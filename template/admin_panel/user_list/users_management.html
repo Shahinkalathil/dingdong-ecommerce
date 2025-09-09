@@ -1,0 +1,458 @@
+{% extends 'admin_panel/base.html'%} 
+{% load static %} 
+{% block title %}DINGDONG - User Dashboard{% endblock %} 
+{% block content %}
+
+<!-- Main Content --> 
+<main class="flex-1 p-6 lg:p-8"> 
+    <!-- Page Header --> 
+    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-8"> 
+        <!-- Title (Left) --> 
+        <h2 class="text-3xl font-bold text-gray-900">
+            Users 
+        </h2> 
+        
+        <!-- Right Side: Refresh + Search --> 
+        <div class="flex flex-col sm:flex-row items-center gap-3"> 
+            <!-- Refresh Button --> 
+            {% if is_search %} 
+            <a href="{% url 'admin_users' %}" class="px-4 py-2 bg-blue-600 text-white font-medium rounded-lg shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 transition"> 
+                <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                </svg>
+                Refresh 
+            </a> 
+            {% endif %} 
+            
+            <!-- Search Form --> 
+            <form action="{% url 'users_search' %}" method="GET" class="relative"> 
+                <input id="searchInput" 
+                       name="keyword" 
+                       type="text" 
+                       value="{{ keyword }}"
+                       placeholder="Search by ID, Name, Email, Phone..." 
+                       class="w-full sm:w-80 px-4 py-2 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white transition" 
+                       oninput="toggleSearchButton()" 
+                       autocomplete="off"> 
+                
+                <!-- Clear Search Button (when there's a keyword) -->
+                {% if keyword %}
+                <button type="button" onclick="clearSearch()" class="absolute right-12 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-gray-100 transition" title="Clear search">
+                    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+                {% endif %}
+                
+                <!-- Search Icon Button --> 
+                <button id="searchBtn" 
+                        type="submit" 
+                        {% if not keyword %}disabled{% endif %}
+                        class="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full transition disabled:opacity-40 disabled:cursor-not-allowed hover:bg-blue-50 enabled:hover:text-blue-500" 
+                        title="Search"> 
+                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"> 
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/> 
+                    </svg> 
+                </button> 
+            </form> 
+        </div> 
+    </div> 
+    
+    <!-- Messages -->
+    {% if messages %}
+    <div class="mb-6 space-y-2">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} p-4 rounded-lg border {% if message.tags == 'success' %}bg-green-50 border-green-200 text-green-800{% elif message.tags == 'error' %}bg-red-50 border-red-200 text-red-800{% else %}bg-blue-50 border-blue-200 text-blue-800{% endif %}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    
+    <!-- Users Table --> 
+    <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200"> 
+        
+        <!-- Check if users exist -->
+        {% if users %}
+        
+        <!-- Desktop Table -->                                                          
+        <div class="hidden lg:block overflow-x-auto"> 
+            <table class="w-full"> 
+                <thead class="bg-gray-50 border-b border-gray-200"> 
+                    <tr> 
+                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">S.No</th> 
+                        
+                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">Name</th> 
+                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">Mobile</th> 
+                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">Email</th> 
+                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">Joined On</th> 
+                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">Status</th> 
+                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">Action</th> 
+                    </tr> 
+                </thead> 
+                <tbody class="bg-white divide-y divide-gray-200"> 
+                    {% for user in users %} 
+                    <tr class="hover:bg-blue-50 transition-colors duration-200"> 
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {{ forloop.counter|add:users.start_index|add:"-1" }}
+                        </td>
+                        
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            {{ user.fullname|default:"N/A" }}
+                        </td> 
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {{ user.phone|default:"N/A" }}
+                        </td> 
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {{ user.email|default:"N/A" }}
+                        </td> 
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {{ user.created_at|date:"d M Y, H:i" }}
+                        </td> 
+                        <td class="px-6 py-4 whitespace-nowrap text-sm">
+                            {% if user.is_active %}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                    Active
+                                </span>
+                            {% else %}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                    Blocked
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm"> 
+                            {% if not user.is_superuser %}
+                                {% if user.is_active %} 
+                                <button onclick="openConfirmModal('{{ user.id }}', 'block', '{{ user.fullname|escapejs }}')" 
+                                        class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200"> 
+                                    Block 
+                                </button> 
+                                {% else %} 
+                                <button onclick="openConfirmModal('{{ user.id }}', 'unblock', '{{ user.fullname|escapejs }}')" 
+                                        class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200"> 
+                                    Unblock 
+                                </button> 
+                                {% endif %}
+                            {% else %}
+                                <span class="text-sm text-gray-500">Admin</span>
+                            {% endif %} 
+                        </td> 
+                    </tr>
+                    {% endfor %} 
+                </tbody> 
+            </table> 
+        </div> 
+        
+        <!-- Mobile Cards --> 
+        <div class="lg:hidden p-4"> 
+            <div class="space-y-4"> 
+                {% for user in users %} 
+                <div class="bg-white rounded-lg p-4 border border-gray-200 shadow-sm"> 
+                    <div class="flex justify-between items-start mb-3"> 
+                        <div class="flex-1"> 
+                            <h3 class="font-semibold text-gray-900 text-base">{{ user.fullname|default:"N/A" }}</h3> 
+                            <p class="text-sm text-gray-500">ID: {{ user.id }}</p> 
+                            <div class="mt-2">
+                                {% if user.is_active %}
+                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                        Active
+                                    </span>
+                                {% else %}
+                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                        Blocked
+                                    </span>
+                                {% endif %}
+                            </div>
+                        </div> 
+                        
+                        {% if not user.is_superuser %}
+                            {% if user.is_active %} 
+                            <button onclick="openConfirmModal('{{ user.id }}', 'block', '{{ user.fullname|escapejs }}')"
+                                    class="bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors"> 
+                                Block 
+                            </button> 
+                            {% else %} 
+                            <button onclick="openConfirmModal('{{ user.id }}', 'unblock', '{{ user.fullname|escapejs }}')"
+                                    class="bg-green-500 hover:bg-green-600 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors"> 
+                                Unblock 
+                            </button> 
+                            {% endif %}
+                        {% else %}
+                            <span class="text-sm text-gray-500">Admin</span>
+                        {% endif %} 
+                    </div> 
+                    
+                    <div class="space-y-2 text-sm text-gray-700"> 
+                        <div><span class="font-medium">Mobile:</span> {{ user.phone|default:"N/A" }}</div> 
+                        <div><span class="font-medium">Email:</span> {{ user.email|default:"N/A" }}</div> 
+                        <div><span class="font-medium">Joined:</span> {{ user.created_at|date:"d M Y, H:i" }}</div> 
+                    </div> 
+                </div> 
+                {% endfor %} 
+            </div> 
+        </div>
+        
+        {% else %}
+        <!-- No Users Found --> 
+        <div class="p-8 text-center"> 
+            <div class="mb-4">
+                <svg class="mx-auto h-16 w-16 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                </svg>
+            </div>
+            <h3 class="text-lg font-medium text-gray-900 mb-2">No users found</h3>
+            {% if is_search %}
+                <p class="text-gray-500 mb-4">No users match your search criteria "{{ keyword }}"</p>
+                <a href="{% url 'admin_users' %}" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                    </svg>
+                    View All Users
+                </a>
+            {% else %}
+                <p class="text-gray-500">No users have registered yet.</p>
+            {% endif %}
+        </div> 
+        {% endif %} 
+    </div>
+    
+    <!-- Pagination --> 
+    {% if users.has_other_pages %} 
+    <div class="flex items-center justify-center mt-8 space-x-2"> 
+        {% if users.has_previous %} 
+        <a href="?{% if keyword %}keyword={{ keyword }}&{% endif %}page={{ users.previous_page_number }}" 
+           class="p-2 hover:bg-gray-100 rounded-lg transition-colors duration-200"> 
+            <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"> 
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/> 
+            </svg> 
+        </a> 
+        {% else %} 
+        <span class="p-2 rounded-lg text-gray-400 cursor-not-allowed"> 
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"> 
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/> 
+            </svg> 
+        </span> 
+        {% endif %} 
+        
+        {% for page_num in users.paginator.page_range %} 
+            {% if page_num == users.number %} 
+            <span class="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium shadow-sm"> 
+                {{ page_num }} 
+            </span> 
+            {% else %} 
+            <a href="?{% if keyword %}keyword={{ keyword }}&{% endif %}page={{ page_num }}" 
+               class="px-4 py-2 hover:bg-gray-100 text-gray-700 rounded-lg font-medium transition-colors duration-200"> 
+                {{ page_num }} 
+            </a> 
+            {% endif %} 
+        {% endfor %} 
+        
+        {% if users.has_next %} 
+        <a href="?{% if keyword %}keyword={{ keyword }}&{% endif %}page={{ users.next_page_number }}" 
+           class="p-2 hover:bg-gray-100 rounded-lg transition-colors duration-200"> 
+            <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"> 
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/> 
+            </svg> 
+        </a> 
+        {% else %} 
+        <span class="p-2 rounded-lg text-gray-400 cursor-not-allowed"> 
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"> 
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/> 
+            </svg> 
+        </span> 
+        {% endif %} 
+    </div>
+    {% endif %} 
+</main>
+
+<!-- Confirmation Modal -->
+<div id="confirmModal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center hidden z-50"> 
+    <div class="bg-white rounded-2xl shadow-2xl p-6 w-96 mx-4"> 
+        <div class="text-center mb-6">
+            <div id="modalIcon" class="mx-auto mb-4"></div>
+            <h2 class="text-xl font-semibold text-gray-800 mb-2" id="confirmTitle">Confirm Action</h2>
+            <p class="text-gray-600" id="confirmMessage">Are you sure?</p> 
+        </div>
+        <div class="flex justify-end space-x-3"> 
+            <button onclick="closeConfirmModal()" 
+                    class="px-6 py-2 bg-gray-300 hover:bg-gray-400 rounded-lg text-gray-800 font-medium transition-colors"> 
+                Cancel 
+            </button> 
+            <a id="confirmActionBtn" 
+               href="#" 
+               class="px-6 py-2 rounded-lg text-white font-medium transition-colors"> 
+                Confirm 
+            </a> 
+        </div> 
+    </div> 
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Set active navigation for users page
+        const navItems = document.querySelectorAll('.nav-item');
+        navItems.forEach(nav => nav.classList.remove('active-nav'));
+        const usersNav = document.querySelector('a[href*="users"]');
+        if (usersNav) {
+            usersNav.classList.add('active-nav');
+        }
+
+        // Mobile sidebar functionality
+        const openSidebar = document.getElementById('openSidebar');
+        const closeSidebar = document.getElementById('closeSidebar');
+        const mobileSidebar = document.getElementById('mobileSidebar');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+        function showSidebar() {
+            if (mobileSidebar) mobileSidebar.classList.remove('-translate-x-full');
+            if (sidebarOverlay) sidebarOverlay.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function hideSidebar() {
+            if (mobileSidebar) mobileSidebar.classList.add('-translate-x-full');
+            if (sidebarOverlay) sidebarOverlay.classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+
+        if (openSidebar) openSidebar.addEventListener('click', showSidebar);
+        if (closeSidebar) closeSidebar.addEventListener('click', hideSidebar);
+        if (sidebarOverlay) sidebarOverlay.addEventListener('click', hideSidebar);
+        
+        // Auto-hide messages after 5 seconds
+        const messages = document.querySelectorAll('.alert');
+        messages.forEach(message => {
+            setTimeout(() => {
+                message.style.opacity = '0';
+                setTimeout(() => message.remove(), 300);
+            }, 5000);
+        });
+    });
+
+    // Search functionality
+    function toggleSearchButton() {
+        const searchInput = document.getElementById('searchInput');
+        const searchBtn = document.getElementById('searchBtn');
+        searchBtn.disabled = searchInput.value.trim() === '';
+    }
+
+    function clearSearch() {
+        document.getElementById('searchInput').value = '';
+        toggleSearchButton();
+        // Redirect to main users page
+        window.location.href = "{% url 'admin_users' %}";
+    }
+
+    // Enhanced confirmation modal
+    window.openConfirmModal = function(userId, action, userName) {
+        const modal = document.getElementById('confirmModal');
+        const confirmBtn = document.getElementById('confirmActionBtn');
+        const message = document.getElementById('confirmMessage');
+        const title = document.getElementById('confirmTitle');
+        const icon = document.getElementById('modalIcon');
+
+    // Set correct message, styling, and icon
+        if (action === 'block') {
+            title.textContent = "Block User";
+            message.textContent = `Are you sure you want to block "${userName}"? They won't be able to access their account.`;
+            confirmBtn.className = "px-6 py-2 rounded-lg text-white bg-red-500 hover:bg-red-600 font-medium transition-colors";
+            confirmBtn.textContent = "Block User";
+            icon.innerHTML = `
+                <div class="w-16 h-16 mx-auto bg-red-100 rounded-full flex items-center justify-center">
+                    <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728L5.636 5.636m12.728 12.728L18.364 5.636M5.636 18.364l12.728-12.728"/>
+                    </svg>
+                </div>
+            `;
+        } else {
+            title.textContent = "Unblock User";
+            message.textContent = `Are you sure you want to unblock "${userName}"? They will regain access to their account.`;
+            confirmBtn.className = "px-6 py-2 rounded-lg text-white bg-green-500 hover:bg-green-600 font-medium transition-colors";
+            confirmBtn.textContent = "Unblock User";
+            icon.innerHTML = `
+                <div class="w-16 h-16 mx-auto bg-green-100 rounded-full flex items-center justify-center">
+                    <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </div>
+            `;
+        }
+
+        // Get current URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const currentPage = urlParams.get("page") || 1;
+        const keyword = urlParams.get("keyword") || '';
+        
+        // Build the action URL
+        let actionUrl = "{% url 'user_status' 'USER_ID' %}".replace("USER_ID", userId);
+        
+        // Add query parameters
+        const params = new URLSearchParams();
+        if (keyword) params.append('keyword', keyword);
+        params.append('page', currentPage);
+        
+        if (params.toString()) {
+            actionUrl += '?' + params.toString();
+        }
+        
+        confirmBtn.href = actionUrl;
+
+        // Show modal with animation
+        modal.classList.remove("hidden");
+        setTimeout(() => {
+            modal.querySelector('.bg-white').style.transform = 'scale(1)';
+            modal.querySelector('.bg-white').style.opacity = '1';
+        }, 10);
+    };
+
+    // Close modal function
+    window.closeConfirmModal = function() {
+        const modal = document.getElementById('confirmModal');
+        const modalContent = modal.querySelector('.bg-white');
+        
+        // Add closing animation
+        modalContent.style.transform = 'scale(0.95)';
+        modalContent.style.opacity = '0.5';
+        
+        setTimeout(() => {
+            modal.classList.add("hidden");
+            modalContent.style.transform = 'scale(1)';
+            modalContent.style.opacity = '1';
+        }, 150);
+    };
+
+    // Close modal when clicking outside
+    document.addEventListener('click', function(e) {
+        const modal = document.getElementById('confirmModal');
+        if (e.target === modal) {
+            closeConfirmModal();
+        }
+    });
+
+    // Close modal with Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            const modal = document.getElementById('confirmModal');
+            if (!modal.classList.contains('hidden')) {
+                closeConfirmModal();
+            }
+        }
+    });
+
+    // Handle form submission with Enter key
+    document.getElementById('searchInput').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            const searchBtn = document.getElementById('searchBtn');
+            if (!searchBtn.disabled) {
+                this.closest('form').submit();
+            }
+        }
+    });
+
+    // Initialize search button state on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        toggleSearchButton();
+});
+</script>
+{% endblock %}

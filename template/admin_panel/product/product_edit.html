@@ -1,0 +1,643 @@
+{% extends 'admin_panel/base.html' %}
+{% load static %}
+{% load custom_filters %}
+
+{% block title %}DINGDONG - Edit Product & Variants{% endblock %}
+
+{% block content %}
+<body class="bg-gray-50 min-h-screen">
+  <div class="max-w-6xl mx-auto px-4 py-8">
+    <form method="POST" enctype="multipart/form-data" action="{% url 'edit_products' product.id %}">
+      {% csrf_token %}
+
+      <!-- Error Display -->
+      {% if error %}
+      <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
+        <strong>Error:</strong> {{ error }}
+      </div>
+      {% endif %}
+
+      <!-- Card -->
+      <div class="bg-white rounded-3xl p-8 shadow-lg border border-gray-100">
+
+        <!-- Header -->
+        <div class="flex items-start justify-between mb-8">
+          <div class="flex-1">
+            <h1 class="text-4xl font-extrabold text-gray-900 mb-2">Edit Product</h1>
+            <p class="text-gray-600">Update product information and variants</p>
+          </div>
+        </div>
+
+        <!-- Product Info -->
+        <div class="mb-8">
+          <h2 class="text-2xl font-bold text-gray-800 mb-6">Product Information</h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+            <!-- Product Name -->
+            <div class="md:col-span-2">
+              <label class="block text-sm font-medium text-gray-700 mb-2">Product Name</label>
+              <input type="text" name="product_name"
+                     value="{% if form_data.product_name %}{{ form_data.product_name }}{% else %}{{ product.name }}{% endif %}"
+                     class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                     required>
+            </div>
+
+            <!-- Brand -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Brand</label>
+              <select name="product_brand"
+                      class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                      required>
+                <option value="">Select Brand</option>
+                {% for b in brands %}
+                <option value="{{ b.id }}" 
+                  {% if form_data.product_brand %}
+                    {% if form_data.product_brand == b.id|stringformat:"s" %}selected{% endif %}
+                  {% else %}
+                    {% if b.id == product.brand.id %}selected{% endif %}
+                  {% endif %}>
+                  {{ b.name }}
+                </option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <!-- Category -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Category</label>
+              <select name="product_category"
+                      class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                      required>
+                <option value="">Select Category</option>
+                {% for c in categories %}
+                <option value="{{ c.id }}"
+                  {% if form_data.product_category %}
+                    {% if form_data.product_category == c.id|stringformat:"s" %}selected{% endif %}
+                  {% else %}
+                    {% if c.id == product.category.id %}selected{% endif %}
+                  {% endif %}>
+                  {{ c.name }}
+                </option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <!-- Description -->
+            <div class="md:col-span-2">
+              <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
+              <textarea name="product_description"
+                        class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 min-h-[100px]"
+                        required>{% if form_data.product_description %}{{ form_data.product_description }}{% else %}{{ product.description }}{% endif %}</textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Variants Section -->
+        <h2 class="text-2xl font-bold text-gray-800 mt-8 mb-6">Variants</h2>
+
+        <!-- Container for all variants -->
+        <div id="variantsContainer">
+          {% for variant in product.variants.all %}
+          <div class="variant-item border-t border-gray-200 pt-6 mt-6" data-variant-id="{{ variant.id }}">
+            <div class="flex justify-between items-center mb-4">
+              <h3 class="text-xl font-bold text-gray-800">Variant {{ forloop.counter }}</h3>
+              {% if not forloop.first %}
+              <button type="button" onclick="removeVariant(this)" class="bg-red-500 text-white px-3 py-1 rounded-lg hover:bg-red-600 transition">
+                Remove
+              </button>
+              {% endif %}
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <!-- Left Side -->
+              <div class="space-y-6">
+
+                <!-- Color -->
+                <div class="bg-gray-50 rounded-2xl p-6">
+                  <h4 class="text-lg font-semibold text-gray-800 mb-4">Color Information</h4>
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 mb-2">Color Name</label>
+                      <input type="text" name="variants_color_name"
+                             value="{% if form_data.variants_color_name %}{{ form_data.variants_color_name|get_item:forloop.counter0 }}{% else %}{{ variant.color_name }}{% endif %}"
+                             class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                             placeholder="Color name"
+                             required>
+                    </div>
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 mb-2">Color Code</label>
+                      <div class="flex items-center gap-3">
+                        <input type="color" name="variants_color_code" 
+                               value="{% if form_data.variants_color_code %}{{ form_data.variants_color_code|get_item:forloop.counter0 }}{% else %}{{ variant.color_code }}{% endif %}"
+                               class="w-12 h-12 border border-gray-300 rounded color-picker"
+                               data-variant-index="{{ forloop.counter0 }}">
+                        <input type="text" name="variants_color_hex"
+                               value="{% if form_data.variants_color_hex %}{{ form_data.variants_color_hex|get_item:forloop.counter0 }}{% else %}{{ variant.color_code }}{% endif %}"
+                               class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 color-hex-input"
+                               placeholder="#000000"
+                               data-variant-index="{{ forloop.counter0 }}">
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Pricing -->
+                <div class="bg-gray-50 rounded-2xl p-6">
+                  <h4 class="text-lg font-semibold text-gray-800 mb-4">Pricing & Stock</h4>
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 mb-2">Price (₹)</label>
+                      <input type="number" name="variants_price"
+                             value="{% if form_data.variants_price %}{{ form_data.variants_price|get_item:forloop.counter0 }}{% else %}{{ variant.price }}{% endif %}"
+                             class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                             placeholder="0.00" min="0" step="0.01"
+                             required>
+                    </div>
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 mb-2">Stock Quantity</label>
+                      <input type="number" name="variants_stock"
+                             value="{% if form_data.variants_stock %}{{ form_data.variants_stock|get_item:forloop.counter0 }}{% else %}{{ variant.stock }}{% endif %}"
+                             class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                             placeholder="0" min="0"
+                             required>
+                    </div>
+                    <div class="md:col-span-2">
+                      <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                      <div class="flex items-center gap-3">
+                        <select name="variants_is_listed"
+                                class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                          <option value="true" 
+                            {% if form_data.variants_is_listed %}
+                              {% if form_data.variants_is_listed|get_item:forloop.counter0 == "true" %}selected{% endif %}
+                            {% else %}
+                              {% if variant.is_listed %}selected{% endif %}
+                            {% endif %}>Listed</option>
+                          <option value="false"
+                            {% if form_data.variants_is_listed %}
+                              {% if form_data.variants_is_listed|get_item:forloop.counter0 == "false" %}selected{% endif %}
+                            {% else %}
+                              {% if not variant.is_listed %}selected{% endif %}
+                            {% endif %}>Unlisted</option>
+                        </select>
+                        <div class="flex items-center">
+                          <div class="w-3 h-3 rounded-full status-indicator 
+                            {% if form_data.variants_is_listed %}
+                              {% if form_data.variants_is_listed|get_item:forloop.counter0 == "true" %}bg-green-500{% else %}bg-red-500{% endif %}
+                            {% else %}
+                              {% if variant.is_listed %}bg-green-500{% else %}bg-red-500{% endif %}
+                            {% endif %}"></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            <!-- Right Side: Images -->
+            <div class="space-y-4">
+              <h4 class="text-lg font-semibold text-gray-800">Variant Images</h4>
+
+              <!-- Main Image Upload -->
+              <div class="image-upload-container" data-image-type="main">
+                <div class="bg-gray-100 rounded-2xl overflow-hidden aspect-[4/3] relative border-2 border-dashed border-gray-300 hover:border-blue-500 hover:bg-blue-50 transition cursor-pointer">
+
+                  <!-- Hidden File Input -->
+                  <input type="file" accept="image/*" class="image-input hidden" name="main_image">
+                  <input type="hidden" class="cropped-data" name="cropped_main_image">
+
+                  <!-- Placeholder -->
+                  <div class="placeholder absolute inset-0 flex items-center justify-center">
+                    <div class="text-gray-400 text-center">
+                      <svg class="w-12 h-12 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                      </svg>
+                      <p class="text-gray-600">Click to upload main image</p>
+                    </div>
+                  </div>
+
+                  <!-- Preview -->
+                  <div class="preview-container hidden w-full h-full relative">
+                    <img src="" alt="Preview" class="preview w-full h-full object-cover">
+                    <div class="absolute top-2 right-2 flex gap-2">
+                      <button type="button" class="crop-image bg-blue-500 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm hover:bg-blue-600 transition">edit</button>
+                      <button type="button" class="remove-image bg-red-500 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm hover:bg-red-600 transition">×</button>
+                    </div>
+                  </div>
+
+                  {% if variant.main_image %}
+                  <div class="existing-image w-full h-full relative">
+                    <img src="{{ variant.main_image.url }}" alt="Existing" class="w-full h-full object-cover">
+                    <div class="absolute top-2 right-2 flex gap-2">
+                      <button type="button" onclick="cropExistingImage(this)" class="bg-blue-500 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm hover:bg-blue-600 transition">edit</button>
+                      <button type="button" onclick="removeExistingImage(this)" class="bg-red-500 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm hover:bg-red-600 transition">×</button>
+                    </div>
+                  </div>
+                  {% endif %}
+                </div>
+              </div>
+
+              <!-- Thumbnail Images -->
+              <div class="grid grid-cols-3 gap-3">
+                {% for i in "123" %}
+                <div class="image-upload-container" data-image-type="thumb">
+                  <div class="bg-gray-100 rounded-xl overflow-hidden aspect-square relative border-2 border-dashed border-gray-300 hover:border-blue-500 hover:bg-blue-50 transition cursor-pointer">
+
+                    <!-- Hidden File Input -->
+                    <input type="file" accept="image/*" class="image-input hidden" name="thumb_image_{{ i }}">
+                    <input type="hidden" class="cropped-data" name="cropped_thumb_{{ i }}">
+
+                    <!-- Placeholder -->
+                    <div class="placeholder absolute inset-0 flex items-center justify-center">
+                      <div class="text-gray-400 text-center">
+                        <svg class="w-8 h-8 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                        </svg>
+                        <div class="text-xs">Add Image</div>
+                      </div>
+                    </div>
+
+                    <!-- Preview -->
+                    <div class="preview-container hidden w-full h-full relative">
+                      <img src="" alt="Preview" class="preview w-full h-full object-cover">
+                      <div class="absolute top-1 right-1 flex gap-1">
+                        <button type="button" class="crop-image bg-blue-500 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs hover:bg-blue-600 transition">edit</button>
+                        <button type="button" class="remove-image bg-red-500 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs hover:bg-red-600 transition">×</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                {% endfor %}
+              </div>
+            </div>
+
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+
+        <!-- Add Variant Button -->
+        <div class="mt-8 pt-6 border-t border-gray-200 text-center">
+          <button type="button" onclick="addVariant()" class="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition">
+            Add New Variant
+          </button>
+        </div>
+
+        <!-- Actions -->
+        <div class="mt-8 pt-6 border-t border-gray-200 flex justify-center gap-4">
+          <button type="submit" class="bg-green-500 text-white px-8 py-3 rounded-xl font-semibold hover:bg-green-600 transition">Save All Changes</button>
+          <a href="{% url 'admin_products' %}" class="bg-gray-400 text-white px-8 py-3 rounded-xl font-semibold hover:bg-gray-500 transition inline-block">Cancel</a>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <!-- Crop Modal -->
+  <div id="cropModal" class="fixed inset-0 bg-black bg-opacity-75 z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl p-6 max-w-4xl w-full max-h-[90vh] overflow-auto">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-xl font-semibold text-gray-900">Crop Image</h3>
+        <button id="closeCropModal" class="text-gray-500 hover:text-gray-700 text-2xl font-bold">&times;</button>
+      </div>
+      <div class="crop-container mb-6">
+        <img id="cropImage" class="max-w-full max-h-96 mx-auto rounded-lg shadow-lg" />
+      </div>
+      <div class="flex justify-center space-x-4">
+        <button id="cropCancel" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">Cancel</button>
+        <button id="cropConfirm" class="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">Crop & Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CropperJS CDN -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css" rel="stylesheet"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
+  
+  <script>
+    let currentCropper = null;
+    let currentImageContainer = null;
+    let variantCounter = {{ product.variants.count }};
+
+    /* --- Color Picker and Hex Input Sync --- */
+    function setupColorSync(scope) {
+      scope.querySelectorAll('.color-picker').forEach((colorPicker) => {
+        const variantIndex = colorPicker.getAttribute('data-variant-index');
+        const hexInput = scope.querySelector(`.color-hex-input[data-variant-index="${variantIndex}"]`);
+        
+        // Sync color picker to hex input
+        colorPicker.addEventListener('change', function() {
+          if (hexInput) {
+            hexInput.value = this.value;
+          }
+        });
+        
+        // Sync hex input to color picker
+        if (hexInput) {
+          hexInput.addEventListener('input', function() {
+            if (/^#[0-9A-F]{6}$/i.test(this.value)) {
+              colorPicker.value = this.value;
+            }
+          });
+        }
+      });
+    }
+
+    /* --- Status Indicator Update --- */
+    function setupStatusIndicators(scope) {
+      scope.querySelectorAll('select[name="variants_is_listed"]').forEach((select) => {
+        const indicator = select.closest('.flex').querySelector('.status-indicator');
+        
+        select.addEventListener('change', function() {
+          if (indicator) {
+            if (this.value === 'true') {
+              indicator.classList.remove('bg-red-500');
+              indicator.classList.add('bg-green-500');
+            } else {
+              indicator.classList.remove('bg-green-500');
+              indicator.classList.add('bg-red-500');
+            }
+          }
+        });
+      });
+    }
+
+    /* --- Image Upload (Preview + Crop Setup) --- */
+    function setupImageUpload(scope) {
+      scope.querySelectorAll('.image-upload-container').forEach((wrap) => {
+        const input = wrap.querySelector('.image-input');
+        const preview = wrap.querySelector('.preview');
+        const placeholder = wrap.querySelector('.placeholder');
+        const previewContainer = wrap.querySelector('.preview-container');
+        const removeBtn = wrap.querySelector('.remove-image');
+        const cropBtn = wrap.querySelector('.crop-image');
+        const croppedDataInput = wrap.querySelector('.cropped-data');
+        const existingImage = wrap.querySelector('.existing-image');
+        const removeFlag = wrap.querySelector('.remove-flag');
+
+        // Make placeholder clickable
+        if (placeholder) {
+          placeholder.addEventListener('click', () => {
+            input.click();
+          });
+        }
+
+        // Show preview on file select and auto-open cropper
+        input.addEventListener('change', (e) => {
+          const file = e.target.files && e.target.files[0];
+          if (!file) return;
+
+          const reader = new FileReader();
+          reader.onload = (evt) => {
+            preview.src = evt.target.result;
+            if (placeholder) placeholder.classList.add('hidden');
+            if (existingImage) existingImage.style.display = 'none';
+            previewContainer.classList.remove('hidden');
+            
+            // Reset remove flag
+            if (removeFlag) removeFlag.value = 'false';
+            
+            // Auto-open cropper for new images
+            setTimeout(() => {
+              openCropper(wrap, evt.target.result);
+            }, 100);
+          };
+          reader.readAsDataURL(file);
+        });
+
+        // Remove image & reset
+        if (removeBtn) {
+          removeBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            input.value = '';
+            preview.src = '';
+            croppedDataInput.value = '';
+            previewContainer.classList.add('hidden');
+            if (placeholder) placeholder.classList.remove('hidden');
+            if (existingImage) existingImage.style.display = 'block';
+            if (removeFlag) removeFlag.value = 'false';
+          });
+        }
+
+        // Open cropper manually
+        if (cropBtn) {
+          cropBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (preview.src) {
+              openCropper(wrap, preview.src);
+            }
+          });
+        }
+      });
+    }
+
+    /* --- Remove Existing Image --- */
+    function removeExistingImage(button) {
+      const existingImage = button.closest('.existing-image');
+      const uploadContainer = existingImage.closest('.image-upload-container');
+      const placeholder = uploadContainer.querySelector('.placeholder');
+      const removeFlag = uploadContainer.querySelector('.remove-flag');
+      
+      if (existingImage) {
+        existingImage.style.display = 'none';
+        if (placeholder) {
+          placeholder.classList.remove('hidden');
+        }
+        if (removeFlag) {
+          removeFlag.value = 'true';
+        }
+      }
+    }
+
+    /* --- Crop Existing Image --- */
+    function cropExistingImage(button) {
+      const existingImage = button.closest('.existing-image');
+      const img = existingImage.querySelector('img');
+      const container = existingImage.closest('.image-upload-container');
+      
+      if (img && container) {
+        openCropper(container, img.src);
+      }
+    }
+
+    /* --- Open Cropper Modal --- */
+    function openCropper(imageContainer, imageSrc) {
+      currentImageContainer = imageContainer;
+      const modal = document.getElementById('cropModal');
+      const cropImage = document.getElementById('cropImage');
+      
+      if (!modal || !cropImage) {
+        console.error('Crop modal elements not found');
+        return;
+      }
+      
+      cropImage.src = imageSrc;
+      modal.classList.remove('hidden');
+      
+      // Destroy existing cropper
+      if (currentCropper) {
+        currentCropper.destroy();
+      }
+      
+      // Wait for image to load then initialize cropper
+      cropImage.onload = function() {
+        const imageType = imageContainer.getAttribute('data-image-type');
+        let aspectRatio = null;
+        
+        if (imageType === 'main') {
+          aspectRatio = 4/5;
+        } else if (imageType === 'thumb') {
+          aspectRatio = 1;
+        }
+        
+        currentCropper = new Cropper(cropImage, {
+          aspectRatio: aspectRatio, 
+          viewMode: 2,
+          dragMode: 'move',
+          autoCropArea: 0.8,
+          restore: false,
+          guides: true,
+          center: true,
+          highlight: false,
+          cropBoxMovable: true,
+          cropBoxResizable: true, 
+          toggleDragModeOnDblclick: false,
+          minContainerWidth: 300,
+          minContainerHeight: 200,
+          background: true,
+          modal: true,
+          responsive: true,
+          checkOrientation: false,
+          scalable: true,
+          zoomable: true,
+          wheelZoomRatio: 0.1
+        });
+      };
+    }
+
+    /* --- Close Cropper Modal --- */
+    function closeCropModal() {
+      const modal = document.getElementById('cropModal');
+      if (modal) {
+        modal.classList.add('hidden');
+      }
+      
+      if (currentCropper) {
+        currentCropper.destroy();
+        currentCropper = null;
+      }
+      
+      currentImageContainer = null;
+    }
+
+    /* --- Confirm Crop --- */
+    function confirmCrop() {
+      if (!currentCropper || !currentImageContainer) return;
+      
+      const imageType = currentImageContainer.getAttribute('data-image-type');
+      let outputWidth, outputHeight;
+      
+      if (imageType === 'main') {
+        outputWidth = 400;
+        outputHeight = 500;
+      } else if (imageType === 'thumb') {
+        outputWidth = 400;
+        outputHeight = 400;
+      } else {
+        outputWidth = 400;
+        outputHeight = 400;
+      }
+      
+      const canvas = currentCropper.getCroppedCanvas({
+        width: outputWidth,
+        height: outputHeight,
+        imageSmoothingEnabled: true,
+        imageSmoothingQuality: 'high',
+      });
+      
+      if (canvas) {
+        const preview = currentImageContainer.querySelector('.preview');
+        const croppedDataInput = currentImageContainer.querySelector('.cropped-data');
+        const existingImage = currentImageContainer.querySelector('.existing-image');
+        const placeholder = currentImageContainer.querySelector('.placeholder');
+        const previewContainer = currentImageContainer.querySelector('.preview-container');
+        const removeFlag = currentImageContainer.querySelector('.remove-flag');
+        
+        const croppedDataURL = canvas.toDataURL('image/jpeg', 0.9);
+        preview.src = croppedDataURL;
+        croppedDataInput.value = croppedDataURL;
+        
+        // Show preview, hide existing image and placeholder
+        if (existingImage) existingImage.style.display = 'none';
+        if (placeholder) placeholder.classList.add('hidden');
+        if (previewContainer) previewContainer.classList.remove('hidden');
+        
+        // Reset remove flag since we're replacing with new image
+        if (removeFlag) removeFlag.value = 'false';
+         }
+      
+      closeCropModal();
+    }
+
+    /* --- Event Listeners for Crop Modal --- */
+    document.getElementById('closeCropModal')?.addEventListener('click', closeCropModal);
+    document.getElementById('cropCancel')?.addEventListener('click', closeCropModal);
+    document.getElementById('cropConfirm')?.addEventListener('click', confirmCrop);
+
+    /* --- Add Variant --- */
+    function addVariant() {
+      variantCounter++;
+      const container = document.getElementById('variantsContainer');
+      const template = document.querySelector('.variant-item');
+      if (!template) return;
+
+      const clone = template.cloneNode(true);
+      clone.setAttribute('data-variant-id', '');
+      clone.querySelector('h3').textContent = `Variant ${variantCounter}`;
+
+      // Reset all inputs inside the clone
+      clone.querySelectorAll('input, select, textarea').forEach((input) => {
+        if (input.type === 'checkbox' || input.type === 'radio') {
+          input.checked = false;
+        } else if (input.tagName.toLowerCase() === 'select') {
+          input.selectedIndex = 0;
+        } else {
+          input.value = '';
+        }
+      });
+
+      // Remove existing images/previews
+      clone.querySelectorAll('.existing-image, .preview-container').forEach(el => el.remove());
+      clone.querySelectorAll('.placeholder').forEach(el => el.classList.remove('hidden'));
+
+      // Enable remove button for new variants
+      const removeBtn = clone.querySelector('button[onclick^="removeVariant"]');
+      if (removeBtn) {
+        removeBtn.classList.remove('hidden');
+      }
+
+      container.appendChild(clone);
+
+      // Re-initialize JS bindings for new variant
+      setupColorSync(clone);
+      setupStatusIndicators(clone);
+      setupImageUpload(clone);
+    }
+
+    /* --- Remove Variant --- */
+    function removeVariant(button) {
+      const item = button.closest('.variant-item');
+      if (item) {
+        item.remove();
+      }
+    }
+
+    /* --- Initialize all on page load --- */
+    document.addEventListener('DOMContentLoaded', () => {
+      const scope = document;
+      setupColorSync(scope);
+      setupStatusIndicators(scope);
+      setupImageUpload(scope);
+    });
+  </script>
+{% endblock %}

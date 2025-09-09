@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DINGDONG - Sign In</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1e40af',
+                        secondary: '#64748b',
+                        accent: '#f59e0b',
+                        neutral: '#f8fafc',
+                        dark: '#0f172a'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="min-h-screen bg-white font-sans antialiased">
+    <!-- Header -->
+    <header class="w-full bg-white border-b border-gray-200 py-6">
+        <div class="container mx-auto px-4">
+            <!-- Centered DINGDONG text and removed user icon -->
+            <div class="flex justify-center">
+                <h1 class="text-3xl font-bold text-dark tracking-wider">DINGDONG</h1>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex items-center justify-center min-h-[calc(100vh-120px)] px-4 py-8">
+        <div class="w-full max-w-md">
+            <!-- Login Card -->
+            <div class="bg-white rounded-2xl shadow-xl border border-gray-100 p-8 md:p-10">
+                <!-- Sign In Title -->
+                <h2 class="text-2xl md:text-3xl font-semibold text-dark text-center mb-8">Sign in</h2>
+                
+                <!-- Login Form -->
+                <form id="loginForm" class="space-y-6">
+                    <!-- Email/Phone Input -->
+                    <div>
+                        <label for="email" class="block text-sm font-medium text-secondary mb-3">
+                            Email 
+                        </label>
+                        <input 
+                            type="text" 
+                            id="email" 
+                            name="email"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 text-dark placeholder-gray-400"
+                            placeholder="Enter your email or phone number"
+                            required
+                        >
+                    </div>
+
+                    <!-- Password Input -->
+                    <div>
+                        <label for="password" class="block text-sm font-medium text-secondary mb-3">
+                            Password
+                        </label>
+                        <div class="relative">
+                            <input 
+                                type="password" 
+                                id="password" 
+                                name="password"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 text-dark placeholder-gray-400"
+                                placeholder="Enter your password"
+                                required
+                            >
+                            <button 
+                                type="button" 
+                                id="togglePassword"
+                                class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors duration-200"
+                            >
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Remember Me & Forgot Password -->
+                    <div class="flex items-center justify-between text-sm">
+                        <label class="flex items-center space-x-2 cursor-pointer">
+                            <input 
+                                type="checkbox" 
+                                id="remember" 
+                                name="remember"
+                                class="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary focus:ring-2 transition-all duration-200"
+                            >
+                            <span class="text-secondary">Remember me</span>
+                        </label>
+                        <a href="#" class="text-secondary hover:text-primary transition-colors duration-200 font-medium">
+                            Forget password ?
+                        </a>
+                    </div>
+
+                    <!-- Sign In Button -->
+                    <button 
+                        type="submit"
+                        class="w-full bg-dark hover:bg-gray-800 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 transform hover:scale-[1.02] focus:ring-4 focus:ring-gray-300 focus:outline-none"
+                    >
+                        Sign in
+                    </button>
+
+                    <!-- Terms and Conditions -->
+                    <p class="text-xs text-secondary text-center leading-relaxed mt-6">
+                        By continuing, you agree to Luxe Tickers 
+                        <a href="#" class="text-primary hover:underline">Conditions of Use</a> 
+                        and 
+                        <a href="#" class="text-primary hover:underline">Privacy Notice</a>.
+                    </p>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Toggle password visibility
+        document.getElementById('togglePassword').addEventListener('click', function() {
+            const passwordInput = document.getElementById('password');
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            
+            // Toggle icon
+            this.innerHTML = type === 'password' 
+                ? '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>'
+                : '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L12 12m-3.122-3.122l4.242 4.242M12 12l6.878 6.878M12 12v.01"></path></svg>';
+        });
+
+        // Form submission
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const remember = document.getElementById('remember').checked;
+            
+            // Basic validation
+            if (!email || !password) {
+                alert('Please fill in all required fields.');
+                return;
+            }
+            
+            // Simulate login process
+            const submitButton = this.querySelector('button[type="submit"]');
+            const originalText = submitButton.textContent;
+            
+            submitButton.textContent = 'Signing in...';
+            submitButton.disabled = true;
+            
+            setTimeout(() => {
+                // Simulate successful login
+                alert('Login successful! Welcome to DINGDONG Dashboard.');
+                
+                // Reset button
+                submitButton.textContent = originalText;
+                submitButton.disabled = false;
+                
+                // Here you would typically redirect to dashboard
+                // window.location.href = 'dashboard.html';
+            }, 2000);
+        });
+
+        // Input focus effects
+        const inputs = document.querySelectorAll('input[type="text"], input[type="password"]');
+        inputs.forEach(input => {
+            input.addEventListener('focus', function() {
+                this.parentElement.classList.add('focused');
+            });
+            
+            input.addEventListener('blur', function() {
+                this.parentElement.classList.remove('focused');
+            });
+        });
+
+        // Responsive adjustments
+        function handleResize() {
+            const isMobile = window.innerWidth < 768;
+            const loginCard = document.querySelector('.bg-white');
+            
+            if (isMobile) {
+                loginCard.classList.add('mx-4');
+            } else {
+                loginCard.classList.remove('mx-4');
+            }
+        }
+        
+        window.addEventListener('resize', handleResize);
+        handleResize(); // Initial call
+    </script>
+</body>
+</html>

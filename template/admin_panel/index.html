@@ -1,0 +1,271 @@
+{% extends 'admin_panel/base.html' %}
+{% block title %}DINGDONG - Sales Dashboard{% endblock %}
+{% load static %}
+
+{% block extra_css %}
+<style>
+    /* Custom CSS variables for consistent theming */
+    :root {
+        --color-primary: #1e40af;
+        --color-secondary: #7c3aed;
+        --color-accent: #059669;
+        --color-danger: #dc2626;
+        --color-dark: #1f2937;
+    }
+
+    .text-primary { color: var(--color-primary); }
+    .bg-primary { background-color: var(--color-primary); }
+    .text-secondary { color: var(--color-secondary); }
+    .bg-secondary { background-color: var(--color-secondary); }
+    .text-accent { color: var(--color-accent); }
+    .bg-accent { background-color: var(--color-accent); }
+    .text-danger { color: var(--color-danger); }
+    .bg-danger { background-color: var(--color-danger); }
+    .text-dark { color: var(--color-dark); }
+    .bg-dark { background-color: var(--color-dark); }
+
+    /* Always show scrollbar */
+    .overflow-x-auto {
+        scrollbar-gutter: stable;
+    }
+
+    .overflow-x-auto::-webkit-scrollbar {
+        height: 8px;
+    }
+    .overflow-x-auto::-webkit-scrollbar-thumb {
+        background: #d1d5db;
+        border-radius: 9999px;
+    }
+    .overflow-x-auto::-webkit-scrollbar-track {
+        background: #f3f4f6;
+    }
+
+    /* Navigation styles */
+    .nav-item {
+        transition: all 0.2s ease-in-out;
+    }
+    .active-nav {
+        background-color: var(--color-primary);
+        color: white;
+    }
+
+    /* Table row hover effect */
+    .table-row:hover {
+        background-color: #f9fafb;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<body class="bg-gray-50 font-sans">
+    <!-- Main Content -->
+    <main class="flex-1 lg:ml-0">
+        <!-- Dashboard View -->
+        <div id="dashboardView" class="p-4 lg:p-6">
+            <!-- Statistics Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-6">
+                <!-- Today Sales -->
+                <div class="stat-card bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-600 mb-1">Today Sales</p>
+                            <p class="text-2xl font-bold text-dark">$25,222.00</p>
+                            <p class="text-xs text-accent font-medium mt-1">▲ +35%</p>
+                        </div>
+                        <div class="p-3 bg-blue-50 rounded-lg">
+                            <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Today Expenses -->
+                <div class="stat-card bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-600 mb-1">Today Expenses</p>
+                            <p class="text-2xl font-bold text-dark">$1,255.00</p>
+                            <p class="text-xs text-danger font-medium mt-1">▼ -35%</p>
+                        </div>
+                        <div class="p-3 bg-purple-50 rounded-lg">
+                            <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Today Visitors -->
+                <div class="stat-card bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-600 mb-1">Today Visitors</p>
+                            <p class="text-2xl font-bold text-dark">6,268</p>
+                            <p class="text-xs text-accent font-medium mt-1">▲ +15%</p>
+                        </div>
+                        <div class="p-3 bg-pink-50 rounded-lg">
+                            <svg class="w-6 h-6 text-pink-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Today Orders -->
+                <div class="stat-card bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-600 mb-1">Today Orders</p>
+                            <p class="text-2xl font-bold text-dark">625</p>
+                            <p class="text-xs text-accent font-medium mt-1">▲ +25%</p>
+                        </div>
+                        <div class="p-3 bg-red-50 rounded-lg">
+                            <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13l2.5 5m6-5v6a2 2 0 01-2 2H9a2 2 0 01-2-2v-6"></path>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Section -->
+            <div class="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-6">
+                <!-- Sales Overview Chart -->
+                <div class="xl:col-span-2 bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                    <h3 class="text-lg font-semibold text-dark mb-4">Sales Overview</h3>
+                    <div class="h-64 flex items-end justify-between space-x-2">
+                        <!-- Chart Bars -->
+                        <div class="flex items-end h-full space-x-1">
+                            <div class="bg-primary w-4 h-16 rounded-t"></div>
+                            <div class="bg-primary w-4 h-20 rounded-t"></div>
+                            <div class="bg-primary w-4 h-24 rounded-t"></div>
+                            <div class="bg-primary w-4 h-20 rounded-t"></div>
+                            <div class="bg-primary w-4 h-32 rounded-t"></div>
+                            <div class="bg-primary w-4 h-0 rounded-t"></div>
+                            <div class="bg-primary w-4 h-36 rounded-t"></div>
+                            <div class="bg-primary w-4 h-24 rounded-t"></div>
+                            <div class="bg-primary w-4 h-20 rounded-t"></div>
+                            <div class="bg-primary w-4 h-28 rounded-t"></div>
+                            <div class="bg-secondary w-4 h-40 rounded-t"></div>
+                            <div class="bg-primary w-4 h-44 rounded-t"></div>
+                            <div class="bg-primary w-4 h-48 rounded-t"></div>
+                            <div class="bg-primary w-4 h-52 rounded-t"></div>
+                            <div class="bg-primary w-4 h-48 rounded-t"></div>
+                            <div class="bg-primary w-4 h-0 rounded-t"></div>
+                            <div class="bg-primary w-4 h-48 rounded-t"></div>
+                            <div class="bg-primary w-4 h-52 rounded-t"></div>
+                            <div class="bg-primary w-4 h-48 rounded-t"></div>
+                            <div class="bg-primary w-4 h-44 rounded-t"></div>
+                            <div class="bg-primary w-4 h-44 rounded-t"></div>
+                            <div class="bg-primary w-4 h-0 rounded-t"></div>
+                            <div class="bg-primary w-4 h-52 rounded-t"></div>
+                            <div class="bg-primary w-4 h-48 rounded-t"></div>
+                            <div class="bg-primary w-4 h-40 rounded-t"></div>
+                            <div class="bg-secondary w-4 h-52 rounded-t"></div>
+                            <div class="bg-primary w-4 h-48 rounded-t"></div>
+                            <div class="bg-primary w-4 h-0 rounded-t"></div>
+                            <div class="bg-primary w-4 h-48 rounded-t"></div>
+                            <div class="bg-primary w-4 h-44 rounded-t"></div>
+                        </div>
+                    </div>
+                    <div class="flex justify-between text-xs text-gray-500 mt-2">
+                        <span>01 Jan</span>
+                        <span>02 Jan</span>
+                        <span>03 Jan</span>
+                        <span>04 Jan</span>
+                        <span>05 Jan</span>
+                        <span>06 Jan</span>
+                        <span>07 Jan</span>
+                    </div>
+                </div>
+
+                <!-- Visited Customers Chart -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                    <h3 class="text-lg font-semibold text-dark mb-4">Visited Customers</h3>
+                    <div class="flex items-center justify-center mb-4">
+                        <div class="relative w-32 h-32">
+                            <svg class="w-32 h-32 transform -rotate-90" viewBox="0 0 36 36">
+                                <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#e5e7eb" stroke-width="2"/>
+                                <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#1e40af" stroke-width="2" stroke-dasharray="85, 100"/>
+                            </svg>
+                            <div class="absolute inset-0 flex items-center justify-center">
+                                <span class="text-xl font-bold text-dark">85%</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div class="w-3 h-3 bg-primary rounded-full mr-2"></div>
+                                <span class="text-sm text-gray-600">Desktop</span>
+                            </div>
+                            <span class="text-sm font-medium text-dark">85%</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div class="w-3 h-3 bg-secondary rounded-full mr-2"></div>
+                                <span class="text-sm text-gray-600">Mobile</span>
+                            </div>
+                            <span class="text-sm font-medium text-dark">13%</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div class="w-3 h-3 bg-accent rounded-full mr-2"></div>
+                                <span class="text-sm text-gray-600">Tablet</span>
+                            </div>
+                            <span class="text-sm font-medium text-dark">2%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Orders Table -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100">
+                <div class="p-6 border-b border-gray-200">
+                    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                        <h3 class="text-lg font-semibold text-dark">Recent Orders</h3>
+                    </div>
+                </div>
+                
+                <!-- Table -->
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-gray-50 border-b border-gray-200">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product Name</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order ID</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Qty</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tax</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Unit/Type</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            <tr class="table-row">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-dark">Sarah Johnson</td>
+                                <td class="px-6 py-4 text-sm text-gray-900">
+                                    <div>Calvin Klein</div>
+                                    <div class="text-xs text-gray-500">Senses K5N2S526 For Women</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">#2371323e</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">1</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">$17,880</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">12%</td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-pink-100 text-pink-800">Women</span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Pcs</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-dark">$19,000</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+{% endblock %}

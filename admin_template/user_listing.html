@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DINGDONG - Users Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1e40af',
+                        secondary: '#f59e0b',
+                        accent: '#ef4444',
+                        neutral: '#6b7280',
+                        'gray-custom': '#e5e7eb'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- Header -->
+    <!-- Updated header to use white background with blue accent -->
+    <header class="bg-white border-b border-gray-200 px-6 py-4 shadow-sm">
+        <div class="flex items-center justify-between">
+            <h1 class="text-2xl font-bold text-gray-900 text-center flex-1">DINGDONG</h1>
+            <div class="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
+                <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path>
+                </svg>
+            </div>
+        </div>
+    </header>
+
+    <div class="flex min-h-screen">
+        <!-- Sidebar -->
+        <!-- Updated sidebar to use white background with blue active states -->
+        <aside class="w-80 bg-white border-r border-gray-200 shadow-sm">
+            <nav class="py-4">
+                <ul class="space-y-0">
+                    <li>
+                        <button onclick="navigateToPage('dashboard')" class="w-full text-left px-6 py-4 text-gray-600 hover:bg-blue-50 hover:text-primary border-b border-gray-100 transition-colors duration-200">
+                            Dashboard
+                        </button>
+                    </li>
+                    <li>
+                        <button onclick="navigateToPage('orders')" class="w-full text-left px-6 py-4 text-gray-600 hover:bg-blue-50 hover:text-primary border-b border-gray-100 transition-colors duration-200">
+                            Orders
+                        </button>
+                    </li>
+                    <li>
+                        <button onclick="navigateToPage('products')" class="w-full text-left px-6 py-4 text-gray-600 hover:bg-blue-50 hover:text-primary border-b border-gray-100 transition-colors duration-200">
+                            Products
+                        </button>
+                    </li>
+                    <li>
+                        <button class="w-full text-left px-6 py-4 bg-primary text-white font-semibold border-b border-gray-100">
+                            Users
+                        </button>
+                    </li>
+                    <li>
+                        <button onclick="navigateToPage('categories')" class="w-full text-left px-6 py-4 text-gray-600 hover:bg-blue-50 hover:text-primary border-b border-gray-100 transition-colors duration-200">
+                            Categories
+                        </button>
+                    </li>
+                    <li>
+                        <button onclick="navigateToPage('brands')" class="w-full text-left px-6 py-4 text-gray-600 hover:bg-blue-50 hover:text-primary border-b border-gray-100 transition-colors duration-200">
+                            Brands
+                        </button>
+                    </li>
+                    <li>
+                        <button onclick="navigateToPage('coupons')" class="w-full text-left px-6 py-4 text-gray-600 hover:bg-blue-50 hover:text-primary border-b border-gray-100 transition-colors duration-200">
+                            Coupons
+                        </button>
+                    </li>
+                    <li>
+                        <button onclick="navigateToPage('banners')" class="w-full text-left px-6 py-4 text-gray-600 hover:bg-blue-50 hover:text-primary border-b border-gray-100 transition-colors duration-200">
+                            Banners
+                        </button>
+                    </li>
+                    <li>
+                        <button onclick="navigateToPage('payments')" class="w-full text-left px-6 py-4 text-gray-600 hover:bg-blue-50 hover:text-primary border-b border-gray-100 transition-colors duration-200">
+                            Payments
+                        </button>
+                    </li>
+                    <li>
+                        <button onclick="navigateToPage('offers')" class="w-full text-left px-6 py-4 text-gray-600 hover:bg-blue-50 hover:text-primary border-b border-gray-100 transition-colors duration-200">
+                            Offers
+                        </button>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- Mobile Sidebar Overlay -->
+        <div id="sidebarOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden lg:hidden"></div>
+
+        <!-- Mobile Sidebar -->
+        <!-- Updated mobile sidebar to match new color scheme -->
+        <aside id="mobileSidebar" class="fixed left-0 top-0 w-80 h-full bg-white border-r border-gray-200 shadow-lg z-50 transform -translate-x-full transition-transform duration-300 lg:hidden">
+            <div class="p-4 border-b border-gray-200">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-xl font-bold text-gray-900">Menu</h2>
+                    <button id="closeSidebar" class="p-2 hover:bg-gray-100 rounded">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <nav class="py-4">
+                <ul class="space-y-0">
+                    <li><button onclick="navigateToPage('dashboard')" class="w-full text-left px-6 py-4 text-gray-600 hover:bg-blue-50 hover:text-primary border-b border-gray-100">Dashboard</button></li>
+                    <li><button onclick="navigateToPage('orders')" class="w-full text-left px-6 py-4 text-gray-600 hover:bg-blue-50 hover:text-primary border-b border-gray-100">Orders</button></li>
+                    <li><button onclick="navigateToPage('products')" class="w-full text-left px-6 py-4 text-gray-600 hover:bg-blue-50 hover:text-primary border-b border-gray-100">Products</button></li>
+                    <li><button class="w-full text-left px-6 py-4 bg-primary text-white font-semibold border-b border-gray-100">Users</button></li>
+                    <li><button onclick="navigateToPage('categories')" class="w-full text-left px-6 py-4 text-gray-600 hover:bg-blue-50 hover:text-primary border-b border-gray-100">Categories</button></li>
+                    <li><button onclick="navigateToPage('brands')" class="w-full text-left px-6 py-4 text-gray-600 hover:bg-blue-50 hover:text-primary border-b border-gray-100">Brands</button></li>
+                    <li><button onclick="navigateToPage('coupons')" class="w-full text-left px-6 py-4 text-gray-600 hover:bg-blue-50 hover:text-primary border-b border-gray-100">Coupons</button></li>
+                    <li><button onclick="navigateToPage('banners')" class="w-full text-left px-6 py-4 text-gray-600 hover:bg-blue-50 hover:text-primary border-b border-gray-100">Banners</button></li>
+                    <li><button onclick="navigateToPage('payments')" class="w-full text-left px-6 py-4 text-gray-600 hover:bg-blue-50 hover:text-primary border-b border-gray-100">Payments</button></li>
+                    <li><button onclick="navigateToPage('offers')" class="w-full text-left px-6 py-4 text-gray-600 hover:bg-blue-50 hover:text-primary border-b border-gray-100">Offers</button></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 p-6 lg:p-8">
+            <!-- Mobile Header -->
+            <div class="lg:hidden mb-6">
+                <button id="openSidebar" class="p-2 hover:bg-gray-100 rounded">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Page Header -->
+            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8">
+                <h2 class="text-3xl font-bold text-gray-900 mb-4 lg:mb-0">Users</h2>
+                
+                <!-- Search Bar -->
+                <div class="relative">
+                    <input 
+                        type="text" 
+                        placeholder="User Id :" 
+                        class="w-full lg:w-80 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-white"
+                    >
+                    <button class="absolute right-3 top-1/2 transform -translate-y-1/2">
+                        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Users Table -->
+            <!-- Enhanced table styling with better shadows and borders -->
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
+                <!-- Desktop Table -->
+                <div class="hidden lg:block overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-gray-50 border-b border-gray-200">
+                            <tr>
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">ID</th>
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">Name</th>
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">Mobile</th>
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">Email</th>
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">Joined On</th>
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            <tr class="hover:bg-blue-50 transition-colors duration-200">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">1</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Aflah Zameen</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">9283902832</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">aflah@gmail.com</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">31/03/2023</td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <button onclick="blockUser(1)" class="bg-accent hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200">
+                                        Block
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr class="hover:bg-blue-50 transition-colors duration-200">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">2</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Mohammed Sufiyan</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">9347839202</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">mudsufiyan@gmail.com</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">31/01/2023</td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <button onclick="blockUser(2)" class="bg-accent hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200">
+                                        Block
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr class="hover:bg-blue-50 transition-colors duration-200">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">3</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Dulkar Saman</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">9383927363</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">dulkarsaman@gmail.com</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">31/10/2024</td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <button onclick="blockUser(3)" class="bg-accent hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200">
+                                        Block
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr class="hover:bg-blue-50 transition-colors duration-200">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">4</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Farhan Yassar</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">8373838338</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">farhnyassar@gmail.com</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">25/01/2023</td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <button onclick="blockUser(4)" class="bg-accent hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200">
+                                        Block
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr class="hover:bg-blue-50 transition-colors duration-200">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">5</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Sreeshanth</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">7383833933</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">sreeshanth@gmail.com</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">29/01/2023</td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <button onclick="blockUser(5)" class="bg-accent hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200">
+                                        Block
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Mobile Cards -->
+                <!-- Updated mobile cards with cleaner styling -->
+                <div class="lg:hidden space-y-4 p-4">
+                    <div class="bg-white rounded-lg p-4 border border-gray-200 shadow-sm">
+                        <div class="flex justify-between items-start mb-3">
+                            <div>
+                                <h3 class="font-semibold text-gray-900">Aflah Zameen</h3>
+                                <p class="text-sm text-gray-600">ID: 1</p>
+                            </div>
+                            <button onclick="blockUser(1)" class="bg-accent hover:bg-red-600 text-white px-3 py-1 rounded text-sm font-medium">
+                                Block
+                            </button>
+                        </div>
+                        <div class="space-y-2 text-sm">
+                            <div><span class="font-medium">Mobile:</span> 9283902832</div>
+                            <div><span class="font-medium">Email:</span> aflah@gmail.com</div>
+                            <div><span class="font-medium">Joined:</span> 31/03/2023</div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-lg p-4 border border-gray-200 shadow-sm">
+                        <div class="flex justify-between items-start mb-3">
+                            <div>
+                                <h3 class="font-semibold text-gray-900">Mohammed Sufiyan</h3>
+                                <p class="text-sm text-gray-600">ID: 2</p>
+                            </div>
+                            <button onclick="blockUser(2)" class="bg-accent hover:bg-red-600 text-white px-3 py-1 rounded text-sm font-medium">
+                                Block
+                            </button>
+                        </div>
+                        <div class="space-y-2 text-sm">
+                            <div><span class="font-medium">Mobile:</span> 9347839202</div>
+                            <div><span class="font-medium">Email:</span> mudsufiyan@gmail.com</div>
+                            <div><span class="font-medium">Joined:</span> 31/01/2023</div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-lg p-4 border border-gray-200 shadow-sm">
+                        <div class="flex justify-between items-start mb-3">
+                            <div>
+                                <h3 class="font-semibold text-gray-900">Dulkar Saman</h3>
+                                <p class="text-sm text-gray-600">ID: 3</p>
+                            </div>
+                            <button onclick="blockUser(3)" class="bg-accent hover:bg-red-600 text-white px-3 py-1 rounded text-sm font-medium">
+                                Block
+                            </button>
+                        </div>
+                        <div class="space-y-2 text-sm">
+                            <div><span class="font-medium">Mobile:</span> 9383927363</div>
+                            <div><span class="font-medium">Email:</span> dulkarsaman@gmail.com</div>
+                            <div><span class="font-medium">Joined:</span> 31/10/2024</div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-lg p-4 border border-gray-200 shadow-sm">
+                        <div class="flex justify-between items-start mb-3">
+                            <div>
+                                <h3 class="font-semibold text-gray-900">Farhan Yassar</h3>
+                                <p class="text-sm text-gray-600">ID: 4</p>
+                            </div>
+                            <button onclick="blockUser(4)" class="bg-accent hover:bg-red-600 text-white px-3 py-1 rounded text-sm font-medium">
+                                Block
+                            </button>
+                        </div>
+                        <div class="space-y-2 text-sm">
+                            <div><span class="font-medium">Mobile:</span> 8373838338</div>
+                            <div><span class="font-medium">Email:</span> farhnyassar@gmail.com</div>
+                            <div><span class="font-medium">Joined:</span> 25/01/2023</div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-lg p-4 border border-gray-200 shadow-sm">
+                        <div class="flex justify-between items-start mb-3">
+                            <div>
+                                <h3 class="font-semibold text-gray-900">Sreeshanth</h3>
+                                <p class="text-sm text-gray-600">ID: 5</p>
+                            </div>
+                            <button onclick="blockUser(5)" class="bg-accent hover:bg-red-600 text-white px-3 py-1 rounded text-sm font-medium">
+                                Block
+                            </button>
+                        </div>
+                        <div class="space-y-2 text-sm">
+                            <div><span class="font-medium">Mobile:</span> 7383833933</div>
+                            <div><span class="font-medium">Email:</span> sreeshanth@gmail.com</div>
+                            <div><span class="font-medium">Joined:</span> 29/01/2023</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pagination -->
+            <div class="flex items-center justify-center mt-8 space-x-2">
+                <button class="p-2 hover:bg-gray-100 rounded-lg transition-colors duration-200">
+                    <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                    </svg>
+                </button>
+                
+                <button class="px-4 py-2 bg-primary text-white rounded-lg font-medium shadow-sm">1</button>
+                <button class="px-4 py-2 hover:bg-gray-100 text-gray-700 rounded-lg font-medium transition-colors duration-200">2</button>
+                <button class="px-4 py-2 hover:bg-gray-100 text-gray-700 rounded-lg font-medium transition-colors duration-200">3</button>
+                <button class="px-4 py-2 hover:bg-gray-100 text-gray-700 rounded-lg font-medium transition-colors duration-200">4</button>
+                <span class="px-2 text-gray-500">...</span>
+                <button class="px-4 py-2 hover:bg-gray-100 text-gray-700 rounded-lg font-medium transition-colors duration-200">46</button>
+                
+                <button class="p-2 hover:bg-gray-100 rounded-lg transition-colors duration-200">
+                    <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                </button>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Mobile sidebar functionality
+        const openSidebar = document.getElementById('openSidebar');
+        const closeSidebar = document.getElementById('closeSidebar');
+        const mobileSidebar = document.getElementById('mobileSidebar');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+        function showSidebar() {
+            mobileSidebar.classList.remove('-translate-x-full');
+            sidebarOverlay.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function hideSidebar() {
+            mobileSidebar.classList.add('-translate-x-full');
+            sidebarOverlay.classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+
+        openSidebar.addEventListener('click', showSidebar);
+        closeSidebar.addEventListener('click', hideSidebar);
+        sidebarOverlay.addEventListener('click', hideSidebar);
+
+        // Navigation functionality
+        function navigateToPage(page) {
+            console.log(`Navigating to ${page} page`);
+            // Add your navigation logic here
+        }
+
+        // Block user functionality
+        function blockUser(userId) {
+            if (confirm(`Are you sure you want to block user ${userId}?`)) {
+                console.log(`Blocking user ${userId}`);
+                // Add your block user logic here
+            }
+        }
+
+        // Search functionality
+        const searchInput = document.querySelector('input[placeholder="User Id :"]');
+        searchInput.addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            console.log(`Searching for: ${searchTerm}`);
+            // Add your search logic here
+        });
+
+        // Responsive table handling
+        function handleResize() {
+            // Additional responsive handling if needed
+        }
+
+        window.addEventListener('resize', handleResize);
+        handleResize(); // Initial call
+    </script>
+</body>
+</html>

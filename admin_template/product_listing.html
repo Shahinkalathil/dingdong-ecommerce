@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DINGDONG - Products Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1e40af',
+                        secondary: '#64748b',
+                        accent: '#f59e0b',
+                        success: '#10b981',
+                        danger: '#ef4444',
+                        warning: '#f59e0b'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- Header -->
+    <header class="bg-white border-b border-gray-200 px-6 py-4">
+        <div class="flex items-center justify-between">
+            <h1 class="text-2xl font-bold text-gray-900 text-center flex-1">DINGDONG</h1>
+            <div class="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
+                <svg class="w-5 h-5 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path>
+                </svg>
+            </div>
+        </div>
+    </header>
+
+    <div class="flex min-h-screen">
+        <!-- Sidebar -->
+        <aside class="w-64 bg-white border-r border-gray-200 hidden lg:block">
+            <nav class="p-4 space-y-2">
+                <a href="#" class="flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors">
+                    <span class="font-medium">Dashboard</span>
+                </a>
+                <a href="#" class="flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors">
+                    <span class="font-medium">Orders</span>
+                </a>
+                <a href="#" class="flex items-center px-4 py-3 text-white bg-primary rounded-lg">
+                    <span class="font-medium">Products</span>
+                </a>
+                <a href="#" class="flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors">
+                    <span class="font-medium">Users</span>
+                </a>
+                <a href="#" class="flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors">
+                    <span class="font-medium">Categories</span>
+                </a>
+                <a href="#" class="flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors">
+                    <span class="font-medium">Brands</span>
+                </a>
+                <a href="#" class="flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors">
+                    <span class="font-medium">Coupons</span>
+                </a>
+                <a href="#" class="flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors">
+                    <span class="font-medium">Banners</span>
+                </a>
+                <a href="#" class="flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors">
+                    <span class="font-medium">Payments</span>
+                </a>
+                <a href="#" class="flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors">
+                    <span class="font-medium">Offers</span>
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Mobile Menu Button -->
+        <button id="mobileMenuBtn" class="lg:hidden fixed top-4 left-4 z-50 p-2 bg-primary text-white rounded-lg">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+            </svg>
+        </button>
+
+        <!-- Mobile Sidebar Overlay -->
+        <div id="mobileMenuOverlay" class="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-40 hidden">
+            <aside class="w-64 bg-white h-full">
+                <div class="p-4 border-b border-gray-200">
+                    <button id="closeMobileMenu" class="p-2 text-gray-600 hover:text-gray-900">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+                <nav class="p-4 space-y-2">
+                    <a href="#" class="block px-4 py-3 text-gray-700 rounded-lg hover:bg-gray-100">Dashboard</a>
+                    <a href="#" class="block px-4 py-3 text-gray-700 rounded-lg hover:bg-gray-100">Orders</a>
+                    <a href="#" class="block px-4 py-3 text-white bg-primary rounded-lg">Products</a>
+                    <a href="#" class="block px-4 py-3 text-gray-700 rounded-lg hover:bg-gray-100">Users</a>
+                    <a href="#" class="block px-4 py-3 text-gray-700 rounded-lg hover:bg-gray-100">Categories</a>
+                    <a href="#" class="block px-4 py-3 text-gray-700 rounded-lg hover:bg-gray-100">Brands</a>
+                    <a href="#" class="block px-4 py-3 text-gray-700 rounded-lg hover:bg-gray-100">Coupons</a>
+                    <a href="#" class="block px-4 py-3 text-gray-700 rounded-lg hover:bg-gray-100">Banners</a>
+                    <a href="#" class="block px-4 py-3 text-gray-700 rounded-lg hover:bg-gray-100">Payments</a>
+                    <a href="#" class="block px-4 py-3 text-gray-700 rounded-lg hover:bg-gray-100">Offers</a>
+                </nav>
+            </aside>
+        </div>
+
+        <!-- Main Content -->
+        <main class="flex-1 p-6 lg:p-8">
+            <!-- Page Header -->
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
+                <h2 class="text-3xl font-bold text-gray-900 mb-4 sm:mb-0">Products</h2>
+                <div class="flex items-center space-x-4">
+                    <div class="relative">
+                        <input type="text" placeholder="Product Id :" class="pl-4 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+                        <button class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex flex-col sm:flex-row gap-4 mb-6">
+                <button class="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-medium">
+                    Edit Product
+                </button>
+                <button class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">
+                    + Add Product
+                </button>
+            </div>
+
+            <!-- Products Table -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                <!-- Desktop Table -->
+                <div class="hidden md:block overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-gray-50 border-b border-gray-200">
+                            <tr>
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">Product</th>
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">Category</th>
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">Brand</th>
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">Stock</th>
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">Price</th>
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200">
+                            <tr class="hover:bg-gray-50 transition-colors">
+                                <td class="px-6 py-4 text-sm text-gray-900 font-medium">Longines-Classic</td>
+                                <td class="px-6 py-4 text-sm text-gray-600">Men</td>
+                                <td class="px-6 py-4 text-sm text-gray-600">Longines</td>
+                                <td class="px-6 py-4 text-sm text-gray-600">54</td>
+                                <td class="px-6 py-4 text-sm text-gray-900 font-semibold">₹ 92,000</td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center space-x-2">
+                                        <button class="px-3 py-1 bg-red-500 text-white text-xs rounded-md hover:bg-red-600 transition-colors">
+                                            Unlist
+                                        </button>
+                                        <button class="p-1 text-gray-400 hover:text-primary transition-colors">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr class="hover:bg-gray-50 transition-colors">
+                                <td class="px-6 py-4 text-sm text-gray-900 font-medium">Tissot T-Connect</td>
+                                <td class="px-6 py-4 text-sm text-gray-600">Men</td>
+                                <td class="px-6 py-4 text-sm text-gray-600">Tissot</td>
+                                <td class="px-6 py-4 text-sm text-gray-600">24</td>
+                                <td class="px-6 py-4 text-sm text-gray-900 font-semibold">₹ 1,07,000</td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center space-x-2">
+                                        <button class="px-3 py-1 bg-success text-white text-xs rounded-md hover:bg-green-600 transition-colors">
+                                            List
+                                        </button>
+                                        <button class="p-1 text-gray-400 hover:text-primary transition-colors">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr class="hover:bg-gray-50 transition-colors">
+                                <td class="px-6 py-4 text-sm text-gray-900 font-medium">Rado True Thinline</td>
+                                <td class="px-6 py-4 text-sm text-gray-600">Women</td>
+                                <td class="px-6 py-4 text-sm text-gray-600">Rado</td>
+                                <td class="px-6 py-4 text-sm text-gray-600">94</td>
+                                <td class="px-6 py-4 text-sm text-gray-900 font-semibold">₹ 2,50,000</td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center space-x-2">
+                                        <button class="px-3 py-1 bg-red-500 text-white text-xs rounded-md hover:bg-red-600 transition-colors">
+                                            Unlist
+                                        </button>
+                                        <button class="p-1 text-gray-400 hover:text-primary transition-colors">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr class="hover:bg-gray-50 transition-colors">
+                                <td class="px-6 py-4 text-sm text-gray-900 font-medium">Titan Nebula</td>
+                                <td class="px-6 py-4 text-sm text-gray-600">Women</td>
+                                <td class="px-6 py-4 text-sm text-gray-600">Titan</td>
+                                <td class="px-6 py-4 text-sm text-gray-600">14</td>
+                                <td class="px-6 py-4 text-sm text-gray-900 font-semibold">₹ 84,000</td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center space-x-2">
+                                        <button class="px-3 py-1 bg-success text-white text-xs rounded-md hover:bg-green-600 transition-colors">
+                                            List
+                                        </button>
+                                        <button class="p-1 text-gray-400 hover:text-primary transition-colors">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr class="hover:bg-gray-50 transition-colors">
+                                <td class="px-6 py-4 text-sm text-gray-900 font-medium">Seiko Women Srz</td>
+                                <td class="px-6 py-4 text-sm text-gray-600">Women</td>
+                                <td class="px-6 py-4 text-sm text-gray-600">Seiko</td>
+                                <td class="px-6 py-4 text-sm text-gray-600">4</td>
+                                <td class="px-6 py-4 text-sm text-gray-900 font-semibold">₹ 1,90,000</td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center space-x-2">
+                                        <button class="px-3 py-1 bg-red-500 text-white text-xs rounded-md hover:bg-red-600 transition-colors">
+                                            Unlist
+                                        </button>
+                                        <button class="p-1 text-gray-400 hover:text-primary transition-colors">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr class="hover:bg-gray-50 transition-colors">
+                                <td class="px-6 py-4 text-sm text-gray-900 font-medium">Tissot Chronograph</td>
+                                <td class="px-6 py-4 text-sm text-gray-600">Men</td>
+                                <td class="px-6 py-4 text-sm text-gray-600">Tissot</td>
+                                <td class="px-6 py-4 text-sm text-gray-600">54</td>
+                                <td class="px-6 py-4 text-sm text-gray-900 font-semibold">₹ 1,04,000</td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center space-x-2">
+                                        <button class="px-3 py-1 bg-red-500 text-white text-xs rounded-md hover:bg-red-600 transition-colors">
+                                            Unlist
+                                        </button>
+                                        <button class="p-1 text-gray-400 hover:text-primary transition-colors">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr class="hover:bg-gray-50 transition-colors">
+                                <td class="px-6 py-4 text-sm text-gray-900 font-medium">Calvin Klein Wavy</td>
+                                <td class="px-6 py-4 text-sm text-gray-600">Men</td>
+                                <td class="px-6 py-4 text-sm text-gray-600">Calvin Klein</td>
+                                <td class="px-6 py-4 text-sm text-gray-600">24</td>
+                                <td class="px-6 py-4 text-sm text-gray-900 font-semibold">₹ 1,57,000</td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center space-x-2">
+                                        <button class="px-3 py-1 bg-success text-white text-xs rounded-md hover:bg-green-600 transition-colors">
+                                            List
+                                        </button>
+                                        <button class="p-1 text-gray-400 hover:text-primary transition-colors">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr class="hover:bg-gray-50 transition-colors">
+                                <td class="px-6 py-4 text-sm text-gray-900 font-medium">Seiko Women Sndx</td>
+                                <td class="px-6 py-4 text-sm text-gray-600">Women</td>
+                                <td class="px-6 py-4 text-sm text-gray-600">Seiko</td>
+                                <td class="px-6 py-4 text-sm text-gray-600">94</td>
+                                <td class="px-6 py-4 text-sm text-gray-900 font-semibold">₹ 95,000</td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center space-x-2">
+                                        <button class="px-3 py-1 bg-red-500 text-white text-xs rounded-md hover:bg-red-600 transition-colors">
+                                            Unlist
+                                        </button>
+                                        <button class="p-1 text-gray-400 hover:text-primary transition-colors">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr class="hover:bg-gray-50 transition-colors">
+                                <td class="px-6 py-4 text-sm text-gray-900 font-medium">Seiko Solar</td>
+                                <td class="px-6 py-4 text-sm text-gray-600">Women</td>
+                                <td class="px-6 py-4 text-sm text-gray-600">Seiko</td>
+                                <td class="px-6 py-4 text-sm text-gray-600">14</td>
+                                <td class="px-6 py-4 text-sm text-gray-900 font-semibold">₹ 94,000</td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center space-x-2">
+                                        <button class="px-3 py-1 bg-success text-white text-xs rounded-md hover:bg-green-600 transition-colors">
+                                            List
+                                        </button>
+                                        <button class="p-1 text-gray-400 hover:text-primary transition-colors">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr class="hover:bg-gray-50 transition-colors">
+                                <td class="px-6 py-4 text-sm text-gray-900 font-medium">Guess Women Analog</td>
+                                <td class="px-6 py-4 text-sm text-gray-600">Women</td>
+                                <td class="px-6 py-4 text-sm text-gray-600">Guess</td>
+                                <td class="px-6 py-4 text-sm text-gray-600">4</td>
+                                <td class="px-6 py-4 text-sm text-gray-900 font-semibold">₹ 1,09,000</td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center space-x-2">
+                                        <button class="px-3 py-1 bg-red-500 text-white text-xs rounded-md hover:bg-red-600 transition-colors">
+                                            Unlist
+                                        </button>
+                                        <button class="p-1 text-gray-400 hover:text-primary transition-colors">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Mobile Cards -->
+                <div class="md:hidden space-y-4 p-4">
+                    <div class="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+                        <div class="flex justify-between items-start mb-3">
+                            <h3 class="font-semibold text-gray-900">Longines-Classic</h3>
+                            <div class="flex items-center space-x-2">
+                                <button class="px-3 py-1 bg-red-500 text-white text-xs rounded-md">Unlist</button>
+                                <button class="p-1 text-gray-400">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2 text-sm">
+                            <div><span class="text-gray-500">Category:</span> Men</div>
+                            <div><span class="text-gray-500">Brand:</span> Longines</div>
+                            <div><span class="text-gray-500">Stock:</span> 54</div>
+                            <div><span class="text-gray-500">Price:</span> <span class="font-semibold">₹ 92,000</span></div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+                        <div class="flex justify-between items-start mb-3">
+                            <h3 class="font-semibold text-gray-900">Tissot T-Connect</h3>
+                            <div class="flex items-center space-x-2">
+                                <button class="px-3 py-1 bg-success text-white text-xs rounded-md">List</button>
+                                <button class="p-1 text-gray-400">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2 text-sm">
+                            <div><span class="text-gray-500">Category:</span> Men</div>
+                            <div><span class="text-gray-500">Brand:</span> Tissot</div>
+                            <div><span class="text-gray-500">Stock:</span> 24</div>
+                            <div><span class="text-gray-500">Price:</span> <span class="font-semibold">₹ 1,07,000</span></div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+                        <div class="flex justify-between items-start mb-3">
+                            <h3 class="font-semibold text-gray-900">Rado True Thinline</h3>
+                            <div class="flex items-center space-x-2">
+                                <button class="px-3 py-1 bg-red-500 text-white text-xs rounded-md">Unlist</button>
+                                <button class="p-1 text-gray-400">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2 text-sm">
+                            <div><span class="text-gray-500">Category:</span> Women</div>
+                            <div><span class="text-gray-500">Brand:</span> Rado</div>
+                            <div><span class="text-gray-500">Stock:</span> 94</div>
+                            <div><span class="text-gray-500">Price:</span> <span class="font-semibold">₹ 2,50,000</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pagination -->
+            <div class="flex items-center justify-center space-x-2 mt-8">
+                <button class="p-2 text-gray-400 hover:text-gray-600 transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                    </svg>
+                </button>
+                <button class="px-3 py-2 bg-primary text-white rounded-lg font-medium">1</button>
+                <button class="px-3 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">2</button>
+                <button class="px-3 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">3</button>
+                <button class="px-3 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">4</button>
+                <span class="px-2 text-gray-400">...</span>
+                <button class="px-3 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">46</button>
+                <button class="p-2 text-gray-400 hover:text-gray-600 transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                </button>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Mobile menu functionality
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const mobileMenuOverlay = document.getElementById('mobileMenuOverlay');
+        const closeMobileMenu = document.getElementById('closeMobileMenu');
+
+        mobileMenuBtn.addEventListener('click', () => {
+            mobileMenuOverlay.classList.remove('hidden');
+        });
+
+        closeMobileMenu.addEventListener('click', () => {
+            mobileMenuOverlay.classList.add('hidden');
+        });
+
+        mobileMenuOverlay.addEventListener('click', (e) => {
+            if (e.target === mobileMenuOverlay) {
+                mobileMenuOverlay.classList.add('hidden');
+            }
+        });
+
+        // List/Unlist toggle functionality
+        document.addEventListener('click', (e) => {
+            if (e.target.textContent === 'List') {
+                e.target.textContent = 'Unlist';
+                e.target.className = e.target.className.replace('bg-success', 'bg-red-500').replace('hover:bg-green-600', 'hover:bg-red-600');
+            } else if (e.target.textContent === 'Unlist') {
+                e.target.textContent = 'List';
+                e.target.className = e.target.className.replace('bg-red-500', 'bg-success').replace('hover:bg-red-600', 'hover:bg-green-600');
+            }
+        });
+
+        // Search functionality
+        const searchInput = document.querySelector('input[placeholder="Product Id :"]');
+        searchInput.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            const rows = document.querySelectorAll('tbody tr');
+            
+            rows.forEach(row => {
+                const productName = row.querySelector('td:first-child').textContent.toLowerCase();
+                if (productName.includes(searchTerm)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

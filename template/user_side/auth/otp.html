@@ -1,0 +1,165 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OTP Verification - DINGDONG</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
+
+    <!-- OTP Verification Container -->
+    <div class="bg-gray-200 rounded-2xl p-8 w-full max-w-4xl shadow-lg">
+
+        <!-- Logo -->
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-black">DINGDONG</h1>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+            
+            <!-- Left Side - OTP Form -->
+            <div class="order-2 lg:order-1">
+
+                <h2 class="text-2xl lg:text-3xl font-bold text-black mb-4">OTP Verification</h2>
+
+                <!-- Email Info -->
+                <p class="text-gray-700 mb-6 text-sm lg:text-base">
+                    Enter the OTP sent to <span class="font-medium">{{ user.email }}</span>
+                </p>
+
+                
+
+                <!-- OTP Input Form -->
+                <form id="otpForm" method="POST" class="space-y-6">
+                    {% csrf_token %}
+                    
+                    <!-- OTP Boxes -->
+                    <div class="flex justify-center lg:justify-start space-x-2 lg:space-x-3">
+                        {% for i in "123456" %}
+                            <input type="text" maxlength="1"
+                                   class="otp-input w-12 h-12 lg:w-14 lg:h-14 text-center text-xl font-bold border-2 border-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-black transition-all"
+                                   data-index="{{ forloop.counter0 }}">
+                        {% endfor %}
+                    </div>
+                    <!-- Django Messages -->
+                    {% if messages %}
+                    <div class="mb-4">
+                        {% for message in messages %}
+                            <div class="p-2 rounded text-sm 
+                                {% if message.tags == 'error' %} bg-red-100 text-red-600 
+                                {% elif message.tags == 'success' %} bg-green-100 text-green-600 
+                                {% else %} bg-gray-100 text-gray-700 {% endif %}">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <!-- Hidden input for complete OTP -->
+                    <input type="hidden" name="otp" id="complete_otp">
+
+                    <!-- Timer + Resend -->
+                    <div class="flex flex-col sm:flex-row justify-between items-center gap-2 sm:gap-4">
+                        <div class="text-sm text-gray-600 text-center sm:text-left">
+                            Didn’t receive the code? 
+                            <a id="resendBtn" href="{% url 'resend_otp' %}" 
+                               class="text-gray-400 font-medium ml-1 pointer-events-none">
+                                Re-send
+                            </a>
+                        </div>
+                        <span class="text-gray-600 text-sm" id="timer">01:00 sec</span>
+                    </div>
+
+                    <!-- Submit + Back -->
+                    <div class="flex flex-col sm:flex-row gap-4 justify-between items-center">
+                        <button type="submit" 
+                                class="w-full sm:w-auto bg-black text-white py-3 px-8 rounded-lg font-medium hover:bg-gray-800 transition-colors duration-300">
+                            Submit
+                        </button>
+                        <a href="{% url 'sign_up' %}" class="text-gray-600 hover:text-black transition-colors text-sm">
+                            <i class="fas fa-arrow-left mr-2"></i>Back
+                        </a>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- Right Side - Product Card (optional illustration) -->
+            <div class="order-1 lg:order-2 flex justify-center">
+                <div class="bg-white rounded-2xl max-w-xs w-full overflow-hidden">
+                    <img src="{% static 'images/otp-banner.png' %}" 
+                         alt="Verification Banner" 
+                         class="w-full h-full object-cover rounded-2xl">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- OTP + Timer Script -->
+    <script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const otpInputs = document.querySelectorAll(".otp-input");
+        const completeOtp = document.getElementById("complete_otp");
+
+        // auto move between inputs
+        otpInputs.forEach((input, index) => {
+            input.addEventListener("input", (e) => {
+                if (e.target.value.length === 1 && index < otpInputs.length - 1) {
+                    otpInputs[index + 1].focus();
+                }
+                updateOtp();
+            });
+
+            input.addEventListener("keydown", (e) => {
+                if (e.key === "Backspace" && !input.value && index > 0) {
+                    otpInputs[index - 1].focus();
+                }
+            });
+        });
+
+        // Allow pasting full 6-digit OTP
+        otpInputs[0].addEventListener("paste", function (e) {
+            e.preventDefault();
+            const pasteData = (e.clipboardData || window.clipboardData).getData("text");
+            if (pasteData.length === otpInputs.length && /^\d+$/.test(pasteData)) {
+                otpInputs.forEach((input, i) => {
+                    input.value = pasteData[i];
+                });
+                updateOtp();
+                otpInputs[otpInputs.length - 1].focus();
+            }
+        });
+
+        function updateOtp() {
+            let otpValue = "";
+            otpInputs.forEach(inp => otpValue += inp.value);
+            completeOtp.value = otpValue;
+        }
+
+        // Timer + Resend
+        let timerEl = document.getElementById("timer");
+        let resendBtn = document.getElementById("resendBtn");
+        let countdown = 60;
+
+        function startTimer() {
+            let interval = setInterval(() => {
+                timerEl.textContent = `00:${countdown.toString().padStart(2, "0")} sec`;
+                countdown--;
+                if (countdown < 0) {
+                    clearInterval(interval);
+                    resendBtn.classList.remove("text-gray-400", "pointer-events-none");
+                    resendBtn.classList.add("text-black", "hover:underline");
+                    timerEl.textContent = "00:00 sec";
+                }
+            }, 1000);
+        }
+        startTimer();
+    });
+    </script>
+
+</body>
+</html>

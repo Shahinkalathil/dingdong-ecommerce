@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}DINGDONG - Sales Dashboard{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1e40af',
+                        secondary: '#f59e0b',
+                        accent: '#10b981',
+                        danger: '#ef4444',
+                        dark: '#1f2937',
+                        light: '#f8fafc'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .sidebar-item:hover {
+            background-color: #e5e7eb;
+            transform: translateX(4px);
+            transition: all 0.2s ease;
+        }
+        .active-nav {
+            background-color: #1e40af;
+            color: white;
+            border-right: 4px solid #f59e0b;
+        }
+        .stat-card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        .table-row:hover {
+            background-color: #f1f5f9;
+            transform: scale(1.01);
+            transition: all 0.2s ease;
+        }
+        .mobile-menu-overlay {
+            backdrop-filter: blur(4px);
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+
+{% include 'admin_panel/includes/header.html' %}
+
+{% block content %}
+
+{% endblock %}
+</html>

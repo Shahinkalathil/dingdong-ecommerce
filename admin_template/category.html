@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DINGDONG - Categories</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1e40af',
+                        secondary: '#f59e0b',
+                        success: '#10b981',
+                        danger: '#ef4444',
+                        'gray-custom': '#f8fafc'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- Header -->
+    <header class="bg-white border-b border-gray-200 px-6 py-4">
+        <div class="flex items-center justify-between">
+            <h1 class="text-2xl font-bold text-gray-800 text-center flex-1">DINGDONG</h1>
+            <div class="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
+                <svg class="w-5 h-5 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path>
+                </svg>
+            </div>
+        </div>
+    </header>
+
+    <div class="flex min-h-screen">
+        <!-- Sidebar -->
+        <aside class="w-64 bg-white border-r border-gray-200 lg:block hidden">
+            <nav class="mt-8">
+                <a href="#" class="flex items-center px-6 py-3 text-gray-700 hover:bg-blue-50 hover:text-primary transition-colors">
+                    <span class="font-medium">Dashboard</span>
+                </a>
+                <a href="#" class="flex items-center px-6 py-3 text-gray-700 hover:bg-blue-50 hover:text-primary transition-colors">
+                    <span class="font-medium">Orders</span>
+                </a>
+                <a href="#" class="flex items-center px-6 py-3 text-gray-700 hover:bg-blue-50 hover:text-primary transition-colors">
+                    <span class="font-medium">Products</span>
+                </a>
+                <a href="#" class="flex items-center px-6 py-3 text-gray-700 hover:bg-blue-50 hover:text-primary transition-colors">
+                    <span class="font-medium">Users</span>
+                </a>
+                <a href="#" class="flex items-center px-6 py-3 bg-blue-50 text-primary border-r-2 border-primary">
+                    <span class="font-medium">Categories</span>
+                </a>
+                <a href="#" class="flex items-center px-6 py-3 text-gray-700 hover:bg-blue-50 hover:text-primary transition-colors">
+                    <span class="font-medium">Brands</span>
+                </a>
+                <a href="#" class="flex items-center px-6 py-3 text-gray-700 hover:bg-blue-50 hover:text-primary transition-colors">
+                    <span class="font-medium">Coupons</span>
+                </a>
+                <a href="#" class="flex items-center px-6 py-3 text-gray-700 hover:bg-blue-50 hover:text-primary transition-colors">
+                    <span class="font-medium">Banners</span>
+                </a>
+                <a href="#" class="flex items-center px-6 py-3 text-gray-700 hover:bg-blue-50 hover:text-primary transition-colors">
+                    <span class="font-medium">Payments</span>
+                </a>
+                <a href="#" class="flex items-center px-6 py-3 text-gray-700 hover:bg-blue-50 hover:text-primary transition-colors">
+                    <span class="font-medium">Offers</span>
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Mobile Sidebar Overlay -->
+        <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden hidden">
+            <aside class="w-64 bg-white h-full">
+                <div class="flex items-center justify-between p-4 border-b">
+                    <h2 class="text-lg font-semibold">Menu</h2>
+                    <button id="close-sidebar" class="text-gray-500 hover:text-gray-700">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+                <nav class="mt-4">
+                    <a href="#" class="flex items-center px-6 py-3 text-gray-700 hover:bg-blue-50 hover:text-primary transition-colors">
+                        <span class="font-medium">Dashboard</span>
+                    </a>
+                    <a href="#" class="flex items-center px-6 py-3 text-gray-700 hover:bg-blue-50 hover:text-primary transition-colors">
+                        <span class="font-medium">Orders</span>
+                    </a>
+                    <a href="#" class="flex items-center px-6 py-3 text-gray-700 hover:bg-blue-50 hover:text-primary transition-colors">
+                        <span class="font-medium">Products</span>
+                    </a>
+                    <a href="#" class="flex items-center px-6 py-3 text-gray-700 hover:bg-blue-50 hover:text-primary transition-colors">
+                        <span class="font-medium">Users</span>
+                    </a>
+                    <a href="#" class="flex items-center px-6 py-3 bg-blue-50 text-primary border-r-2 border-primary">
+                        <span class="font-medium">Categories</span>
+                    </a>
+                    <a href="#" class="flex items-center px-6 py-3 text-gray-700 hover:bg-blue-50 hover:text-primary transition-colors">
+                        <span class="font-medium">Brands</span>
+                    </a>
+                    <a href="#" class="flex items-center px-6 py-3 text-gray-700 hover:bg-blue-50 hover:text-primary transition-colors">
+                        <span class="font-medium">Coupons</span>
+                    </a>
+                    <a href="#" class="flex items-center px-6 py-3 text-gray-700 hover:bg-blue-50 hover:text-primary transition-colors">
+                        <span class="font-medium">Banners</span>
+                    </a>
+                    <a href="#" class="flex items-center px-6 py-3 text-gray-700 hover:bg-blue-50 hover:text-primary transition-colors">
+                        <span class="font-medium">Payments</span>
+                    </a>
+                    <a href="#" class="flex items-center px-6 py-3 text-gray-700 hover:bg-blue-50 hover:text-primary transition-colors">
+                        <span class="font-medium">Offers</span>
+                    </a>
+                </nav>
+            </aside>
+        </div>
+
+        <!-- Main Content -->
+        <main class="flex-1 p-6">
+            <!-- Mobile Menu Button -->
+            <button id="mobile-menu" class="lg:hidden mb-4 p-2 text-gray-600 hover:text-gray-800">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                </svg>
+            </button>
+
+            <!-- Page Title -->
+            <div class="mb-8">
+                <h1 class="text-3xl font-bold text-gray-800 text-center">Categories</h1>
+            </div>
+
+            <!-- Categories Content -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <!-- Action Buttons -->
+                <div class="flex flex-col sm:flex-row gap-4 mb-6">
+                    <button onclick="editCategory()" class="px-6 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors font-medium">
+                        Edit Category
+                    </button>
+                    <button onclick="addCategory()" class="px-6 py-2 bg-primary text-white rounded-md hover:bg-blue-700 transition-colors font-medium">
+                        + Add Category
+                    </button>
+                </div>
+
+                <!-- Categories Table -->
+                <div class="overflow-x-auto">
+                    <!-- Desktop Table -->
+                    <table class="w-full hidden md:table">
+                        <thead>
+                            <tr class="border-b border-gray-200">
+                                <th class="text-left py-4 px-2 font-semibold text-gray-700 uppercase tracking-wide">CATEGORY</th>
+                                <th class="text-left py-4 px-2 font-semibold text-gray-700 uppercase tracking-wide">ACTION</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                                <td class="py-4 px-2 text-gray-800 font-medium">Men</td>
+                                <td class="py-4 px-2">
+                                    <div class="flex items-center gap-3">
+                                        <button onclick="listCategory('Men')" class="px-4 py-1 bg-success text-white text-sm rounded-md hover:bg-green-600 transition-colors font-medium">
+                                            LIST
+                                        </button>
+                                        <button onclick="editCategoryItem('Men')" class="p-2 text-gray-500 hover:text-primary transition-colors">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr class="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                                <td class="py-4 px-2 text-gray-800 font-medium">Women</td>
+                                <td class="py-4 px-2">
+                                    <div class="flex items-center gap-3">
+                                        <button onclick="listCategory('Women')" class="px-4 py-1 bg-success text-white text-sm rounded-md hover:bg-green-600 transition-colors font-medium">
+                                            LIST
+                                        </button>
+                                        <button onclick="editCategoryItem('Women')" class="p-2 text-gray-500 hover:text-primary transition-colors">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <!-- Mobile Cards -->
+                    <div class="md:hidden space-y-4">
+                        <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                            <div class="flex items-center justify-between mb-3">
+                                <h3 class="font-semibold text-gray-800">Men</h3>
+                                <button onclick="editCategoryItem('Men')" class="p-2 text-gray-500 hover:text-primary transition-colors">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                            <button onclick="listCategory('Men')" class="w-full px-4 py-2 bg-success text-white text-sm rounded-md hover:bg-green-600 transition-colors font-medium">
+                                LIST
+                            </button>
+                        </div>
+
+                        <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                            <div class="flex items-center justify-between mb-3">
+                                <h3 class="font-semibold text-gray-800">Women</h3>
+                                <button onclick="editCategoryItem('Women')" class="p-2 text-gray-500 hover:text-primary transition-colors">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                            <button onclick="listCategory('Women')" class="w-full px-4 py-2 bg-success text-white text-sm rounded-md hover:bg-green-600 transition-colors font-medium">
+                                LIST
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Mobile menu functionality
+        const mobileMenuBtn = document.getElementById('mobile-menu');
+        const sidebarOverlay = document.getElementById('sidebar-overlay');
+        const closeSidebarBtn = document.getElementById('close-sidebar');
+
+        mobileMenuBtn.addEventListener('click', () => {
+            sidebarOverlay.classList.remove('hidden');
+        });
+
+        closeSidebarBtn.addEventListener('click', () => {
+            sidebarOverlay.classList.add('hidden');
+        });
+
+        sidebarOverlay.addEventListener('click', (e) => {
+            if (e.target === sidebarOverlay) {
+                sidebarOverlay.classList.add('hidden');
+            }
+        });
+
+        // Category management functions
+        function addCategory() {
+            const categoryName = prompt('Enter new category name:');
+            if (categoryName && categoryName.trim()) {
+                alert(`Category "${categoryName}" will be added to the system.`);
+                // Here you would typically send the data to your backend
+            }
+        }
+
+        function editCategory() {
+            alert('Edit Category functionality will allow you to modify existing categories.');
+            // Here you would typically open an edit modal or navigate to edit page
+        }
+
+        function listCategory(categoryName) {
+            alert(`Viewing products in "${categoryName}" category.`);
+            // Here you would typically navigate to the products list filtered by category
+        }
+
+        function editCategoryItem(categoryName) {
+            const newName = prompt(`Edit category name:`, categoryName);
+            if (newName && newName.trim() && newName !== categoryName) {
+                alert(`Category "${categoryName}" will be renamed to "${newName}".`);
+                // Here you would typically send the update to your backend
+            }
+        }
+    </script>
+</body>
+</html>

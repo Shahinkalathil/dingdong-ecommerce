@@ -1,0 +1,271 @@
+{% extends 'admin_panel/base.html' %}
+{% load static %}
+{% block title %}DINGDONG - Products Dashboard{% endblock %}
+
+{% block content %}
+<!-- Main Content -->
+<main class="flex-1 p-6 lg:p-8">
+    <!-- Page Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
+        <h2 class="text-3xl font-bold text-gray-900 mb-4 sm:mb-0">Products</h2>
+        <!-- Right Side: Refresh + Search --> 
+        <div class="flex flex-col sm:flex-row items-center gap-3"> 
+            <!-- Refresh Button --> 
+            {% if keyword %}
+            <a href="{% url 'admin_products' %}" class="px-4 py-2 bg-blue-600 text-white font-medium rounded-lg shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 transition"> 
+                <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                </svg>
+                Refresh 
+            </a> 
+            {% endif%}
+            
+            
+            <!-- Search Form --> 
+            <form action="{% url 'products_search' %}" method="GET" class="relative"> 
+                <input id="searchInput" 
+                       name="keyword" 
+                       type="text" 
+                       value="{{ keyword }}"
+                       placeholder="Search by Name, Category, Brand..." 
+                       class="w-full sm:w-80 px-4 py-2 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white transition"  
+                       autocomplete="on"> 
+                
+                <!-- Clear Search Button (when there's a keyword) -->
+                {% if keyword %}
+                    <button type="button" onclick="window.location.href='{% url 'admin_products' %}'" class="absolute right-12 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-gray-100 transition" title="Clear search">
+                        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                {% endif%}
+                
+                
+                <!-- Search Icon Button --> 
+                <button id="searchBtn" 
+                        type="submit" 
+                        
+                        class="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full transition disabled:opacity-40 disabled:cursor-not-allowed hover:bg-blue-50 enabled:hover:text-blue-500" 
+                        title="Search"> 
+                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"> 
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/> 
+                    </svg> 
+                </button> 
+            </form> 
+        </div>
+    </div>
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <!-- Action Buttons -->
+        <div class="flex flex-col sm:flex-row gap-4 mb-6">
+            <a href="{% url 'add_products' %}" 
+                class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-center">
+                + Add Product
+            </a>
+        </div>
+
+
+        <!-- Products Table -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+            <!-- Desktop Table -->
+            <div class="hidden md:block overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-gray-50 border-b border-gray-200">
+                        <tr>
+                            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">S.No</th>
+                            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">Image</th>
+                            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">Product Name</th>
+                            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">Category</th>
+                            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">Brand</th>
+                            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200">
+                        {% for product in products %}
+                        <tr class="hover:bg-gray-50 transition-colors">
+                            <td class="px-6 py-4 text-sm text-gray-900 font-medium">{{ forloop.counter }}</td>
+                            
+                            <td class="px-6 py-4">
+                                {% with first_variant=product.variants.first %}
+                                    {% if first_variant %}
+                                        {% with first_image=first_variant.images.first %}
+                                            {% if first_image %}
+                                                <img src="{{ first_image.image.url }}" alt="Product Image" class="w-12 h-12 object-cover rounded-md">
+                                            {% else %}
+                                                <div class="w-12 h-12 bg-gray-200 rounded-md flex items-center justify-center">
+                                                    <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                                    </svg>
+                                                </div>
+                                            {% endif %}
+                                        {% endwith %}
+                                    {% else %}
+                                        <div class="w-12 h-12 bg-gray-200 rounded-md flex items-center justify-center">
+                                            <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                            </svg>
+                                        </div>
+                                    {% endif %}
+                                {% endwith %}
+                            </td>
+                            
+                            <td class="px-6 py-4 text-sm text-gray-900 font-medium">{{ product.name }}</td>
+                            <td class="px-6 py-4 text-sm text-gray-600">{{ product.category.name }}</td>
+                            <td class="px-6 py-4 text-sm text-gray-600">{{ product.brand.name }}</td>
+                            
+                            <td class="px-6 py-4">
+                                <div class="flex items-center space-x-2">
+                                    <!-- View/Eye Button -->
+                                    <a href="{% url 'product_variant' product.id %}" 
+                                    class="p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-md transition-colors" 
+                                    title="View Product">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 
+                                                    8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 
+                                                    7' product.id %-4.477 0-8.268-2.943-9.542-7z"/>
+                                        </svg>
+                                    </a>
+                                                                        
+                                    <!-- Edit Button -->
+                                    <a href="{% url 'edit_products' product.id %}" 
+                                        class="p-2 text-green-600 hover:text-green-800 hover:bg-green-50 rounded-md transition-colors" 
+                                        title="Edit Product">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
+                                                </path>
+                                            </svg>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                            {% empty %}
+                            <!-- Empty State -->
+                            <tr>
+                                <td colspan="6" class="px-6 py-8 text-center text-gray-500">
+                                    🚫 No products found.
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Mobile Cards -->
+            <div class="md:hidden space-y-4 p-4">
+                <div class="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+                    <div class="flex justify-between items-start mb-3">
+                        <h3 class="font-semibold text-gray-900">Longines-Classic</h3>
+                        <div class="flex items-center space-x-2">
+                            <button class="px-3 py-1 bg-red-500 text-white text-xs rounded-md">Unlist</button>
+                            <button class="p-1 text-gray-400">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 text-sm">
+                        <div><span class="text-gray-500">Category:</span> Men</div>
+                        <div><span class="text-gray-500">Brand:</span> Longines</div>
+                        <div><span class="text-gray-500">Stock:</span> 54</div>
+                        <div><span class="text-gray-500">Price:</span> <span class="font-semibold">₹ 92,000</span></div>
+                    </div>
+                </div>
+
+                <div class="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+                    <div class="flex justify-between items-start mb-3">
+                        <h3 class="font-semibold text-gray-900">Tissot T-Connect</h3>
+                        <div class="flex items-center space-x-2">
+                            <button class="px-3 py-1 bg-success text-white text-xs rounded-md">List</button>
+                            <button class="p-1 text-gray-400">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 text-sm">
+                        <div><span class="text-gray-500">Category:</span> Men</div>
+                        <div><span class="text-gray-500">Brand:</span> Tissot</div>
+                        <div><span class="text-gray-500">Stock:</span> 24</div>
+                        <div><span class="text-gray-500">Price:</span> <span class="font-semibold">₹ 1,07,000</span></div>
+                    </div>
+                </div>
+
+                <div class="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+                    <div class="flex justify-between items-start mb-3">
+                        <h3 class="font-semibold text-gray-900">Rado True Thinline</h3>
+                        <div class="flex items-center space-x-2">
+                            <button class="px-3 py-1 bg-red-500 text-white text-xs rounded-md">Unlist</button>
+                            <button class="p-1 text-gray-400">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 text-sm">
+                        <div><span class="text-gray-500">Category:</span> Women</div>
+                        <div><span class="text-gray-500">Brand:</span> Rado</div>
+                        <div><span class="text-gray-500">Stock:</span> 94</div>
+                        <div><span class="text-gray-500">Price:</span> <span class="font-semibold">₹ 2,50,000</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+</div>
+
+<script>
+    // Mobile menu functionality
+    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+    const mobileMenuOverlay = document.getElementById('mobileMenuOverlay');
+    const closeMobileMenu = document.getElementById('closeMobileMenu');
+
+    mobileMenuBtn.addEventListener('click', () => {
+        mobileMenuOverlay.classList.remove('hidden');
+    });
+
+    closeMobileMenu.addEventListener('click', () => {
+        mobileMenuOverlay.classList.add('hidden');
+    });
+
+    mobileMenuOverlay.addEventListener('click', (e) => {
+        if (e.target === mobileMenuOverlay) {
+            mobileMenuOverlay.classList.add('hidden');
+        }
+});
+
+// List/Unlist toggle functionality
+document.addEventListener('click', (e) => {
+    if (e.target.textContent === 'List') {
+        e.target.textContent = 'Unlist';
+        e.target.className = e.target.className.replace('bg-success', 'bg-red-500').replace('hover:bg-green-600', 'hover:bg-red-600');
+    } else if (e.target.textContent === 'Unlist') {
+        e.target.textContent = 'List';
+        e.target.className = e.target.className.replace('bg-red-500', 'bg-success').replace('hover:bg-red-600', 'hover:bg-green-600');
+    }
+});
+
+// Search functionality
+const searchInput = document.querySelector('input[placeholder="Product Id :"]');
+searchInput.addEventListener('input', (e) => {
+    const searchTerm = e.target.value.toLowerCase();
+    const rows = document.querySelectorAll('tbody tr');
+    
+    rows.forEach(row => {
+        const productName = row.querySelector('td:first-child').textContent.toLowerCase();
+        if (productName.includes(searchTerm)) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+});
+</script>
+</body>
+{% endblock %}
