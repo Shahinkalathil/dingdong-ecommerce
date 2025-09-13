@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}DINGDONG - Authorized Brand Store{% endblock %}</title>
+
+    <!-- Tailwind CSS (CDN) with custom config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#000000',
+                        secondary: '#f3f4f6',
+                        accent: '#FFA500',
+                    }
+                }
+            }
+        }
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body class="bg-gray-100 {% block body_class %}{% endblock %}">
+        {% include 'user_side/includes/header.html' %} 
+    <main>
+        {% block content %}
+        {% endblock %}
+    </main>
+        {% include 'user_side/includes/footer.html' %}               
+</body>
+</html>

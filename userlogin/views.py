@@ -10,7 +10,11 @@ import uuid
 
 from .models import CustomUser
 from .utils import send_otp_email, send_forget_password_mail
+from django.views.decorators.cache import never_cache
+from .utils import redirect_authenticated
 
+@redirect_authenticated
+@never_cache
 def sign_up(request):
     if request.method == "POST":
         fullname = request.POST.get("fullname", "").strip()
@@ -143,10 +147,11 @@ def otp(request):
         else:
             user.is_active = True
             user.save()
-            return redirect("index")
+            return redirect("home")
     return render(request, 'user_side/auth/otp.html', {"otp_expiry": otp_expiry, "user": user})
 
-
+@redirect_authenticated
+@never_cache
 def sign_in(request):
     email = ''
     if request.method == 'POST':
@@ -157,7 +162,7 @@ def sign_in(request):
         if user is not None:
             login(request, user)
             request.session['email'] = user.email
-            return redirect('index')
+            return redirect('home')
         else:
             try:
                 user_obj = User.objects.get(email=email)

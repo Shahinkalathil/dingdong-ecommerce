@@ -1,5 +1,6 @@
 from django.core.mail import send_mail
 from django.urls import reverse
+from django.shortcuts import redirect
 
 def send_otp_email(email, otp):
     subject = "Your OTP for Account Verification"
@@ -20,3 +21,11 @@ def send_forget_password_mail(email, token, request):
 
     send_mail(subject, message, email_from, recipient_list)
     return True
+
+
+def redirect_authenticated(view_func):
+    def wrapper(request, *args, **kwargs):
+        if request.user.is_authenticated:
+            return redirect('home')
+        return view_func(request, *args, **kwargs)
+    return wrapper

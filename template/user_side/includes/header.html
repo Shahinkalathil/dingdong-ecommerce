@@ -1,0 +1,96 @@
+{% load static %}
+
+<!-- Top Black Bar -->
+<div class="bg-black text-white text-center py-1 text-sm sticky top-0 z-50">
+  AUTHORIZED BRAND STORE for 40+ Brands
+</div>
+
+<!-- Header with Navigation -->
+<header class="bg-white sticky top-7 z-40 shadow-sm">
+  <div class="container mx-auto px-4 py-4 flex justify-center items-center relative">
+    <div class="text-3xl font-bold text-center">
+      <a href="{% url 'home' %}" class="text-black no-underline hover:text-gray-800">DINGDONG</a>
+    </div>
+    <div class="absolute right-4 flex items-center space-x-4">
+      <button class="text-gray-600 hover:text-black transition-colors" onclick="toggleSearch()">
+        <i class="fas fa-search"></i>
+      </button>
+      <a href="#" class="text-gray-600 hover:text-black transition-colors">
+        <i class="far fa-heart"></i>
+      </a>
+      <a href="#" class="text-gray-600 hover:text-black transition-colors">
+        <i class="far fa-bell"></i>
+      </a>
+      <div class="relative">
+        <button class="text-gray-600 hover:text-black transition-colors" onclick="toggleUserMenu()">
+          <i class="fas fa-user"></i>
+        </button>
+        <!-- User Dropdown Menu -->
+        <div id="userMenu" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
+          {% if user.is_authenticated %}
+            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Profile</a>
+            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Orders</a>
+            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Wishlist</a>
+            <hr class="my-1">
+            <a href="{% url 'logout' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Logout</a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Search Bar (Hidden by default) -->
+  <div id="searchBar" class="hidden bg-gray-50 border-t border-gray-200 py-3">
+    <div class="container mx-auto px-4">
+      <div class="relative max-w-md mx-auto">
+        <input type="text" placeholder="Search products..." 
+               class="w-full pl-4 pr-10 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500">
+        <button class="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600">
+          <i class="fas fa-search"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Main Navigation with proper spacing -->
+  <nav class="container mx-auto px-4 py-2 border-t border-gray-200">
+    <ul class="flex justify-center space-x-8 md:space-x-12 lg:space-x-16">
+      <li>
+        <a href="{% url 'products' %}" class="px-2 py-2 font-medium hover:text-blue-600 cursor-pointer transition-colors">Products</a>
+      </li>
+      <li>
+        <a href="#" class="px-2 py-2 font-medium hover:text-blue-600 cursor-pointer transition-colors">Offers</a>
+      </li>
+      <li>
+        <a href="#" class="px-2 py-2 font-medium hover:text-blue-600 cursor-pointer transition-colors">Brands</a>
+      </li>
+      <li>
+        <a href="#" class="px-2 py-2 font-medium hover:text-blue-600 cursor-pointer transition-colors">Repair & Service</a>
+      </li>
+      <li>
+        <a href="#" class="px-2 py-2 font-medium hover:text-blue-600 cursor-pointer transition-colors">Stores</a>
+      </li>
+    </ul>
+  </nav>
+</header>
+
+<script>
+function toggleSearch() {
+  const searchBar = document.getElementById('searchBar');
+  searchBar.classList.toggle('hidden');
+}
+
+function toggleUserMenu() {
+  const userMenu = document.getElementById('userMenu');
+  userMenu.classList.toggle('hidden');
+}
+
+document.addEventListener('click', function(event) {
+  const userMenu = document.getElementById('userMenu');
+  const userButton = event.target.closest('button');
+  
+  if (!userButton || !userButton.onclick || userButton.onclick.toString().indexOf('toggleUserMenu') === -1) {
+    userMenu.classList.add('hidden');
+  }
+});
+</script>   
