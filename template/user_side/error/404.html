@@ -1,0 +1,17 @@
+{% extends "user_side/base.html" %} 
+{% load static %}
+
+{% block content %}
+<div class="flex flex-col items-center justify-center min-h-screen bg-gray-50 text-center px-4">
+    <img src="{% static 'images/no_product.png' %}" alt="Not Found"
+         class="w-64 h-64 object-contain mb-6">
+
+    <h1 class="text-3xl font-bold text-gray-800 mb-2">Product Not Found</h1>
+    <p class="text-gray-600 mb-6">Sorry, the product you’re looking for doesn’t exist or has been removed.</p>
+
+    <a href="{% url 'product_listing' %}" 
+       class="px-6 py-3 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700 transition">
+        Back to Products
+    </a>
+</div>
+{% endblock %}

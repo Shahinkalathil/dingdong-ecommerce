@@ -143,7 +143,7 @@ def category_status(request, id, action):
 # Product Management
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 @user_passes_test(lambda u: u.is_superuser, login_url="admin_login")
-def products(request):
+def admin_products(request):
     products = Product.objects.prefetch_related("variants__images").all()
     context = {
         "products": products,
@@ -637,3 +637,4 @@ def product_variant(request, id):
         "product": product,
         "variants": variants
     })
+

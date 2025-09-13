@@ -1,0 +1,468 @@
+{% extends 'user_side/base.html' %}
+{% load static %}
+
+{% block title %}DINGDONG - Authorized Brand Store{% endblock %}
+
+{% block content %}
+<!-- Hero Banner Carousel -->
+<section class="container mx-auto px-4 py-6">
+  <div class="relative rounded-lg overflow-hidden bg-gray-900 h-[300px] md:h-[400px]">
+    <div class="carousel-container relative w-full h-full">
+
+      <!-- Banner 1 -->
+      <div class="carousel-slide active absolute inset-0 transition-all duration-500 ease-in-out opacity-100 translate-x-0 z-10">
+        <img src="https://via.placeholder.com/1200x400?text=Banner+1" alt="Banner 1" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105">
+        <div class="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center"></div>
+      </div>
+
+      <!-- Banner 2 -->
+      <div class="carousel-slide absolute inset-0 transition-all duration-500 ease-in-out opacity-0 translate-x-full z-0">
+        <img src="https://via.placeholder.com/1200x400?text=Banner+2" alt="Banner 2" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105">
+        <div class="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center">
+          <div class="text-center text-white">
+            <h2 class="text-3xl md:text-5xl font-bold mb-4">G-SHOCK Series</h2>
+            <p class="text-lg md:text-xl mb-6">Tough & Durable</p>
+            <button class="bg-red-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-red-700 transition-colors">
+              Explore G-SHOCK
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Banner 3 -->
+      <div class="carousel-slide absolute inset-0 transition-all duration-500 ease-in-out opacity-0 translate-x-full z-0">
+        <img src="https://via.placeholder.com/1200x400?text=Banner+3" alt="Banner 3" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105">
+        <div class="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center">
+          <div class="text-center text-white">
+            <h2 class="text-3xl md:text-5xl font-bold mb-4">Vintage Collection</h2>
+            <p class="text-lg md:text-xl mb-6">Classic Timepieces</p>
+            <button class="bg-yellow-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-yellow-700 transition-colors">
+              View Collection
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Navigation -->
+    <button class="carousel-prev absolute left-4 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-3 rounded-full hover:bg-opacity-75 hover:scale-110 transition-all z-10">
+      <i class="fas fa-chevron-left text-lg"></i>
+    </button>
+    <button class="carousel-next absolute right-4 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-3 rounded-full hover:bg-opacity-75 hover:scale-110 transition-all z-10">
+      <i class="fas fa-chevron-right text-lg"></i>
+    </button>
+
+    <!-- Dots -->
+    <div class="absolute bottom-4 left-0 right-0 flex justify-center space-x-3 z-10">
+      <button class="carousel-dot w-4 h-4 rounded-full bg-white opacity-100" data-slide="0"></button>
+      <button class="carousel-dot w-4 h-4 rounded-full bg-white opacity-50" data-slide="1"></button>
+      <button class="carousel-dot w-4 h-4 rounded-full bg-white opacity-50" data-slide="2"></button>
+    </div>
+  </div>
+</section>
+
+<!-- Product Row -->
+<section class="container mx-auto px-4 md:px-4 py-6">
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
+
+    <!-- Product Card Example -->
+    <div class="bg-white p-4 rounded-lg shadow hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 group">
+      <div class="relative">
+        <img src="https://via.placeholder.com/200x200" alt="Product 1" class="w-full h-48 object-contain">
+        <button class="wishlist-btn absolute top-2 right-2 text-gray-400 hover:text-red-500 group-hover:text-red-500 transition-colors duration-300">
+          <i class="far fa-heart text-lg"></i>
+        </button>
+      </div>
+      <div class="mt-4">
+        <h3 class="text-xs font-bold uppercase line-clamp-2 overflow-hidden" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">CASIO</h3>
+        <div class="flex items-center mt-2">
+          <p class="text-xs text-gray-600 mt-1 font-medium">Casio Brand</p>
+          <div class="flex text-yellow-400 ml-2">
+            <i class="fas fa-star text-xs"></i>
+            <i class="fas fa-star text-xs"></i>
+            <i class="fas fa-star text-xs"></i>
+            <i class="far fa-star text-xs"></i>
+            <i class="far fa-star text-xs"></i>
+          </div>
+          <span class="text-xs text-gray-500 ml-1">(3.0)</span>
+        </div>
+        <div class="mt-2">
+          <span class="font-bold">₹ 2999.00</span>
+          <span class="text-xs text-gray-500 line-through ml-2">₹ 3999.00</span>
+        </div>
+      </div>
+    </div>
+
+        <div class="bg-white p-4 rounded-lg shadow hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 group">
+      <div class="relative">
+        <img src="https://via.placeholder.com/200x200" alt="Product 1" class="w-full h-48 object-contain">
+        <button class="wishlist-btn absolute top-2 right-2 text-gray-400 hover:text-red-500 group-hover:text-red-500 transition-colors duration-300">
+          <i class="far fa-heart text-lg"></i>
+        </button>
+      </div>
+      <div class="mt-4">
+        <h3 class="text-xs font-bold uppercase line-clamp-2 overflow-hidden" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">CASIO</h3>
+        <div class="flex items-center mt-2">
+          <p class="text-xs text-gray-600 mt-1 font-medium">Casio Brand</p>
+          <div class="flex text-yellow-400 ml-2">
+            <i class="fas fa-star text-xs"></i>
+            <i class="fas fa-star text-xs"></i>
+            <i class="fas fa-star text-xs"></i>
+            <i class="far fa-star text-xs"></i>
+            <i class="far fa-star text-xs"></i>
+          </div>
+          <span class="text-xs text-gray-500 ml-1">(3.0)</span>
+        </div>
+        <div class="mt-2">
+          <span class="font-bold">₹ 2999.00</span>
+          <span class="text-xs text-gray-500 line-through ml-2">₹ 3999.00</span>
+        </div>
+      </div>
+    </div>
+
+
+        <div class="bg-white p-4 rounded-lg shadow hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 group">
+      <div class="relative">
+        <img src="https://via.placeholder.com/200x200" alt="Product 1" class="w-full h-48 object-contain">
+        <button class="wishlist-btn absolute top-2 right-2 text-gray-400 hover:text-red-500 group-hover:text-red-500 transition-colors duration-300">
+          <i class="far fa-heart text-lg"></i>
+        </button>
+      </div>
+      <div class="mt-4">
+        <h3 class="text-xs font-bold uppercase line-clamp-2 overflow-hidden" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">CASIO</h3>
+        <div class="flex items-center mt-2">
+          <p class="text-xs text-gray-600 mt-1 font-medium">Casio Brand</p>
+          <div class="flex text-yellow-400 ml-2">
+            <i class="fas fa-star text-xs"></i>
+            <i class="fas fa-star text-xs"></i>
+            <i class="fas fa-star text-xs"></i>
+            <i class="far fa-star text-xs"></i>
+            <i class="far fa-star text-xs"></i>
+          </div>
+          <span class="text-xs text-gray-500 ml-1">(3.0)</span>
+        </div>
+        <div class="mt-2">
+          <span class="font-bold">₹ 2999.00</span>
+          <span class="text-xs text-gray-500 line-through ml-2">₹ 3999.00</span>
+        </div>
+      </div>
+    </div>
+
+
+        <div class="bg-white p-4 rounded-lg shadow hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 group">
+      <div class="relative">
+        <img src="https://via.placeholder.com/200x200" alt="Product 1" class="w-full h-48 object-contain">
+        <button class="wishlist-btn absolute top-2 right-2 text-gray-400 hover:text-red-500 group-hover:text-red-500 transition-colors duration-300">
+          <i class="far fa-heart text-lg"></i>
+        </button>
+      </div>
+      <div class="mt-4">
+        <h3 class="text-xs font-bold uppercase line-clamp-2 overflow-hidden" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">CASIO</h3>
+        <div class="flex items-center mt-2">
+          <p class="text-xs text-gray-600 mt-1 font-medium">Casio Brand</p>
+          <div class="flex text-yellow-400 ml-2">
+            <i class="fas fa-star text-xs"></i>
+            <i class="fas fa-star text-xs"></i>
+            <i class="fas fa-star text-xs"></i>
+            <i class="far fa-star text-xs"></i>
+            <i class="far fa-star text-xs"></i>
+          </div>
+          <span class="text-xs text-gray-500 ml-1">(3.0)</span>
+        </div>
+        <div class="mt-2">
+          <span class="font-bold">₹ 2999.00</span>
+          <span class="text-xs text-gray-500 line-through ml-2">₹ 3999.00</span>
+        </div>
+      </div>
+    </div>
+
+
+        <div class="bg-white p-4 rounded-lg shadow hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 group">
+      <div class="relative">
+        <img src="https://via.placeholder.com/200x200" alt="Product 1" class="w-full h-48 object-contain">
+        <button class="wishlist-btn absolute top-2 right-2 text-gray-400 hover:text-red-500 group-hover:text-red-500 transition-colors duration-300">
+          <i class="far fa-heart text-lg"></i>
+        </button>
+      </div>
+      <div class="mt-4">
+        <h3 class="text-xs font-bold uppercase line-clamp-2 overflow-hidden" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">CASIO</h3>
+        <div class="flex items-center mt-2">
+          <p class="text-xs text-gray-600 mt-1 font-medium">Casio Brand</p>
+          <div class="flex text-yellow-400 ml-2">
+            <i class="fas fa-star text-xs"></i>
+            <i class="fas fa-star text-xs"></i>
+            <i class="fas fa-star text-xs"></i>
+            <i class="far fa-star text-xs"></i>
+            <i class="far fa-star text-xs"></i>
+          </div>
+          <span class="text-xs text-gray-500 ml-1">(3.0)</span>
+        </div>
+        <div class="mt-2">
+          <span class="font-bold">₹ 2999.00</span>
+          <span class="text-xs text-gray-500 line-through ml-2">₹ 3999.00</span>
+        </div>
+      </div>
+    </div>
+
+
+        <div class="bg-white p-4 rounded-lg shadow hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 group">
+      <div class="relative">
+        <img src="https://via.placeholder.com/200x200" alt="Product 1" class="w-full h-48 object-contain">
+        <button class="wishlist-btn absolute top-2 right-2 text-gray-400 hover:text-red-500 group-hover:text-red-500 transition-colors duration-300">
+          <i class="far fa-heart text-lg"></i>
+        </button>
+      </div>
+      <div class="mt-4">
+        <h3 class="text-xs font-bold uppercase line-clamp-2 overflow-hidden" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">CASIO</h3>
+        <div class="flex items-center mt-2">
+          <p class="text-xs text-gray-600 mt-1 font-medium">Casio Brand</p>
+          <div class="flex text-yellow-400 ml-2">
+            <i class="fas fa-star text-xs"></i>
+            <i class="fas fa-star text-xs"></i>
+            <i class="fas fa-star text-xs"></i>
+            <i class="far fa-star text-xs"></i>
+            <i class="far fa-star text-xs"></i>
+          </div>
+          <span class="text-xs text-gray-500 ml-1">(3.0)</span>
+        </div>
+        <div class="mt-2">
+          <span class="font-bold">₹ 2999.00</span>
+          <span class="text-xs text-gray-500 line-through ml-2">₹ 3999.00</span>
+        </div>
+      </div>
+    </div>
+
+
+
+
+        <div class="bg-white p-4 rounded-lg shadow hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 group">
+      <div class="relative">
+        <img src="https://via.placeholder.com/200x200" alt="Product 1" class="w-full h-48 object-contain">
+        <button class="wishlist-btn absolute top-2 right-2 text-gray-400 hover:text-red-500 group-hover:text-red-500 transition-colors duration-300">
+          <i class="far fa-heart text-lg"></i>
+        </button>
+      </div>
+      <div class="mt-4">
+        <h3 class="text-xs font-bold uppercase line-clamp-2 overflow-hidden" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">CASIO</h3>
+        <div class="flex items-center mt-2">
+          <p class="text-xs text-gray-600 mt-1 font-medium">Casio Brand</p>
+          <div class="flex text-yellow-400 ml-2">
+            <i class="fas fa-star text-xs"></i>
+            <i class="fas fa-star text-xs"></i>
+            <i class="fas fa-star text-xs"></i>
+            <i class="far fa-star text-xs"></i>
+            <i class="far fa-star text-xs"></i>
+          </div>
+          <span class="text-xs text-gray-500 ml-1">(3.0)</span>
+        </div>
+        <div class="mt-2">
+          <span class="font-bold">₹ 2999.00</span>
+          <span class="text-xs text-gray-500 line-through ml-2">₹ 3999.00</span>
+        </div>
+      </div>
+    </div>
+
+
+
+
+        <div class="bg-white p-4 rounded-lg shadow hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 group">
+      <div class="relative">
+        <img src="https://via.placeholder.com/200x200" alt="Product 1" class="w-full h-48 object-contain">
+        <button class="wishlist-btn absolute top-2 right-2 text-gray-400 hover:text-red-500 group-hover:text-red-500 transition-colors duration-300">
+          <i class="far fa-heart text-lg"></i>
+        </button>
+      </div>
+      <div class="mt-4">
+        <h3 class="text-xs font-bold uppercase line-clamp-2 overflow-hidden" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">CASIO</h3>
+        <div class="flex items-center mt-2">
+          <p class="text-xs text-gray-600 mt-1 font-medium">Casio Brand</p>
+          <div class="flex text-yellow-400 ml-2">
+            <i class="fas fa-star text-xs"></i>
+            <i class="fas fa-star text-xs"></i>
+            <i class="fas fa-star text-xs"></i>
+            <i class="far fa-star text-xs"></i>
+            <i class="far fa-star text-xs"></i>
+          </div>
+          <span class="text-xs text-gray-500 ml-1">(3.0)</span>
+        </div>
+        <div class="mt-2">
+          <span class="font-bold">₹ 2999.00</span>
+          <span class="text-xs text-gray-500 line-through ml-2">₹ 3999.00</span>
+        </div>
+      </div>
+    </div>
+
+
+
+
+
+        <div class="bg-white p-4 rounded-lg shadow hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 group">
+      <div class="relative">
+        <img src="https://via.placeholder.com/200x200" alt="Product 1" class="w-full h-48 object-contain">
+        <button class="wishlist-btn absolute top-2 right-2 text-gray-400 hover:text-red-500 group-hover:text-red-500 transition-colors duration-300">
+          <i class="far fa-heart text-lg"></i>
+        </button>
+      </div>
+      <div class="mt-4">
+        <h3 class="text-xs font-bold uppercase line-clamp-2 overflow-hidden" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">CASIO</h3>
+        <div class="flex items-center mt-2">
+          <p class="text-xs text-gray-600 mt-1 font-medium">Casio Brand</p>
+          <div class="flex text-yellow-400 ml-2">
+            <i class="fas fa-star text-xs"></i>
+            <i class="fas fa-star text-xs"></i>
+            <i class="fas fa-star text-xs"></i>
+            <i class="far fa-star text-xs"></i>
+            <i class="far fa-star text-xs"></i>
+          </div>
+          <span class="text-xs text-gray-500 ml-1">(3.0)</span>
+        </div>
+        <div class="mt-2">
+          <span class="font-bold">₹ 2999.00</span>
+          <span class="text-xs text-gray-500 line-through ml-2">₹ 3999.00</span>
+        </div>
+      </div>
+    </div>
+
+
+
+
+
+        <div class="bg-white p-4 rounded-lg shadow hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 group">
+      <div class="relative">
+        <img src="https://via.placeholder.com/200x200" alt="Product 1" class="w-full h-48 object-contain">
+        <button class="wishlist-btn absolute top-2 right-2 text-gray-400 hover:text-red-500 group-hover:text-red-500 transition-colors duration-300">
+          <i class="far fa-heart text-lg"></i>
+        </button>
+      </div>
+      <div class="mt-4">
+        <h3 class="text-xs font-bold uppercase line-clamp-2 overflow-hidden" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">CASIO</h3>
+        <div class="flex items-center mt-2">
+          <p class="text-xs text-gray-600 mt-1 font-medium">Casio Brand</p>
+          <div class="flex text-yellow-400 ml-2">
+            <i class="fas fa-star text-xs"></i>
+            <i class="fas fa-star text-xs"></i>
+            <i class="fas fa-star text-xs"></i>
+            <i class="far fa-star text-xs"></i>
+            <i class="far fa-star text-xs"></i>
+          </div>
+          <span class="text-xs text-gray-500 ml-1">(3.0)</span>
+        </div>
+        <div class="mt-2">
+          <span class="font-bold">₹ 2999.00</span>
+          <span class="text-xs text-gray-500 line-through ml-2">₹ 3999.00</span>
+        </div>
+      </div>
+    </div>
+
+
+
+
+
+        <div class="bg-white p-4 rounded-lg shadow hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 group">
+      <div class="relative">
+        <img src="https://via.placeholder.com/200x200" alt="Product 1" class="w-full h-48 object-contain">
+        <button class="wishlist-btn absolute top-2 right-2 text-gray-400 hover:text-red-500 group-hover:text-red-500 transition-colors duration-300">
+          <i class="far fa-heart text-lg"></i>
+        </button>
+      </div>
+      <div class="mt-4">
+        <h3 class="text-xs font-bold uppercase line-clamp-2 overflow-hidden" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">CASIO</h3>
+        <div class="flex items-center mt-2">
+          <p class="text-xs text-gray-600 mt-1 font-medium">Casio Brand</p>
+          <div class="flex text-yellow-400 ml-2">
+            <i class="fas fa-star text-xs"></i>
+            <i class="fas fa-star text-xs"></i>
+            <i class="fas fa-star text-xs"></i>
+            <i class="far fa-star text-xs"></i>
+            <i class="far fa-star text-xs"></i>
+          </div>
+          <span class="text-xs text-gray-500 ml-1">(3.0)</span>
+        </div>
+        <div class="mt-2">
+          <span class="font-bold">₹ 2999.00</span>
+          <span class="text-xs text-gray-500 line-through ml-2">₹ 3999.00</span>
+        </div>
+      </div>
+    </div>
+
+
+
+
+    
+
+    <!-- You can duplicate product cards as needed -->
+    
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  document.querySelectorAll('.wishlist-btn').forEach(btn => {
+    btn.addEventListener('click', function (e) {
+      e.preventDefault();
+      const icon = this.querySelector('i');
+      icon.classList.toggle('far');
+      icon.classList.toggle('fas');
+      this.classList.toggle('text-red-500');
+      this.classList.toggle('text-gray-400');
+    });
+  });
+
+  let currentSlide = 0;
+  const slides = document.querySelectorAll('.carousel-slide');
+  const dots = document.querySelectorAll('.carousel-dot');
+  const prevBtn = document.querySelector('.carousel-prev');
+  const nextBtn = document.querySelector('.carousel-next');
+  const totalSlides = slides.length;
+
+  function showSlide(index) {
+    slides.forEach((slide, i) => {
+      slide.classList.remove('active');
+      if (i === index) {
+        slide.style.opacity = '1';
+        slide.style.transform = 'translateX(0)';
+        slide.classList.add('active');
+        slide.classList.remove('z-0');
+        slide.classList.add('z-10');
+      } else {
+        slide.style.opacity = '0';
+        slide.style.transform = i < index ? 'translateX(-100%)' : 'translateX(100%)';
+        slide.classList.remove('z-10');
+        slide.classList.add('z-0');
+      }
+    });
+    dots.forEach((dot, i) => {
+      if (i === index) {
+        dot.classList.remove('opacity-50');
+        dot.classList.add('opacity-100');
+      } else {
+        dot.classList.remove('opacity-100');
+        dot.classList.add('opacity-50');
+      }
+    });
+    currentSlide = index;
+  }
+
+  function nextSlide() { showSlide((currentSlide + 1) % totalSlides); }
+  function prevSlide() { showSlide((currentSlide - 1 + totalSlides) % totalSlides); }
+
+  nextBtn.addEventListener('click', e => { e.preventDefault(); nextSlide(); });
+  prevBtn.addEventListener('click', e => { e.preventDefault(); prevSlide(); });
+
+  dots.forEach((dot, index) => {
+    dot.addEventListener('click', e => { e.preventDefault(); showSlide(index); });
+  });
+
+  let autoPlayInterval = setInterval(nextSlide, 4000);
+  const carouselContainer = document.querySelector('.carousel-container')?.parentElement;
+  if (carouselContainer) {
+    carouselContainer.addEventListener('mouseenter', () => clearInterval(autoPlayInterval));
+    carouselContainer.addEventListener('mouseleave', () => autoPlayInterval = setInterval(nextSlide, 4000));
+  }
+
+  showSlide(0);
+});
+</script>
+{% endblock %}

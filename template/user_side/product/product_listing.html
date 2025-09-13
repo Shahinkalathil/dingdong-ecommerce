@@ -1,0 +1,265 @@
+{% extends 'user_side/base.html' %}
+{% load static %}
+
+{% block title %}DINGDONG - Authorized Brand Store{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="flex flex-col lg:flex-row gap-8">
+        <!-- Sidebar Filters -->
+        <div class="lg:w-1/4 space-y-6">
+            <form method="GET" action="{% url 'products' %}" id="filterForm">
+                <!-- Search Bar -->
+                <div class="bg-white p-4 rounded-lg shadow-sm">
+                    <div class="flex gap-2">
+                        <input type="text" name="search" placeholder="Search products..." 
+                               value="{{ search_query|default:'' }}"
+                               class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        {% if search_query %}
+                            <a href="{% url 'products' %}{% if selected_category %}?category={{ selected_category }}{% endif %}{% if selected_brand %}{% if selected_category %}&{% else %}?{% endif %}brand={{ selected_brand }}{% endif %}{% if selected_price_range %}{% if selected_category or selected_brand %}&{% else %}?{% endif %}price_range={{ selected_price_range }}{% endif %}{% if selected_sort %}{% if selected_category or selected_brand or selected_price_range %}&{% else %}?{% endif %}sort={{ selected_sort }}{% endif %}" 
+                               class="px-2 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors">
+                                Clear
+                            </a>
+                        {% else %}
+                            <button type="button" onclick="document.querySelector('input[name=search]').value=''; document.getElementById('filterForm').submit();" 
+                                    class="px-2 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors">
+                                Clear
+                            </button>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Category Filter -->
+                <div class="bg-white p-4 rounded-lg shadow-sm">
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="font-semibold text-gray-800">Category</h3>
+                        {% if selected_category %}
+                            <a href="{% url 'products' %}{% if search_query %}?search={{ search_query }}{% endif %}{% if selected_brand %}{% if search_query %}&{% else %}?{% endif %}brand={{ selected_brand }}{% endif %}{% if selected_price_range %}{% if search_query or selected_brand %}&{% else %}?{% endif %}price_range={{ selected_price_range }}{% endif %}{% if selected_sort %}{% if search_query or selected_brand or selected_price_range %}&{% else %}?{% endif %}sort={{ selected_sort }}{% endif %}" 
+                               class="text-sm text-gray-500 hover:text-gray-700">Clear</a>
+                        {% endif %}
+                    </div>
+                    <div class="relative">
+                        <select name="category" onchange="document.getElementById('filterForm').submit();" 
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none bg-white">
+                            <option value="">All Categories</option>
+                            {% for category in categories %}
+                                <option value="{{ category.id }}" {% if selected_category == category.id|stringformat:"s" %}selected{% endif %}>
+                                    {{ category.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                        <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Brand Filter -->
+                <div class="bg-white p-4 rounded-lg shadow-sm">
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="font-semibold text-gray-800">Brand</h3>
+                        {% if selected_brand %}
+                            <a href="{% url 'products' %}{% if search_query %}?search={{ search_query }}{% endif %}{% if selected_category %}{% if search_query %}&{% else %}?{% endif %}category={{ selected_category }}{% endif %}{% if selected_price_range %}{% if search_query or selected_category %}&{% else %}?{% endif %}price_range={{ selected_price_range }}{% endif %}{% if selected_sort %}{% if search_query or selected_category or selected_price_range %}&{% else %}?{% endif %}sort={{ selected_sort }}{% endif %}" 
+                               class="text-sm text-gray-500 hover:text-gray-700">Clear</a>
+                        {% endif %}
+                    </div>
+                    <div class="relative">
+                        <select name="brand" onchange="document.getElementById('filterForm').submit();" 
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none bg-white">
+                            <option value="">All Brands</option>
+                            {% for brand in brands %}
+                                <option value="{{ brand.id }}" {% if selected_brand == brand.id|stringformat:"s" %}selected{% endif %}>
+                                    {{ brand.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                        <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Price Range Filter -->
+                <div class="bg-white p-4 rounded-lg shadow-sm">
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="font-semibold text-gray-800">Price Range</h3>
+                        {% if selected_price_range %}
+                            <a href="{% url 'products' %}{% if search_query %}?search={{ search_query }}{% endif %}{% if selected_category %}{% if search_query %}&{% else %}?{% endif %}category={{ selected_category }}{% endif %}{% if selected_brand %}{% if search_query or selected_category %}&{% else %}?{% endif %}brand={{ selected_brand }}{% endif %}{% if selected_sort %}{% if search_query or selected_category or selected_brand %}&{% else %}?{% endif %}sort={{ selected_sort }}{% endif %}" 
+                               class="text-sm text-gray-500 hover:text-gray-700">Clear</a>
+                        {% endif %}
+                    </div>
+                    <div class="relative">
+                        <select name="price_range" onchange="document.getElementById('filterForm').submit();" 
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none bg-white">
+                            <option value="">All Prices</option>
+                            <option value="0-1000" {% if selected_price_range == "0-1000" %}selected{% endif %}>₹0 - ₹1,000</option>
+                            <option value="1000-3000" {% if selected_price_range == "1000-3000" %}selected{% endif %}>₹1,000 - ₹3,000</option>
+                            <option value="3000-5000" {% if selected_price_range == "3000-5000" %}selected{% endif %}>₹3,000 - ₹5,000</option>
+                            <option value="5000-10000" {% if selected_price_range == "5000-10000" %}selected{% endif %}>₹5,000 - ₹10,000</option>
+                            <option value="10000+" {% if selected_price_range == "10000+" %}selected{% endif %}>₹10,000+</option>
+                        </select>
+                        <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Hidden fields to preserve other filters -->
+                {% if selected_sort %}<input type="hidden" name="sort" value="{{ selected_sort }}">{% endif %}
+            </form>
+
+            <!-- Clear All Filters -->
+            {% if search_query or selected_category or selected_brand or selected_price_range %}
+                <a href="{% url 'products' %}" 
+                   class="block w-full px-4 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors font-semibold text-center">
+                    Clear All Filters
+                </a>
+            {% endif %}
+        </div>
+
+        <!-- Main Content -->
+        <div class="lg:w-3/4">
+            <!-- Sort and Results Info -->
+            <div class="flex justify-between items-center mb-6">
+                <div class="text-gray-600">
+                    Showing {{ page_obj.start_index }} - {{ page_obj.end_index }} of {{ total_products }} products
+                </div>
+                <form method="GET" action="{% url 'products' %}" class="relative">
+                    <!-- Preserve current filters -->
+                    {% if search_query %}<input type="hidden" name="search" value="{{ search_query }}">{% endif %}
+                    {% if selected_category %}<input type="hidden" name="category" value="{{ selected_category }}">{% endif %}
+                    {% if selected_brand %}<input type="hidden" name="brand" value="{{ selected_brand }}">{% endif %}
+                    {% if selected_price_range %}<input type="hidden" name="price_range" value="{{ selected_price_range }}">{% endif %}
+                    
+                    <select name="sort" onchange="this.form.submit();" 
+                            class="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none bg-white pr-10">
+                        <option value="" {% if not selected_sort %}selected{% endif %}>SORT BY</option>
+                        <option value="price-low" {% if selected_sort == "price-low" %}selected{% endif %}>Price: Low to High</option>
+                        <option value="price-high" {% if selected_sort == "price-high" %}selected{% endif %}>Price: High to Low</option>
+                        <option value="name-az" {% if selected_sort == "name-az" %}selected{% endif %}>Name: A to Z</option>
+                        <option value="name-za" {% if selected_sort == "name-za" %}selected{% endif %}>Name: Z to A</option>
+                    </select>
+                    <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Product Grid -->
+            {% if product_display_data %}
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
+                    {% for item in product_display_data %}
+                        <a href="{% url 'product_detail' item.product.id %}" class="block">
+                            <div class="bg-white p-4 rounded-lg shadow hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 group">
+                                <div class="relative">
+                                    {% if item.first_image %}
+                                        <img src="{{ item.first_image.image.url }}" 
+                                             alt="{{ item.product.name }}" 
+                                             class="w-full h-48 object-contain">
+                                    {% else %}
+                                        <img src="{% static 'images/no_image.png' %}" 
+                                             alt="No Image" 
+                                             class="w-full h-48 object-contain">
+                                    {% endif %}
+
+                                    <button class="wishlist-btn absolute top-2 right-2 text-gray-400 hover:text-red-500 group-hover:text-red-500 transition-colors duration-300">
+                                        <i class="far fa-heart text-lg"></i>
+                                    </button>
+                                </div>
+                                <div class="mt-4">
+                                    <h3 class="text-xs font-bold uppercase line-clamp-2">
+                                        {{ item.product.name }}
+                                    </h3>
+                                    <div class="flex items-center mt-2">
+                                        <p class="text-xs text-gray-600 mt-1 font-medium">{{ item.product.brand.name }}</p>
+                                        
+                                        <!-- Stars (static example) -->
+                                        <div class="flex text-yellow-400 ml-2">
+                                            <i class="fas fa-star text-xs"></i>
+                                            <i class="fas fa-star text-xs"></i>
+                                            <i class="fas fa-star text-xs"></i>
+                                            <i class="fas fa-star-half-alt text-xs"></i>
+                                            <i class="far fa-star text-xs"></i>
+                                        </div>
+                                        <span class="text-xs text-gray-500 ml-1">(4.5)</span>
+                                    </div>
+                                    <div class="mt-2">
+                                        <span class="font-bold">₹{{ item.variant.price }}</span>
+                                        <span class="text-xs text-gray-500 line-through ml-2">₹{{ item.variant.price|add:"1500" }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center py-12">
+                    <div class="text-gray-400 mb-4">
+                        <i class="fas fa-search text-6xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-600 mb-2">No products found</h3>
+                    <p class="text-gray-500 mb-4">Try adjusting your search or filter criteria</p>
+                    <a href="{% url 'products' %}" 
+                       class="inline-block px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
+                        View All Products
+                    </a>
+                </div>
+            {% endif %}
+
+            <!-- Pagination -->
+            {% if page_obj.has_other_pages %}
+                <div class="flex justify-center items-center space-x-2">
+                    {% if page_obj.has_previous %}
+                        <a href="?{% if search_query %}search={{ search_query }}&{% endif %}{% if selected_category %}category={{ selected_category }}&{% endif %}{% if selected_brand %}brand={{ selected_brand }}&{% endif %}{% if selected_price_range %}price_range={{ selected_price_range }}&{% endif %}{% if selected_sort %}sort={{ selected_sort }}&{% endif %}page={{ page_obj.previous_page_number }}" 
+                           class="px-3 py-2 text-gray-500 hover:text-gray-700">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                            </svg>
+                        </a>
+                    {% else %}
+                        <span class="px-3 py-2 text-gray-300">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                            </svg>
+                        </span>
+                    {% endif %}
+                    
+                    <div class="flex space-x-1">
+                        {% for num in page_obj.paginator.page_range %}
+                            {% if page_obj.number == num %}
+                                <span class="px-3 py-2 rounded-md bg-blue-500 text-white">{{ num }}</span>
+                            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                <a href="?{% if search_query %}search={{ search_query }}&{% endif %}{% if selected_category %}category={{ selected_category }}&{% endif %}{% if selected_brand %}brand={{ selected_brand }}&{% endif %}{% if selected_price_range %}price_range={{ selected_price_range }}&{% endif %}{% if selected_sort %}sort={{ selected_sort }}&{% endif %}page={{ num }}" 
+                                   class="px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100 transition-colors">{{ num }}</a>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                    
+                    {% if page_obj.has_next %}
+                        <a href="?{% if search_query %}search={{ search_query }}&{% endif %}{% if selected_category %}category={{ selected_category }}&{% endif %}{% if selected_brand %}brand={{ selected_brand }}&{% endif %}{% if selected_price_range %}price_range={{ selected_price_range }}&{% endif %}{% if selected_sort %}sort={{ selected_sort }}&{% endif %}page={{ page_obj.next_page_number }}" 
+                           class="px-3 py-2 text-gray-500 hover:text-gray-700">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                            </svg>
+                        </a>
+                    {% else %}
+                        <span class="px-3 py-2 text-gray-300">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                            </svg>
+                        </span>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

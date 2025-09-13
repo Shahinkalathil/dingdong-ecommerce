@@ -8,7 +8,6 @@ from django.views.decorators.cache import cache_control
 from django.db.models import Q
 from django.core.paginator import Paginator
 from django.contrib.auth import get_user_model
-from django.http import JsonResponse
 
 
 # Admin Login
@@ -81,7 +80,6 @@ def user_status(request, id):
     except CustomUser.DoesNotExist:
         messages.error(request, "User not found.")
 
-
     keyword = request.GET.get("keyword", "").strip()
     page = request.GET.get("page", 1)
 
@@ -91,6 +89,7 @@ def user_status(request, id):
         return redirect(f"{reverse('admin_users')}?page={page}")
 
 
+# Search Users
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 @user_passes_test(lambda u: u.is_superuser, login_url="admin_login")
 def users_search(request):
@@ -111,6 +110,7 @@ def users_search(request):
             message = f"No users found matching '{keyword}'"
     else:
         return redirect('admin_users')
+
     paginator = Paginator(users, 5)
     page = request.GET.get('page', 1)
     page_users = paginator.get_page(page)
@@ -123,5 +123,3 @@ def users_search(request):
         "total_results": users.count() if keyword else 0,
     }
     return render(request, "admin_panel/user_list/users_management.html", context)
-
-
