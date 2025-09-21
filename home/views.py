@@ -1,3 +1,4 @@
+from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
@@ -73,6 +74,8 @@ def products(request):
     else:
         products = products.order_by('-id')  
     products = products.distinct()
+
+    rating = round(random.uniform(3.5, 5.0), 1)
     
 
     paginator = Paginator(products, 10)  
@@ -98,6 +101,7 @@ def products(request):
         'product_display_data': product_display_data,
         'categories': categories,
         'brands': brands,
+        "rating": rating,
         'search_query': search_query,
         'selected_category': category_filter,
         'selected_brand': brand_filter,
@@ -108,35 +112,69 @@ def products(request):
     
     return render(request, 'user_side/product/product_listing.html', context)
 
-
-
 def product_detail(request, product_id):
     try:
         product = get_object_or_404(Product, id=product_id)
-        
+
+        # Blocked / unlisted product check
         if not product.is_listed or not product.category.is_listed or not product.brand.is_listed:
             return redirect('products')
-        
+
         variants = ProductVariant.objects.filter(product=product, is_listed=True).prefetch_related('images')
-        
         if not variants.exists():
             return redirect('products')
-        
-        default_variant = variants.first()
-        
+
+        # Pick variant from query param if provided
+        variant_id = request.GET.get("variant")
+        if variant_id:
+            try:
+                default_variant = variants.get(id=variant_id)
+            except ProductVariant.DoesNotExist:
+                # If variant doesn't exist, fall back to first variant
+                default_variant = variants.first()
+        else:
+            default_variant = variants.first()
+
+        # AJAX request for variant switching
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            # Return JSON data for AJAX requests
+            variant_data = {
+                'variant_id': default_variant.id,
+                'color_name': default_variant.color_name,
+                'color_code': default_variant.color_code,
+                'price': str(default_variant.price),
+                'stock': default_variant.stock,
+                'images': [
+                    {
+                        'url': image.image.url,
+                        'alt': f"{default_variant.color_name} {i+1}"
+                    } for i, image in enumerate(default_variant.images.all())
+                ] if default_variant.images.exists() else [],
+                'original_price': str(default_variant.price * Decimal('1.2')),
+                'discount_percentage': round(((default_variant.price * Decimal('1.2') - default_variant.price) / (default_variant.price * Decimal('1.2'))) * 100)
+            }
+            return JsonResponse(variant_data)
+
+        # Fake rating + reviews
         rating = round(random.uniform(3.5, 5.0), 1)
         review_count = random.randint(50, 5000)
-        
+
+        # Price calculation for selected variant
         original_price = default_variant.price * Decimal('1.2')
         discount_percentage = round(((original_price - default_variant.price) / original_price) * 100)
+
+        # Stock for current variant (not total stock)
+        current_variant_stock = default_variant.stock
         
+        # Total stock across all variants (for reference)
         total_stock = sum(variant.stock for variant in variants)
-        
+
+        # Related products
         related_products = Product.objects.filter(
             category=product.category,
             is_listed=True
         ).exclude(id=product.id).prefetch_related('variants__images')[:4]
-        
+
         related_products_data = []
         for related_product in related_products:
             related_variant = related_product.variants.filter(is_listed=True).first()
@@ -147,24 +185,40 @@ def product_detail(request, product_id):
                     'rating': round(random.uniform(3.5, 5.0), 1),
                     'review_count': random.randint(20, 1000),
                 })
-        
+
+        # Specs
         specifications = {
             'Brand': product.brand.name,
             'Category': product.category.name,
             'Material': 'Premium Quality',
             'Warranty': '2 Years',
             'Color Options': ', '.join([v.color_name for v in variants]),
+            'Current Color': default_variant.color_name,
         }
-        
+
+        # Create variants data for template (with stock info)
+        variants_data = []
+        for variant in variants:
+            variants_data.append({
+                'id': variant.id,
+                'color_name': variant.color_name,
+                'color_code': variant.color_code,
+                'stock': variant.stock,
+                'price': variant.price,
+                'images_count': variant.images.count(),
+            })
+
         context = {
             'product': product,
             'variants': variants,
+            'variants_data': variants_data,  # Additional data for JavaScript
             'default_variant': default_variant,
             'rating': rating,
             'review_count': review_count,
             'original_price': original_price,
             'discount_percentage': discount_percentage,
-            'total_stock': total_stock,
+            'current_variant_stock': current_variant_stock,  # Current variant stock
+            'total_stock': total_stock,  # All variants stock
             'related_products': related_products_data,
             'specifications': specifications,
             'key_features': [
@@ -189,12 +243,9 @@ def product_detail(request, product_id):
                 }
             ]
         }
-        
+
         return render(request, "user_side/product/product_detail.html", context)
-        
     except Product.DoesNotExist:
         return render(request, "errors/404.html", status=404)
     except Exception as e:
         return redirect('products')
-
-
