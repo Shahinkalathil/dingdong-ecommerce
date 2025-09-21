@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile - Account Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1f2937',
+                        secondary: '#374151',
+                        accent: '#3b82f6',
+                        success: '#10b981',
+                        warning: '#f59e0b',
+                        danger: '#ef4444'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .hover-popup {
+            position: relative;
+        }
+        .hover-popup::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, #3b82f6, #8b5cf6, #06b6d4);
+            border-radius: 8px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: -1;
+        }
+        .hover-popup:hover::before {
+            opacity: 1;
+        }
+        .profile-card {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="flex flex-col lg:flex-row gap-8">
+            <!-- Sidebar Navigation -->
+            <div class="lg:w-1/4">
+                <div class="bg-white rounded-lg shadow-sm border overflow-hidden">
+                    <div class="p-6 bg-primary text-white">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
+                                <span class="text-white text-lg font-bold">JC</span>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold">John Cena</h3>
+                                <p class="text-sm text-gray-300">Premium Member</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <nav class="p-2">
+                        <a href="#overview" class="hover-popup flex items-center px-4 py-3 text-gray-700 hover:bg-accent hover:text-white rounded-md transition-all duration-200 mb-1 bg-accent/10 text-accent border-r-2 border-accent">
+                            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                            </svg>
+                            Overview
+                        </a>
+                        
+                        <a href="#wallet" class="hover-popup flex items-center px-4 py-3 text-gray-700 hover:bg-accent hover:text-white rounded-md transition-all duration-200 mb-1">
+                            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+                            </svg>
+                            Wallet
+                        </a>
+                        
+                        <a href="#orders" class="hover-popup flex items-center px-4 py-3 text-gray-700 hover:bg-accent hover:text-white rounded-md transition-all duration-200 mb-1">
+                            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+                            </svg>
+                            Orders & Returns
+                        </a>
+                        
+                        <a href="#addresses" class="hover-popup flex items-center px-4 py-3 text-gray-700 hover:bg-accent hover:text-white rounded-md transition-all duration-200 mb-1">
+                            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            </svg>
+                            Addresses
+                        </a>
+                        
+                        <a href="#profile" class="hover-popup flex items-center px-4 py-3 text-gray-700 hover:bg-accent hover:text-white rounded-md transition-all duration-200 mb-1">
+                            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                            </svg>
+                            Profile
+                        </a>
+                        
+                        <a href="#edit-profile" class="hover-popup flex items-center px-4 py-3 text-gray-700 hover:bg-warning hover:text-white rounded-md transition-all duration-200 mb-1">
+                            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                            </svg>
+                            Edit Profile
+                        </a>
+                        
+                        <a href="#security" class="hover-popup flex items-center px-4 py-3 text-gray-700 hover:bg-success hover:text-white rounded-md transition-all duration-200 mb-1">
+                            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                            </svg>
+                            Security
+                        </a>
+                        
+                        <a href="#delete" class="hover-popup flex items-center px-4 py-3 text-gray-700 hover:bg-danger hover:text-white rounded-md transition-all duration-200">
+                            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                            </svg>
+                            Delete Account
+                        </a>
+                    </nav>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="lg:w-3/4">
+                <!-- Overview Section -->
+                <div id="overview" class="bg-white rounded-lg shadow-sm border p-6 mb-6">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-6">Account Overview</h2>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                        <div class="hover-popup bg-gradient-to-br from-accent to-blue-600 text-white p-6 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-blue-100">Total Orders</p>
+                                    <p class="text-2xl font-bold">24</p>
+                                </div>
+                                <svg class="w-8 h-8 text-blue-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+                                </svg>
+                            </div>
+                        </div>
+                        
+                        <div class="hover-popup bg-gradient-to-br from-success to-green-600 text-white p-6 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-green-100">Wallet Balance</p>
+                                    <p class="text-2xl font-bold">₹2,450</p>
+                                </div>
+                                <svg class="w-8 h-8 text-green-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+                                </svg>
+                            </div>
+                        </div>
+                        
+                        <div class="hover-popup bg-gradient-to-br from-warning to-yellow-600 text-white p-6 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-yellow-100">Reward Points</p>
+                                    <p class="text-2xl font-bold">1,250</p>
+                                </div>
+                                <svg class="w-8 h-8 text-yellow-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Orders -->
+                    <div class="mb-8">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Recent Orders</h3>
+                        <div class="space-y-4">
+                            <div class="hover-popup border rounded-lg p-4 hover:shadow-md transition-all duration-200">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center space-x-4">
+                                        <img src="/placeholder.svg?height=60&width=60" alt="Product" class="w-15 h-15 rounded-lg object-cover">
+                                        <div>
+                                            <h4 class="font-medium text-gray-900">Casio G-Shock Digital Watch</h4>
+                                            <p class="text-sm text-gray-500">Order #ORD-2024-001</p>
+                                            <p class="text-sm text-gray-500">Delivered on Jan 15, 2024</p>
+                                        </div>
+                                    </div>
+                                    <div class="text-right">
+                                        <p class="font-semibold text-gray-900">₹1,795</p>
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-success/10 text-success">
+                                            Delivered
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="hover-popup border rounded-lg p-4 hover:shadow-md transition-all duration-200">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center space-x-4">
+                                        <img src="/placeholder.svg?height=60&width=60" alt="Product" class="w-15 h-15 rounded-lg object-cover">
+                                        <div>
+                                            <h4 class="font-medium text-gray-900">Wireless Bluetooth Headphones</h4>
+                                            <p class="text-sm text-gray-500">Order #ORD-2024-002</p>
+                                            <p class="text-sm text-gray-500">Expected delivery: Jan 25, 2024</p>
+                                        </div>
+                                    </div>
+                                    <div class="text-right">
+                                        <p class="font-semibold text-gray-900">₹2,999</p>
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-accent/10 text-accent">
+                                            In Transit
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Profile Details Section -->
+                <div id="profile" class="bg-white rounded-lg shadow-sm border p-6 mb-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <h2 class="text-2xl font-bold text-gray-900">Profile Details</h2>
+                        <button class="hover-popup bg-accent text-white px-4 py-2 rounded-md hover:bg-accent/90 transition-colors duration-200">
+                            EDIT
+                        </button>
+                    </div>
+                    
+                    <div class="profile-card rounded-lg p-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="space-y-4">
+                                <div class="hover-popup p-4 bg-white rounded-lg border hover:shadow-md transition-all duration-200">
+                                    <label class="block text-sm font-medium text-gray-500 mb-1">Full Name</label>
+                                    <p class="text-lg font-semibold text-gray-900">JOHN CENA</p>
+                                </div>
+                                
+                                <div class="hover-popup p-4 bg-white rounded-lg border hover:shadow-md transition-all duration-200">
+                                    <label class="block text-sm font-medium text-gray-500 mb-1">Mobile Number</label>
+                                    <p class="text-lg font-semibold text-gray-900">9207384248</p>
+                                </div>
+                                
+                                <div class="hover-popup p-4 bg-white rounded-lg border hover:shadow-md transition-all duration-200">
+                                    <label class="block text-sm font-medium text-gray-500 mb-1">Email ID</label>
+                                    <p class="text-lg font-semibold text-gray-900">johncena@gmail.com</p>
+                                </div>
+                                
+                                <div class="hover-popup p-4 bg-white rounded-lg border hover:shadow-md transition-all duration-200">
+                                    <label class="block text-sm font-medium text-gray-500 mb-1">Gender</label>
+                                    <p class="text-lg font-semibold text-gray-900">MALE</p>
+                                </div>
+                            </div>
+                            
+                            <div class="space-y-4">
+                                <div class="hover-popup p-4 bg-white rounded-lg border hover:shadow-md transition-all duration-200">
+                                    <label class="block text-sm font-medium text-gray-500 mb-1">Date of Birth</label>
+                                    <p class="text-lg font-semibold text-gray-500">- not added -</p>
+                                </div>
+                                
+                                <div class="hover-popup p-4 bg-white rounded-lg border hover:shadow-md transition-all duration-200">
+                                    <label class="block text-sm font-medium text-gray-500 mb-1">Location</label>
+                                    <p class="text-lg font-semibold text-gray-500">- not added -</p>
+                                </div>
+                                
+                                <div class="hover-popup p-4 bg-white rounded-lg border hover:shadow-md transition-all duration-200">
+                                    <label class="block text-sm font-medium text-gray-500 mb-1">Alternate Mobile</label>
+                                    <p class="text-lg font-semibold text-gray-500">- not added -</p>
+                                </div>
+                                
+                                <div class="hover-popup p-4 bg-white rounded-lg border hover:shadow-md transition-all duration-200">
+                                    <label class="block text-sm font-medium text-gray-500 mb-1">Member Since</label>
+                                    <p class="text-lg font-semibold text-gray-900">January 2023</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Addresses Section -->
+                <div id="addresses" class="bg-white rounded-lg shadow-sm border p-6 mb-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <h2 class="text-2xl font-bold text-gray-900">Saved Addresses</h2>
+                        <button class="hover-popup bg-success text-white px-4 py-2 rounded-md hover:bg-success/90 transition-colors duration-200">
+                            + Add New Address
+                        </button>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="hover-popup border-2 border-accent bg-accent/5 rounded-lg p-6">
+                            <div class="flex items-start justify-between mb-4">
+                                <div class="flex gap-2">
+                                    <h3 class="font-semibold text-gray-900">Home</h3>
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-accent text-white mb-2">
+                                          Default
+                                      </span>
+                                </div>
+                                <button class="text-gray-400 hover:text-gray-600">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                            <p class="text-gray-700 mb-2">John Cena</p>
+                            <p class="text-gray-600 text-sm leading-relaxed">
+                                123 Main Street, Apartment 4B<br>
+                                New York, NY 10001<br>
+                                United States
+                            </p>
+                            <p class="text-gray-600 text-sm mt-2">Phone: +1 (555) 123-4567</p>
+                        </div>
+                        
+                        <div class="hover-popup border rounded-lg p-6 hover:shadow-md transition-all duration-200">
+                            <div class="flex items-start justify-between mb-4">
+                                <h3 class="font-semibold text-gray-900">Office</h3>
+                                <button class="text-gray-400 hover:text-gray-600">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                            <p class="text-gray-700 mb-2">John Cena</p>
+                            <p class="text-gray-600 text-sm leading-relaxed">
+                                456 Business Ave, Suite 789<br>
+                                Manhattan, NY 10005<br>
+                                United States
+                            </p>
+                            <p class="text-gray-600 text-sm mt-2">Phone: +1 (555) 987-6543</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Security Section -->
+                <div id="security" class="bg-white rounded-lg shadow-sm border p-6">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-6">Security Settings</h2>
+                    
+                    <div class="space-y-6">
+                        <div class="hover-popup border rounded-lg p-6 hover:shadow-md transition-all duration-200">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <h3 class="font-semibold text-gray-900 mb-1">Password</h3>
+                                    <p class="text-sm text-gray-500">Last changed 3 months ago</p>
+                                </div>
+                                <button class="bg-warning text-white px-4 py-2 rounded-md hover:bg-warning/90 transition-colors duration-200">
+                                    Change Password
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="hover-popup border rounded-lg p-6 hover:shadow-md transition-all duration-200">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <h3 class="font-semibold text-gray-900 mb-1">Two-Factor Authentication</h3>
+                                    <p class="text-sm text-gray-500">Add an extra layer of security to your account</p>
+                                </div>
+                                <button class="bg-success text-white px-4 py-2 rounded-md hover:bg-success/90 transition-colors duration-200">
+                                    Enable 2FA
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="hover-popup border rounded-lg p-6 hover:shadow-md transition-all duration-200">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <h3 class="font-semibold text-gray-900 mb-1">Login Activity</h3>
+                                    <p class="text-sm text-gray-500">Monitor your account access</p>
+                                </div>
+                                <button class="bg-accent text-white px-4 py-2 rounded-md hover:bg-accent/90 transition-colors duration-200">
+                                    View Activity
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
