@@ -1,13 +1,12 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from django.contrib.auth import authenticate, login, get_user_model
+from django.contrib.auth import authenticate, login, get_user_model, get_backends
 from django.utils import timezone
 from django.utils.timezone import now
 from datetime import timedelta
 import random
 import re
 import uuid
-
 from .models import CustomUser
 from .utils import send_otp_email, send_forget_password_mail
 from django.views.decorators.cache import never_cache
@@ -137,18 +136,28 @@ def sign_up(request):
 
 
 def otp(request):
-    user = CustomUser.objects.get(id=request.session["user_id"])
+    user = get_object_or_404(CustomUser, id=request.session.get("user_id"))
     otp_expiry = user.otp_expiry
+
     if request.method == "POST":
-        entered_otp = request.POST["otp"]
+        entered_otp = request.POST.get("otp")
+
         if entered_otp != user.otp:
             messages.error(request, "Invalid OTP")
             return redirect("otp")
-        else:
-            user.is_active = True
-            user.save()
-            return redirect("home")
-    return render(request, 'user_side/auth/otp.html', {"otp_expiry": otp_expiry, "user": user})
+        user.is_active = True
+        user.save()
+        backend = get_backends()[0]
+        user.backend = f"{backend.__module__}.{backend.__class__.__name__}"
+
+        login(request, user)
+        if "user_id" in request.session:
+            del request.session["user_id"]
+
+        return redirect("home")
+
+    context = {"otp_expiry": otp_expiry, "user": user}
+    return render(request, "user_side/auth/otp.html", context)
 
 @redirect_authenticated
 @never_cache

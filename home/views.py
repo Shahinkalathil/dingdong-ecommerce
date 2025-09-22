@@ -10,6 +10,7 @@ import random
 from decimal import Decimal
 
 
+
 def home(request):
     if request.user.is_authenticated:
         return render(request, 'user_side/index.html')  
