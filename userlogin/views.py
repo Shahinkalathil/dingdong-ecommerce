@@ -1,13 +1,12 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from django.contrib.auth import authenticate, login, get_user_model
+from django.contrib.auth import authenticate, login, get_user_model, get_backends
 from django.utils import timezone
 from django.utils.timezone import now
 from datetime import timedelta
 import random
 import re
 import uuid
-
 from .models import CustomUser
 from .utils import send_otp_email, send_forget_password_mail
 from django.views.decorators.cache import never_cache
@@ -149,6 +148,7 @@ def otp(request):
         messages.error(request, "User not found. Please sign up again.")
         return redirect("sign_up")
     
+
     otp_expiry = user.otp_expiry
 
     if request.method == "POST":
@@ -166,6 +166,7 @@ def otp(request):
             return redirect("home")
 
     return render(request, "user_side/auth/otp.html", {"otp_expiry": otp_expiry, "user": user})
+
 
 
 @redirect_authenticated
