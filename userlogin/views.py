@@ -135,29 +135,39 @@ def sign_up(request):
     return render(request, 'user_side/auth/sign_up.html')
 
 
+from django.contrib.auth import login
+
 def otp(request):
-    user = get_object_or_404(CustomUser, id=request.session.get("user_id"))
+    if "user_id" not in request.session:
+        messages.error(request, "Session expired. Please sign up again.")
+        return redirect("sign_up")
+    
+    try:
+        user = CustomUser.objects.get(id=request.session["user_id"])
+    except CustomUser.DoesNotExist:
+        messages.error(request, "User not found. Please sign up again.")
+        return redirect("sign_up")
+    
+
     otp_expiry = user.otp_expiry
 
     if request.method == "POST":
         entered_otp = request.POST.get("otp")
-
         if entered_otp != user.otp:
             messages.error(request, "Invalid OTP")
             return redirect("otp")
-        user.is_active = True
-        user.save()
-        backend = get_backends()[0]
-        user.backend = f"{backend.__module__}.{backend.__class__.__name__}"
+        else:
+            user.is_active = True
+            user.otp = None  # Clear OTP after use
+            user.save()
 
-        login(request, user)
-        if "user_id" in request.session:
-            del request.session["user_id"]
+            login(request, user, backend="django.contrib.auth.backends.ModelBackend")
 
-        return redirect("home")
+            return redirect("home")
 
-    context = {"otp_expiry": otp_expiry, "user": user}
-    return render(request, "user_side/auth/otp.html", context)
+    return render(request, "user_side/auth/otp.html", {"otp_expiry": otp_expiry, "user": user})
+
+
 
 @redirect_authenticated
 @never_cache
