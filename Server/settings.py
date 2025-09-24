@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 from pathlib import Path
 import os
 from decouple import config
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -50,7 +51,7 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 # Application definition
 
-SITE_ID = 2
+SITE_ID = 6
 
 
 INSTALLED_APPS = [
@@ -74,6 +75,17 @@ INSTALLED_APPS = [
 
 ]
 
+load_dotenv()
+
+USE_NGROK = config("USE_NGROK", default="0") == "1"
+
+if USE_NGROK:
+    SITE_ID = config("SITE_ID_NGROK", cast=int)
+    GOOGLE_REDIRECT_URI = config("GOOGLE_REDIRECT_URI_NGROK")
+else:
+    SITE_ID = config("SITE_ID_LOCAL", cast=int)
+    GOOGLE_REDIRECT_URI = config("GOOGLE_REDIRECT_URI")
+
 SOCIALACCOUNT_PROVIDERS = {
     'google': {
         'SCOPE': ['profile', 'email'],
@@ -82,10 +94,10 @@ SOCIALACCOUNT_PROVIDERS = {
             'client_id': config("GOOGLE_CLIENT_ID", default=""),
             'secret': config("GOOGLE_CLIENT_SECRET", default=""),
             'key': ''
-        }
+        },
+        'REDIRECT_URI': GOOGLE_REDIRECT_URI,
     }
 }
-
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

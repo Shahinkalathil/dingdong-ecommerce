@@ -1,8 +1,7 @@
 from django.http import JsonResponse
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, get_object_or_404
 from products.models import Product, ProductVariant, Category, Brand
 from django.core.paginator import Paginator
 from django.db.models import Q, Min
@@ -12,9 +11,9 @@ from decimal import Decimal
 
 def home(request):
     if request.user.is_authenticated:
-        return render(request, 'user_side/index.html')  
+        return render(request, 'user_side/index.html')
     else:
-        return redirect('sign_up')  
+        return redirect('sign_in')
 
 
 @login_required
