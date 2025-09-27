@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}DINGDONG - Overview profile {% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    {% block scripts  %}
+    {% endblock %}
+</head>
+    {% if show_sidebar %}
+        {% include 'user_side/profile/inculde/sidebar.html' %}
+    {% endif %}
+
+    {% block content %}
+    {% endblock %}
+</body>
+</html>

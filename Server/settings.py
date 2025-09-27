@@ -69,6 +69,8 @@ INSTALLED_APPS = [
     'userlogin',
     'home',
     'products',
+    'uProfile',
+    'cart',
 
     'admin_panel',
     'dashboard',

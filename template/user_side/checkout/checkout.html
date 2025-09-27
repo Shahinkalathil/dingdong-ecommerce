@@ -1,0 +1,542 @@
+{% extends 'user_side/base.html' %}
+{% load static %}
+
+{% block title %}DINGDONG - Cart{% endblock %}
+{% block Script %}
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#000000',
+                        secondary: '#6b7280',
+                        accent: '#f59e0b',
+                        success: '#10b981',
+                        danger: '#ef4444'
+                    }
+                }
+            }
+        }
+    </script>
+{% endblock %}
+
+</head>
+{% block content %}
+<body class="bg-gray-50 font-sans">
+    <div class="min-h-screen py-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+             
+            <div class="text-center mb-8">
+                <h1 class="text-3xl font-bold text-gray-900">CHECKOUT</h1>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                
+
+                <div class="lg:col-span-2 space-y-8">
+                    
+                    
+                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                        <h2 class="text-xl font-semibold text-gray-900 mb-6">Order Items</h2>
+                        
+                        
+                        <div class="flex items-center space-x-4 pb-6 border-b border-gray-200 mb-6">
+                            <img src="/placeholder.svg?height=80&width=80" 
+                                 alt="Longines Conquest Classic" 
+                                 class="w-20 h-20 object-cover rounded-lg border border-gray-200">
+                            <div class="flex-1">
+                                <h3 class="font-semibold text-gray-900">Longines CONQUEST CLASSIC L2.386.4.52.6</h3>
+                                <p class="text-sm text-gray-600">L23864526</p>
+                                <div class="flex items-center mt-2">
+                                    <span class="text-sm text-gray-600">Qty: 1</span>
+                                    <span class="mx-2 text-gray-400">|</span>
+                                    <span class="text-sm font-medium text-gray-900">₹9,000.00</span>
+                                    <span class="ml-2 text-sm text-gray-500 line-through">₹52,000.00</span>
+                                </div>
+                            </div>
+                        </div>
+
+                       
+                        <div class="flex items-center space-x-4 pb-6 border-b border-gray-200 mb-6">
+                            <img src="/placeholder.svg?height=80&width=80" 
+                                 alt="Rado True Thinline" 
+                                 class="w-20 h-20 object-cover rounded-lg border border-gray-200">
+                            <div class="flex-1">
+                                <h3 class="font-semibold text-gray-900">Rado True Thinline Les Couleurs™ Le Corbusier</h3>
+                                <p class="text-sm text-gray-600">R27091612 Unisex Watch</p>
+                                <div class="flex items-center mt-2">
+                                    <span class="text-sm text-gray-600">Qty: 1</span>
+                                    <span class="mx-2 text-gray-400">|</span>
+                                    <span class="text-sm font-medium text-gray-900">₹2,900.00</span>
+                                    <span class="ml-2 text-sm text-gray-500 line-through">₹52,000.00</span>
+                                </div>
+                            </div>
+                        </div>
+
+                    
+                        <div class="flex items-center space-x-4">
+                            <img src="/placeholder.svg?height=80&width=80" 
+                                 alt="Tissot T-Touch Connect Sport" 
+                                 class="w-20 h-20 object-cover rounded-lg border border-gray-200">
+                            <div class="flex-1">
+                                <h3 class="font-semibold text-gray-900">Tissot T-Touch Connect Sport T153.420.47.051.04</h3>
+                                <p class="text-sm text-gray-600">T153420470510</p>
+                                <div class="flex items-center mt-2">
+                                    <span class="text-sm text-gray-600">Qty: 1</span>
+                                    <span class="mx-2 text-gray-400">|</span>
+                                    <span class="text-sm font-medium text-gray-900">₹1,400.00</span>
+                                    <span class="ml-2 text-sm text-gray-500 line-through">₹52,000.00</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    
+                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                        <div class="flex items-center justify-between mb-6">
+                            <h2 class="text-xl font-semibold text-gray-900">1. Delivery Address</h2>
+                            <button class="bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors duration-200">
+                                Add address
+                            </button>
+                        </div>
+
+                        
+                        <div class="space-y-4">
+                            <div class="border-2 border-blue-500 rounded-lg p-4 bg-blue-50">
+                                <div class="flex items-start justify-between">
+                                    <div class="flex items-start space-x-3">
+                                        <input type="radio" name="address" value="default" checked 
+                                               class="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
+                                        <div>
+                                            <div class="font-semibold text-gray-900">John Cen</div>
+                                            <div class="text-gray-700">Varikottu parambil house,</div>
+                                            <div class="text-gray-700">Ambilery, Kalpetta-673121</div>
+                                            <div class="text-sm text-gray-600 mt-2">Phone: +91 9207384248</div>
+                                            <span class="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full mt-2">
+                                                Default Address
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="flex space-x-2">
+                                        <button class="text-blue-600 hover:text-blue-800 text-sm font-medium">Change</button>
+                                        <button class="text-gray-600 hover:text-gray-800 text-sm font-medium">Edit</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                           
+                            <div class="border border-gray-200 rounded-lg p-4 hover:border-gray-300 transition-colors duration-200">
+                                <div class="flex items-start justify-between">
+                                    <div class="flex items-start space-x-3">
+                                        <input type="radio" name="address" value="work" 
+                                               class="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
+                                        <div>
+                                            <div class="font-semibold text-gray-900">John Cen (Work)</div>
+                                            <div class="text-gray-700">Tech Park Building, Floor 5,</div>
+                                            <div class="text-gray-700">Infopark, Kochi-682030</div>
+                                            <div class="text-sm text-gray-600 mt-2">Phone: +91 9207384248</div>
+                                        </div>
+                                    </div>
+                                    <div class="flex space-x-2">
+                                        <button class="text-blue-600 hover:text-blue-800 text-sm font-medium">Select</button>
+                                        <button class="text-gray-600 hover:text-gray-800 text-sm font-medium">Edit</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                           
+                            <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 hover:border-gray-400 transition-colors duration-200">
+                                <button class="w-full text-left">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
+                                            <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <div class="font-medium text-gray-900">Add New Address</div>
+                                            <div class="text-sm text-gray-600">Add a new delivery address</div>
+                                        </div>
+                                    </div>
+                                </button>
+                            </div>
+                        </div>
+
+                        
+                        <div class="mt-6 pt-6 border-t border-gray-200">
+                            <button class="text-blue-600 hover:text-blue-800 font-medium text-sm">
+                                Add Delivery Instructions
+                            </button>
+                        </div>
+                    </div>
+
+                    
+                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                        <h2 class="text-xl font-semibold text-gray-900 mb-6">2. Select a Payment Method</h2>
+                        
+                        <div class="space-y-4">
+                             Credit/Debit Card 
+                            <div class="border border-gray-200 rounded-lg p-4 hover:border-blue-300 transition-colors duration-200">
+                                <label class="flex items-start space-x-3 cursor-pointer">
+                                    <input type="radio" name="payment" value="card" 
+                                           class="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
+                                    <div class="flex-1">
+                                        <div class="font-medium text-gray-900">Credit or debit card</div>
+                                        <div class="flex items-center space-x-2 mt-2">
+                                            <img src="/placeholder.svg?height=24&width=38" alt="Visa" class="h-6">
+                                            <img src="/placeholder.svg?height=24&width=38" alt="MasterCard" class="h-6">
+                                            <img src="/placeholder.svg?height=24&width=38" alt="PayPal" class="h-6">
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
+
+                            <div class="border border-gray-200 rounded-lg p-4 hover:border-blue-300 transition-colors duration-200">
+                                <label class="flex items-start space-x-3 cursor-pointer">
+                                    <input type="radio" name="payment" value="netbanking" 
+                                           class="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
+                                    <div class="flex-1">
+                                        <div class="font-medium text-gray-900">Net banking</div>
+                                        <select class="mt-2 w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                            <option>Choose an option</option>
+                                            <option>State Bank of India</option>
+                                            <option>HDFC Bank</option>
+                                            <option>ICICI Bank</option>
+                                            <option>Axis Bank</option>
+                                            <option>Kotak Mahindra Bank</option>
+                                        </select>
+                                    </div>
+                                </label>
+                            </div>
+
+                        
+                            <div class="border border-gray-200 rounded-lg p-4 hover:border-blue-300 transition-colors duration-200">
+                                <label class="flex items-center space-x-3 cursor-pointer">
+                                    <input type="radio" name="payment" value="upi" 
+                                           class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
+                                    <div class="font-medium text-gray-900">Other UPI Apps</div>
+                                </label>
+                            </div>
+
+                        
+                            <div class="border border-gray-200 rounded-lg p-4 hover:border-blue-300 transition-colors duration-200">
+                                <label class="flex items-center space-x-3 cursor-pointer">
+                                    <input type="radio" name="payment" value="emi" 
+                                           class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
+                                    <div class="font-medium text-gray-900">EMI</div>
+                                </label>
+                            </div>
+
+                           
+                            <div class="border border-gray-200 rounded-lg p-4 hover:border-blue-300 transition-colors duration-200">
+                                <label class="flex items-center space-x-3 cursor-pointer">
+                                    <input type="radio" name="payment" value="cod" 
+                                           class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
+                                    <div class="font-medium text-gray-900">Cash on Delivery/Pay on Delivery</div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+              
+                <div class="lg:col-span-1">
+                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 sticky top-8">
+                        
+                        <div class="text-right mb-6">
+                            <span class="text-2xl font-bold text-gray-900">₹ 13,300.00</span>
+                        </div>
+
+                      
+                        <div class="bg-gray-50 rounded-lg p-4 mb-6">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4">Order Summary</h3>
+                            
+                           
+                            <div class="mb-4">
+                                <label for="promo-code" class="block text-sm font-medium text-gray-700 mb-2">Promo code</label>
+                                <div class="flex space-x-2">
+                                    <input type="text" 
+                                           id="promo-code" 
+                                           name="promo-code" 
+                                           class="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                                           placeholder="Enter promo code">
+                                    <button class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors duration-200 font-medium text-sm">
+                                        Apply
+                                    </button>
+                                </div>
+                            </div>
+                            
+                          
+                            <div class="space-y-3 text-sm">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Sub Total</span>
+                                    <span class="font-medium">₹13,300.00</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Estimated delivery charge</span>
+                                    <span class="font-medium text-green-600">Free Delivery</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Discount Applied</span>
+                                    <span class="font-medium text-green-600">-₹142,700.00</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">GST (18%)</span>
+                                    <span class="font-medium">₹2,394.00</span>
+                                </div>
+                                <hr class="border-gray-300">
+                                <div class="flex justify-between text-lg font-bold">
+                                    <span>Total</span>
+                                    <span>₹15,694.00</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        
+                        <!-- Place Order Button -->
+                        <div class="max-w-md mx-auto">
+                            <button id="placeOrderBtn" class="w-full bg-yellow-400 text-white py-4 px-6 rounded-lg font-semibold text-lg hover:bg-yellow-500 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-2 shadow-lg">
+                                Place Order
+                            </button>
+                        </div>
+                        
+                        
+                        <div class="mt-4 text-center">
+                            <div class="flex items-center justify-center space-x-2 text-sm text-gray-600">
+                                <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                                </svg>
+                                <span>Secure checkout</span>
+                            </div>
+                        </div>
+
+                        <!-- Modal Overlay -->
+                        <div id="orderModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 opacity-0 pointer-events-none transition-opacity duration-300">
+                            <!-- Modal Content -->
+                            <div id="modalContent" class="bg-white rounded-3xl shadow-2xl p-6 max-w-sm w-full text-center relative transform scale-75 transition-transform duration-300" style="border-radius: 24px;">
+                                <!-- Success Icon -->
+                                <div class="relative mb-6">
+                                    <div class="mx-auto w-16 h-16 relative">
+                                        <svg class="w-16 h-16 mx-auto" viewBox="0 0 100 100">
+                                            <circle 
+                                                cx="50" 
+                                                cy="50" 
+                                                r="45" 
+                                                fill="none" 
+                                                stroke="#10b981" 
+                                                stroke-width="8"
+                                                class="opacity-0 animate-[draw-circle_1s_ease-in-out_0.5s_forwards]"
+                                                style="stroke-dasharray: 314; stroke-dashoffset: 314;"
+                                            />
+                                            <path 
+                                                fill="none" 
+                                                stroke="#10b981" 
+                                                stroke-width="8" 
+                                                stroke-linecap="round" 
+                                                stroke-linejoin="round" 
+                                                d="M30 50l10 10 25 -25"
+                                                class="opacity-0 animate-[draw-checkmark_1s_ease-in-out_1.2s_forwards]"
+                                                style="stroke-dasharray: 100; stroke-dashoffset: 100;"
+                                            />
+                                        </svg>
+                                    </div>
+                                    <!-- Pulsing ring -->
+                                    <div class="absolute inset-0 rounded-full bg-green-100 animate-pulse -z-10"></div>
+                                </div>
+                                
+                                <!-- Success Message -->
+                                <div class="mb-6 opacity-0 animate-[fadeInUp_0.8s_ease-out_0.8s_forwards] transform translate-y-8">
+                                    <h1 class="text-2xl font-bold text-gray-800 mb-2">
+                                        Order Confirmed!
+                                    </h1>
+                                    <p class="text-gray-600 text-sm mb-1">
+                                        Thank you for your purchase
+                                    </p>
+                                    <p class="text-xs text-gray-500">
+                                        We've received your order and will process it shortly
+                                    </p>
+                                </div>
+                                
+                                <!-- Order Details -->
+                                <div class="bg-gray-50 rounded-2xl p-4 mb-6 opacity-0 animate-[fadeInUp_0.8s_ease-out_1.2s_forwards] transform translate-y-8">
+                                    <div class="flex justify-between items-center mb-2">
+                                        <span class="text-gray-600 font-medium text-sm">Order Number:</span>
+                                        <span class="text-gray-800 font-bold text-sm">#DNG-2025-001</span>
+                                    </div>
+                                    <div class="flex justify-between items-center mb-2">
+                                        <span class="text-gray-600 font-medium text-sm">Total Amount:</span>
+                                        <span class="text-green-600 font-bold text-base">₹18,000.00</span>
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-gray-600 font-medium text-sm">Estimated Delivery:</span>
+                                        <span class="text-gray-800 font-medium text-sm">3-5 Business Days</span>
+                                    </div>
+                                </div>
+                                
+                                <!-- Status Timeline -->
+                                <div class="mb-6 opacity-0 animate-[fadeInUp_0.8s_ease-out_1.4s_forwards] transform translate-y-8">
+                                    <h3 class="text-base font-semibold text-gray-800 mb-3">Order Status</h3>
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex flex-col items-center">
+                                            <div class="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center mb-1">
+                                                <svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                                                </svg>
+                                            </div>
+                                            <span class="text-xs text-green-600 font-medium">Confirmed</span>
+                                        </div>
+                                        <div class="flex-1 h-1 bg-gray-200 mx-2 relative">
+                                            <div class="absolute inset-y-0 left-0 w-0 bg-green-500 rounded transition-all duration-1000 animate-[progress-bar_1s_ease-out_2s_forwards]" id="progressBar"></div>
+                                        </div>
+                                        <div class="flex flex-col items-center">
+                                            <div class="w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center mb-1">
+                                                <svg class="w-3 h-3 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"/>
+                                                </svg>
+                                            </div>
+                                            <span class="text-xs text-gray-400 font-medium">Processing</span>
+                                        </div>
+                                        <div class="flex-1 h-1 bg-gray-200 mx-2"></div>
+                                        <div class="flex flex-col items-center">
+                                            <div class="w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center mb-1">
+                                                <svg class="w-3 h-3 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path d="M8 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"/>
+                                                    <path d="M3 4a1 1 0 00-1 1v10a1 1 0 001 1h1.05a2.5 2.5 0 014.9 0H10a1 1 0 001-1V5a1 1 0 00-1-1H3zM14 7a1 1 0 00-1 1v6.05A2.5 2.5 0 0115.95 16H17a1 1 0 001-1V8a1 1 0 00-1-1h-3z"/>
+                                                </svg>
+                                            </div>
+                                            <span class="text-xs text-gray-400 font-medium">Delivered</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Action Buttons -->
+                                <div class="space-y-3 opacity-0 animate-[fadeInUp_0.8s_ease-out_1.6s_forwards] transform translate-y-8">
+                                    <button class="w-full bg-black text-white py-3 px-4 rounded-2xl font-semibold text-sm hover:bg-gray-800 transition-all duration-300 transform hover:scale-105 hover:shadow-lg">
+                                        Track Your Order
+                                    </button>
+                                    <button id="closeModal" class="w-full border-2 border-gray-200 text-gray-700 py-3 px-4 rounded-2xl font-semibold text-sm hover:border-gray-300 hover:bg-gray-50 transition-all duration-300 transform hover:scale-105">
+                                        Continue Shopping
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+   <script>
+        const placeOrderBtn = document.getElementById('placeOrderBtn');
+        const orderModal = document.getElementById('orderModal');
+        const modalContent = document.getElementById('modalContent');
+        const closeModal = document.getElementById('closeModal');
+
+        // Open modal
+        placeOrderBtn.addEventListener('click', function() {
+            orderModal.classList.remove('opacity-0', 'pointer-events-none');
+            orderModal.classList.add('opacity-100', 'pointer-events-auto');
+            
+            setTimeout(() => {
+                modalContent.classList.remove('scale-75');
+                modalContent.classList.add('scale-100');
+            }, 50);
+
+            // Animate progress bar
+            setTimeout(() => {
+                const progressBar = document.getElementById('progressBar');
+                progressBar.style.width = '50%';
+            }, 2000);
+        });
+
+        // Close modal
+        function closeModalFunction() {
+            modalContent.classList.remove('scale-100');
+            modalContent.classList.add('scale-75');
+            
+            setTimeout(() => {
+                orderModal.classList.remove('opacity-100', 'pointer-events-auto');
+                orderModal.classList.add('opacity-0', 'pointer-events-none');
+            }, 300);
+        }
+
+        closeModal.addEventListener('click', closeModalFunction);
+
+        // Close modal when clicking outside
+        orderModal.addEventListener('click', function(e) {
+            if (e.target === orderModal) {
+                closeModalFunction();
+            }
+        });
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && orderModal.classList.contains('opacity-100')) {
+                closeModalFunction();
+            }
+        });
+
+        // Add click animation to buttons
+        document.querySelectorAll('button').forEach(button => {
+            button.addEventListener('click', function() {
+                this.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    this.style.transform = 'scale(1.05)';
+                    setTimeout(() => {
+                        this.style.transform = 'scale(1)';
+                    }, 100);
+                }, 100);
+            });
+        });
+    </script>
+
+    <style>
+        @keyframes draw-circle {
+            0% {
+                stroke-dashoffset: 314;
+                opacity: 0;
+            }
+            50% {
+                opacity: 1;
+            }
+            100% {
+                stroke-dashoffset: 0;
+                opacity: 1;
+            }
+        }
+        
+        @keyframes draw-checkmark {
+            0% {
+                stroke-dashoffset: 100;
+                opacity: 0;
+            }
+            50% {
+                opacity: 1;
+            }
+            100% {
+                stroke-dashoffset: 0;
+                opacity: 1;
+            }
+        }
+        
+        @keyframes fadeInUp {
+            0% {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes progress-bar {
+            0% {
+                width: 0%;
+            }
+            100% {
+                width: 50%;
+            }
+        }
+    </style>
+{% endblock %}
