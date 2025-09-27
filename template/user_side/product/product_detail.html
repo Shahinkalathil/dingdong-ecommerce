@@ -159,19 +159,7 @@
                     </div>
                 {% endif %}
 
-                <!-- Quantity -->
-                <div class="space-y-3">
-                    <h3 class="text-sm font-medium text-gray-900">Quantity</h3>
-                    <div class="flex items-center space-x-3">
-                        <button id="decreaseQty" class="w-10 h-10 border border-gray-300 rounded-md flex items-center justify-center hover:bg-gray-50 transition-colors">
-                            <i class="fas fa-minus text-sm"></i>
-                        </button>
-                        <span id="quantity" class="text-lg font-medium w-8 text-center">1</span>
-                        <button id="increaseQty" class="w-10 h-10 border border-gray-300 rounded-md flex items-center justify-center hover:bg-gray-50 transition-colors">
-                            <i class="fas fa-plus text-sm"></i>
-                        </button>
-                    </div>
-                </div>
+        
 
                 <!-- Action Buttons -->
                 <div id="actionButtons" class="space-y-3">
@@ -460,7 +448,6 @@
                 this.initializeThumbnails();
                 this.initializeTabs();
                 this.initializeFAQ();
-                this.initializeQuantity();
                 this.initializeButtons();
                 this.initializeColorSelection(); // AJAX-based color switching
             }
@@ -577,27 +564,7 @@
                 });
             }
 
-            // ---------- Quantity ----------
-            initializeQuantity() {
-                const decreaseBtn = document.getElementById('decreaseQty');
-                const increaseBtn = document.getElementById('increaseQty');
-                const quantityEl = document.getElementById('quantity');
-
-                decreaseBtn.addEventListener('click', () => {
-                    let qty = parseInt(quantityEl.textContent);
-                    if (qty > 1) {
-                        quantityEl.textContent = qty - 1;
-                    }
-                });
-
-                increaseBtn.addEventListener('click', () => {
-                    let qty = parseInt(quantityEl.textContent);
-                    if (qty < this.maxQuantity) {
-                        quantityEl.textContent = qty + 1;
-                    }
-                });
-            }
-
+   
             // ---------- Buttons ----------
             initializeButtons() {
                 const addToCartBtn = document.getElementById('addToCartBtn');
@@ -636,7 +603,6 @@
                                 this.updateVariantUI(variantData);
                                 this.currentVariantId = variantId;
                                 this.maxQuantity = variantData.stock;
-                                document.getElementById('quantity').textContent = '1';
 
                                 window.history.pushState(
                                     {}, 

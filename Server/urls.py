@@ -27,7 +27,8 @@ urlpatterns = [
     path('admin_products/', include('products.urls')),
     path('admin_panel/', include('admin_panel.urls')),
     path('dashboard/', include('dashboard.urls')),
-
+    path('profile/', include('uProfile.urls')),
+    path('cart/', include('cart.urls')),
 ]
 
 # Serve static files during development

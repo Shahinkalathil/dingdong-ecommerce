@@ -1,0 +1,262 @@
+{% extends 'user_side/base.html' %}
+{% load static %}
+
+{% block title %}DINGDONG - Cart{% endblock %}
+{% block Script %}
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#000000',
+                        secondary: '#6b7280',
+                        success: '#10b981',
+                        danger: '#ef4444',
+                        warning: '#f59e0b'
+                    }
+                }
+            }
+        }
+    </script>
+{% endblock %}
+{% block content %}
+</head>
+<body class="bg-gray-50 font-sans">
+    <div class="min-h-screen py-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <!-- Cart Header -->
+            <div class="flex items-center justify-between mb-8">
+                <h1 class="text-3xl font-bold text-gray-900">Cart</h1>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Cart Items -->
+                <div class="lg:col-span-2 space-y-6" id="cartItems">
+                    <!-- Cart Item 1 -->
+                    <div class="cart-item bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow duration-200">
+                        <div class="flex items-start space-x-4">
+                            <!-- Product Image -->
+                            <div class="flex-shrink-0 relative">
+                                <img src="/placeholder.svg?height=120&width=120" 
+                                    class="w-20 h-20 object-cover rounded-lg border border-gray-200">
+                            </div>
+                            
+                            <!-- Product Details -->
+                            <div class="flex-1 min-w-0">
+                                <h3 class="text-lg font-semibold text-gray-900 mb-1">
+                                    Longines CONQUEST CLASSIC L2.386.4.52.6
+                                </h3>
+                                <p class="text-sm text-gray-600 mb-2">L23864526</p>
+                                
+                                <!-- Price -->
+                                <div class="flex items-center space-x-2 mb-4">
+                                    <span class="item-price text-xl font-bold text-gray-900" data-price="9000">₹9,000.00</span>
+                                    <span class="text-sm text-gray-500 line-through">₹52,000.00</span>
+                                </div>
+                                
+                                <!-- Quantity Selector -->
+                                <div class="flex items-center space-x-3 mb-4">
+                                    <div class="flex items-center border border-gray-300 rounded-full">
+                                        <button class="decrement-btn p-2 hover:bg-gray-100 rounded-l-full transition-colors duration-200">
+                                            <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path>
+                                            </svg>
+                                        </button>
+                                        <span class="quantity px-4 py-2 text-sm font-medium">1</span>
+                                        <button class="increment-btn p-2 hover:bg-gray-100 rounded-r-full transition-colors duration-200">
+                                            <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <!-- Shipping Info -->
+                                <div class="flex items-center justify-between text-sm">
+                                    <div class="flex items-center space-x-2">
+                                        <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">In stock</span>
+                                    </div>
+                                    <span class="font-medium text-green-600">Free Delivery</span>
+                                </div>
+                            </div>
+
+                            <!-- Delete Button -->
+                            <div class="flex-shrink-0">
+                                <button class="delete-btn p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors duration-200">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Cart Item 2 -->
+                    <div class="cart-item bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow duration-200">
+                        <div class="flex items-start space-x-4">
+                            <!-- Product Image -->
+                            <div class="flex-shrink-0 relative">
+                                <img src="/placeholder.svg?height=120&width=120" 
+                                    class="w-20 h-20 object-cover rounded-lg border border-gray-200">
+                            </div>
+                            
+                            <!-- Product Details -->
+                            <div class="flex-1 min-w-0">
+                                <h3 class="text-lg font-semibold text-gray-900 mb-1">
+                                    Longines CONQUEST CLASSIC L2.386.4.52.6
+                                </h3>
+                                <p class="text-sm text-gray-600 mb-2">L23864526</p>
+                                
+                                <!-- Price -->
+                                <div class="flex items-center space-x-2 mb-4">
+                                    <span class="item-price text-xl font-bold text-gray-900" data-price="9000">₹9,000.00</span>
+                                    <span class="text-sm text-gray-500 line-through">₹52,000.00</span>
+                                </div>
+                                
+                                <!-- Quantity Selector -->
+                                <div class="flex items-center space-x-3 mb-4">
+                                    <div class="flex items-center border border-gray-300 rounded-full">
+                                        <button class="decrement-btn p-2 hover:bg-gray-100 rounded-l-full transition-colors duration-200">
+                                            <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path>
+                                            </svg>
+                                        </button>
+                                        <span class="quantity px-4 py-2 text-sm font-medium">1</span>
+                                        <button class="increment-btn p-2 hover:bg-gray-100 rounded-r-full transition-colors duration-200">
+                                            <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <!-- Shipping Info -->
+                                <div class="flex items-center justify-between text-sm">
+                                    <div class="flex items-center space-x-2">
+                                        <span class="bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs font-medium">Out Of Stock</span>
+                                    </div>
+                                    <span class="font-medium text-green-600">Free Delivery</span>
+                                </div>
+                            </div>
+
+                            <!-- Delete Button -->
+                            <div class="flex-shrink-0">
+                                <button class="delete-btn p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors duration-200">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Order Summary -->
+                <div class="lg:col-span-1">
+                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 sticky top-8">
+                        <h2 class="text-xl font-bold text-gray-900 mb-6">Summary</h2>
+                        
+                        <!-- Order Details -->
+                        <div class="space-y-4 mb-6">
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Sub Total</span>
+                                <span class="font-semibold" id="subtotal">₹18,000.00</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Estimated delivery charge</span>
+                                <span class="font-semibold text-green-600">Free Delivery</span>
+                            </div>
+                            <hr class="border-gray-200">
+                            <div class="flex justify-between text-lg font-bold">
+                                <span>Total</span>
+                                <span id="total">₹18,000.00</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Checkout Button -->
+                        <a href="{% url 'checkout' %}" 
+                            class="block w-full text-center bg-black text-white py-3 px-4 rounded-lg font-semibold hover:bg-gray-800 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2">
+                            Checkout
+                        </a>
+
+                        
+                        <!-- Continue Shopping -->
+                        <button class="w-full mt-3 bg-gray-100 text-gray-700 py-3 px-4 rounded-lg font-semibold hover:bg-gray-200 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2">
+                            Continue Shopping
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const cartContainer = document.getElementById('cartItems');
+    
+    // Function to update totals
+    function updateTotals() {
+        let subtotal = 0;
+        const cartItems = document.querySelectorAll('.cart-item');
+        
+        cartItems.forEach(item => {
+            const quantity = parseInt(item.querySelector('.quantity').textContent);
+            const price = parseInt(item.querySelector('.item-price').dataset.price);
+            subtotal += quantity * price;
+        });
+        
+        document.getElementById('subtotal').textContent = `₹${subtotal.toLocaleString()}.00`;
+        document.getElementById('total').textContent = `₹${subtotal.toLocaleString()}.00`;
+    }
+    
+    // Event delegation for increment buttons
+    cartContainer.addEventListener('click', function(e) {
+        if (e.target.closest('.increment-btn')) {
+            const cartItem = e.target.closest('.cart-item');
+            const quantityElement = cartItem.querySelector('.quantity');
+            const currentQuantity = parseInt(quantityElement.textContent);
+            
+            quantityElement.textContent = currentQuantity + 1;
+            updateTotals();
+            console.log('Quantity increased to:', currentQuantity + 1);
+        }
+    });
+    
+    // Event delegation for decrement buttons
+    cartContainer.addEventListener('click', function(e) {
+        if (e.target.closest('.decrement-btn')) {
+            const cartItem = e.target.closest('.cart-item');
+            const quantityElement = cartItem.querySelector('.quantity');
+            const currentQuantity = parseInt(quantityElement.textContent);
+            
+            if (currentQuantity > 1) {
+                quantityElement.textContent = currentQuantity - 1;
+                updateTotals();
+                console.log('Quantity decreased to:', currentQuantity - 1);
+            }
+        }
+    });
+    
+    // Event delegation for delete buttons
+    cartContainer.addEventListener('click', function(e) {
+        if (e.target.closest('.delete-btn')) {
+            const cartItem = e.target.closest('.cart-item');
+            
+            if (confirm('Are you sure you want to remove this item from your cart?')) {
+                cartItem.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                cartItem.style.opacity = '0';
+                cartItem.style.transform = 'translateX(100%)';
+                
+                setTimeout(() => {
+                    cartItem.remove();
+                    updateTotals();
+                    console.log('Item removed from cart');
+                }, 300);
+            }
+        }
+    });
+});
+</script>
+{% endblock %}
