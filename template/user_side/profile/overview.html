@@ -53,6 +53,8 @@
       <a href="{% url 'home' %}" class="text-black no-underline hover:text-gray-800">DINGDONG</a>
     </div>
         <div class="space-y-8">
+
+
                 <!-- Overview Section -->
                 <div id="overview" class="bg-white rounded-lg shadow-sm border p-6 mb-6">
                     <h2 class="text-2xl font-bold text-gray-900 mb-6">Account Overview</h2>
@@ -144,10 +146,23 @@
                 <div id="profile" class="bg-white rounded-lg shadow-sm border p-6 mb-6">
                     <div class="flex items-center justify-between mb-6">
                         <h2 class="text-2xl font-bold text-gray-900">Profile Details</h2>
-                        <a href="{% url 'edit_profile' %}" 
+
+                        <a href="{% url 'edit_profile' user.id %}" 
                             class="hover-popup bg-accent text-white px-4 py-2 rounded-md hover:bg-accent/90 transition-colors duration-200">
                             EDIT
                         </a>
+                        
+                    </div>
+                    <div>
+                        {% if messages %}
+                        <div class="p-4 rounded-md mt-4">
+                            {% for message in messages %}
+                                <p class="text-sm {% if message.tags == 'error' %}text-red-600{% else %}text-green-600{% endif %}">
+                                    {{ message }}
+                                </p>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
                     </div>
                     
                     <div class="profile-card rounded-lg p-6">
@@ -155,44 +170,74 @@
                             <div class="space-y-4">
                                 <div class="hover-popup p-4 bg-white rounded-lg border hover:shadow-md transition-all duration-200">
                                     <label class="block text-sm font-medium text-gray-500 mb-1">Full Name</label>
-                                    <p class="text-lg font-semibold text-gray-900">JOHN CENA</p>
+                                    <p class="text-lg font-semibold text-gray-900">
+                                        {% if user.fullname %}
+                                            {{ user.fullname }}
+                                        {% else %}
+                                            Shahin
+                                        {% endif %}
+                                    </p>
                                 </div>
                                 
                                 <div class="hover-popup p-4 bg-white rounded-lg border hover:shadow-md transition-all duration-200">
                                     <label class="block text-sm font-medium text-gray-500 mb-1">Mobile Number</label>
-                                    <p class="text-lg font-semibold text-gray-900">9207384248</p>
+                                    <p class="text-lg font-semibold text-gray-900">{{ user.phone }}</p>
                                 </div>
                                 
                                 <div class="hover-popup p-4 bg-white rounded-lg border hover:shadow-md transition-all duration-200">
                                     <label class="block text-sm font-medium text-gray-500 mb-1">Email ID</label>
-                                    <p class="text-lg font-semibold text-gray-900">johncena@gmail.com</p>
+                                    <p class="text-lg font-semibold text-gray-900">{{ user.email }}</p>
                                 </div>
                                 
                                 <div class="hover-popup p-4 bg-white rounded-lg border hover:shadow-md transition-all duration-200">
                                     <label class="block text-sm font-medium text-gray-500 mb-1">Gender</label>
-                                    <p class="text-lg font-semibold text-gray-900">MALE</p>
+                                    <p class="text-lg font-semibold text-gray-900">
+                                        {% if user.gender %}
+                                            {{ user.gender }}
+                                        {% else %}
+                                            - not added -
+                                        {% endif %}
+                                    </p>
                                 </div>
                             </div>
                             
                             <div class="space-y-4">
                                 <div class="hover-popup p-4 bg-white rounded-lg border hover:shadow-md transition-all duration-200">
                                     <label class="block text-sm font-medium text-gray-500 mb-1">Date of Birth</label>
-                                    <p class="text-lg font-semibold text-gray-500">- not added -</p>
+                                    <p class="text-lg font-semibold text-gray-500">
+                                        {% if user.dob %}
+                                            {{ user.dob|date:"d M Y" }}
+                                        {% else %}
+                                            - not added -
+                                        {% endif %}
+                                    </p>
                                 </div>
                                 
                                 <div class="hover-popup p-4 bg-white rounded-lg border hover:shadow-md transition-all duration-200">
                                     <label class="block text-sm font-medium text-gray-500 mb-1">Location</label>
-                                    <p class="text-lg font-semibold text-gray-500">- not added -</p>
+                                    <p class="text-lg font-semibold text-gray-500">
+                                        {% if user.location %}
+                                            {{ user.location }}
+                                        {% else %}
+                                            - not added -
+                                        {% endif %}
+                                    </p>
                                 </div>
                                 
                                 <div class="hover-popup p-4 bg-white rounded-lg border hover:shadow-md transition-all duration-200">
                                     <label class="block text-sm font-medium text-gray-500 mb-1">Alternate Mobile</label>
-                                    <p class="text-lg font-semibold text-gray-500">- not added -</p>
+                                    <p class="text-lg font-semibold text-gray-500">
+                                        {% if user.alt_phone %}
+                                            {{ user.alt_phone }}
+                                        {% else %}
+                                            - not added -
+                                        {% endif %}
+                                    </p>
                                 </div>
                                 
                                 <div class="hover-popup p-4 bg-white rounded-lg border hover:shadow-md transition-all duration-200">
                                     <label class="block text-sm font-medium text-gray-500 mb-1">Member Since</label>
-                                    <p class="text-lg font-semibold text-gray-900">January 2023</p>
+                                    <p class="text-lg font-semibold text-gray-900">{{ user.created_at|date:"F Y" }}</p>
                                 </div>
                             </div>
                         </div>
@@ -384,6 +429,7 @@
                     </div>
                 </div>
             </div>
+            
         </section>
     </main>
     <script>
@@ -468,5 +514,13 @@
             alert('Password changed successfully!');
             closeModal();
         });
+    setTimeout(function(){
+        const msgDiv = document.querySelector('.p-4.rounded-md');
+        if (msgDiv) {
+            msgDiv.style.display = "none";
+        }
+    }, 5000); // Hide after 5 seconds
+
+
     </script>
 {% endblock %}

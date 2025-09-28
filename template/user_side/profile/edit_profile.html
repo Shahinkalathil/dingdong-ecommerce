@@ -30,36 +30,18 @@
                 <p class="text-gray-600">Update your personal information</p>
             </div>
 
-            <!-- Right side -->
-            <button class="flex items-center text-gray-600 hover:text-gray-800 transition-colors">
+            <a href="{% url 'profile' %}" class="flex items-center text-gray-600 hover:text-gray-800 transition-colors">
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
                 </svg>
                 Back
-            </button>
+            </a>
         </div>
 
 
         <!-- Profile Form -->
-        <form class="space-y-6">
-            <!-- Mobile Number with Change Button -->
-            <div class="space-y-2">
-                <label class="block text-sm font-medium text-gray-700">Mobile number*</label>
-                <div class="flex gap-3">
-                    <input 
-                        type="tel" 
-                        value="9207384248" 
-                        readonly
-                        class="flex-1 px-4 py-3 border border-gray-300 rounded-md bg-gray-50 text-gray-900 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all duration-200"
-                    >
-                    <button 
-                        type="button"
-                        class="px-6 py-3 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all duration-200 font-medium"
-                    >
-                        Change
-                    </button>
-                </div>
-            </div>
+        <form method="POST" class="space-y-6">
+            {% csrf_token %}
 
             <!-- First Name and Last Name -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -67,77 +49,105 @@
                     <label class="block text-sm font-medium text-gray-700">First Name*</label>
                     <input 
                         type="text" 
+                        name="first_name"
+                        value="{{ user.first_name }}"
                         placeholder="Enter first name"
-                        class="w-full px-4 py-3 border border-gray-300 rounded-md bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent hover:border-gray-400 transition-all duration-200"
+                        class="w-full px-4 py-3 border border-gray-300 rounded-md bg-white text-gray-900"
                     >
                 </div>
                 <div class="space-y-2">
                     <label class="block text-sm font-medium text-gray-700">Last Name*</label>
                     <input 
                         type="text" 
+                        name="last_name"
+                        value="{{ user.last_name }}"
                         placeholder="Enter last name"
-                        class="w-full px-4 py-3 border border-gray-300 rounded-md bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent hover:border-gray-400 transition-all duration-200"
+                        class="w-full px-4 py-3 border border-gray-300 rounded-md bg-white text-gray-900"
                     >
                 </div>
             </div>
 
             <!-- Full Name -->
             <div class="space-y-2">
-                <label class="block text-sm font-medium text-gray-700">Full Name</label>
+                <label class="block text-sm font-medium text-gray-700">Full Name*</label>
                 <input 
                     type="text" 
+                    name="fullname"
+                    value="{{ user.fullname }}"
                     placeholder="Enter full name"
-                    class="w-full px-4 py-3 border border-gray-300 rounded-md bg-gray-100 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent focus:bg-white hover:bg-gray-50 transition-all duration-200"
-                >
-            </div>
-
-            <!-- Email -->
-            <div class="space-y-2">
-                <label class="block text-sm font-medium text-gray-700">Email*</label>
-                <input 
-                    type="email" 
-                    value="jhoncena--@gmail.com"
-                    class="w-full px-4 py-3 border border-gray-300 rounded-md bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent hover:border-gray-400 transition-all duration-200"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-md bg-gray-100 text-gray-900"
                 >
             </div>
 
             <!-- Phone -->
             <div class="space-y-2">
-                <label class="block text-sm font-medium text-gray-700">Phone</label>
+                <label class="block text-sm font-medium text-gray-700">Phone*</label>
                 <input 
                     type="tel" 
+                    name="phone"
+                    value="{{ user.phone }}"
                     placeholder="Enter phone number"
-                    class="w-full px-4 py-3 border border-gray-300 rounded-md bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent hover:border-gray-400 transition-all duration-200"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-md bg-white text-gray-900"
                 >
             </div>
 
             <!-- Gender Selection -->
             <div class="space-y-3">
                 <label class="block text-sm font-medium text-gray-700">Gender</label>
-                <div class="flex gap-0 border border-gray-300 rounded-md overflow-hidden">
-                    <label class="flex-1 relative">
-                        <input type="radio" name="gender" value="male" checked class="sr-only peer">
-                        <div class="px-6 py-3 text-center cursor-pointer bg-gray-600 text-white peer-checked:bg-gray-600 peer-checked:text-white hover:bg-gray-700 transition-all duration-200 font-medium">
+                <div class="flex border border-gray-300 rounded-md overflow-hidden">
+                    
+                    <!-- Male -->
+                    <label class="flex-1">
+                        <input type="radio" name="gender" value="MALE"
+                            {% if user.gender == "MALE" %}checked{% endif %}
+                            class="hidden peer">
+                        <div class="px-6 py-3 text-center cursor-pointer 
+                                    bg-white text-gray-700
+                                    peer-checked:bg-gray-600 peer-checked:text-white">
                             Male
                         </div>
                     </label>
-                    <label class="flex-1 relative">
-                        <input type="radio" name="gender" value="female" class="sr-only peer">
-                        <div class="px-6 py-3 text-center cursor-pointer bg-white text-gray-700 border-l border-gray-300 peer-checked:bg-gray-600 peer-checked:text-white peer-checked:border-gray-600 hover:bg-gray-50 transition-all duration-200 font-medium">
+
+                    <!-- Female -->
+                    <label class="flex-1">
+                        <input type="radio" name="gender" value="FEMALE"
+                            {% if user.gender == "FEMALE" %}checked{% endif %}
+                            class="hidden peer">
+                        <div class="px-6 py-3 text-center cursor-pointer 
+                                    bg-white text-gray-700 border-l border-gray-300
+                                    peer-checked:bg-gray-600 peer-checked:text-white">
                             Female
                         </div>
                     </label>
                 </div>
             </div>
 
+
             <!-- Birthday -->
             <div class="space-y-2">
-                <label class="block text-sm font-medium text-gray-700">Birthday</label>
+                <label class="block text-sm font-medium text-gray-700">Birthday*</label>
                 <input 
-                    type="text" 
-                    placeholder="birthday(dd/mm/yyyy)"
-                    class="w-full px-4 py-3 border border-gray-300 rounded-md bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent hover:border-gray-400 transition-all duration-200"
+                    type="date" 
+                    name="dob"
+                    value="{{ user.dob|date:'Y-m-d' }}"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-md bg-white text-gray-900"
                 >
+            </div>
+
+            <!-- Location Dropdown -->
+            <div class="space-y-2">
+                <label class="block text-sm font-medium text-gray-700">Location*</label>
+                <select 
+                    name="location"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-md bg-white text-gray-900"
+                >
+                    <option value="">Select Location</option>
+                    <option value="Malappuram " {% if user.location == "Malappuram" %}selected{% endif %}>Malappuram</option>
+                    <option value="Kochi" {% if user.location == "Kochi" %}selected{% endif %}>Kochi</option>
+                    <option value="Kozhikode" {% if user.location == "Kozhikode" %}selected{% endif %}>Kozhikode</option>
+                    <option value="Kannur" {% if user.location == "Kannur" %}selected{% endif %}>Kannur</option>
+                    <option value="Kasaragod" {% if user.location == "Kasaragod" %}selected{% endif %}>Kasaragod</option>
+                </select>
             </div>
 
             <!-- Alternative Mobile Number -->
@@ -145,8 +155,10 @@
                 <label class="block text-sm font-medium text-gray-700">Alternative mobile number</label>
                 <input 
                     type="tel" 
+                    name="alt_phone"
+                    value="{{ user.alt_phone }}"
                     placeholder="Enter alternative mobile number"
-                    class="w-full px-4 py-3 border border-gray-300 rounded-md bg-gray-100 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent focus:bg-white hover:bg-gray-50 transition-all duration-200"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-md bg-gray-100 text-gray-900"
                 >
             </div>
 
@@ -154,21 +166,22 @@
             <div class="pt-4">
                 <button 
                     type="submit"
-                    class="w-full md:w-auto px-8 py-3 bg-black text-white rounded-md hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-all duration-200 font-medium text-lg"
+                    class="w-full md:w-auto px-8 py-3 bg-black text-white rounded-md hover:bg-gray-800"
                 >
                     Save Details
                 </button>
             </div>
         </form>
-    </div>
-
-    <!-- Success Message (Hidden by default, can be shown with CSS) -->
-    <div class="max-w-2xl mx-auto mt-4 p-4 bg-green-50 border border-green-200 rounded-md text-green-800 hidden" id="success-message">
-        <div class="flex items-center">
-            <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-            </svg>
-            Profile updated successfully!
+        <!-- ✅ Show messages -->
+        {% if messages %}
+        <div class="mt-4">
+            {% for message in messages %}
+                <p class="text-sm {% if message.tags == 'error' %}text-red-600{% else %}text-green-600{% endif %}">
+                    {{ message }}
+                </p>
+            {% endfor %}
         </div>
+        {% endif %}
+    
     </div>
 {% endblock %}
