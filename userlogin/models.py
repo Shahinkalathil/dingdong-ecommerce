@@ -15,6 +15,10 @@ class CustomUser(AbstractUser):
     forget_password_expiry = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)  
     is_active = models.BooleanField(default=True)
+    gender = models.CharField(max_length=10, choices=[("MALE", "Male"), ("FEMALE", "Female")], null=True, blank=True)
+    dob = models.DateField(null=True, blank=True)
+    location = models.CharField(max_length=255, null=True, blank=True)
+    alt_phone = models.CharField(max_length=50, null=True, blank=True)
 
     def __str__(self):
         return self.email if self.email else self.username
