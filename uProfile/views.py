@@ -2,6 +2,8 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from userlogin.models import CustomUser
+
+
 # Create your views here.
 @login_required
 def overview(request):
@@ -9,8 +11,20 @@ def overview(request):
     context = {
         "show_sidebar": True,
         "user" : user,
+        "last_login": user.last_login,
     }
     return render(request, 'user_side/profile/overview.html', context)
+
+@login_required
+def change_password(request):
+    user = request.user
+    if request.method == "POST":
+        old_password = request.POST.get("oldPassword")
+        new_password = request.POST.get("newPassword")
+        confirm_password = request.POST.get("confirmPassword") 
+
+
+
 
 @login_required
 def edit_profile(request, id):
