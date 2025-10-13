@@ -2,6 +2,8 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from userlogin.models import CustomUser
+from django.http import JsonResponse
+from django.contrib.auth import update_session_auth_hash
 
 
 # Create your views here.
@@ -17,11 +19,44 @@ def overview(request):
 
 @login_required
 def change_password(request):
-    user = request.user
     if request.method == "POST":
-        old_password = request.POST.get("oldPassword")
-        new_password = request.POST.get("newPassword")
-        confirm_password = request.POST.get("confirmPassword") 
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            old = request.POST.get('oldPassword')
+            new = request.POST.get('newPassword')
+            confirm = request.POST.get('confirmPassword')
+            errors = {}
+
+            if not old:
+                errors['oldPassword'] = "Old password is required"
+            elif not request.user.check_password(old):
+                errors['oldPassword'] = "Old password is incorrect"
+            
+            if not new:
+                errors['newPassword'] = "New password is required"
+            elif len(new) < 8:
+                errors['newPassword'] = "Password must be at least 8 characters long"
+            elif new == old:
+                errors['newPassword'] = "New password must be different from old password"
+
+            if not confirm:
+                errors['confirmPassword'] = "Please confirm your new password"
+            elif new != confirm:
+                errors['confirmPassword'] = "Passwords do not match"
+
+            if errors:
+                return JsonResponse({'success': False, 'errors': errors})
+
+            request.user.set_password(new)
+            request.user.save()
+
+            update_session_auth_hash(request, request.user)
+            
+            return JsonResponse({
+                'success': True, 
+                'message': 'Password changed successfully!'
+            })
+        
+    return redirect('profile')
 
 
 
