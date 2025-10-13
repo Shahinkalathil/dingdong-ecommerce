@@ -2,8 +2,12 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
+    # ------------------ User Profile ------------------
     path('', views.overview, name='profile'),
     path("edit-profile/<int:id>/", views.edit_profile, name="edit_profile"),
+    path("change-password/", views.change_password, name="change_password"),
+
+
     path("address/add/", views.add_address, name="add_address"),
     path("address/edit/", views.edit_address, name="edit_address"),
 

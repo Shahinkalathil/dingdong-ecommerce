@@ -7,14 +7,23 @@
     <div class="bg-white rounded-lg shadow-sm border overflow-hidden">
         <div class="p-6 bg-primary text-white">
             <div class="flex items-center space-x-3">
-                <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
-                    <span class="text-white text-lg font-bold">JC</span>
+                <div class="w-12 h-12 rounded-full overflow-hidden bg-gray-200">
+                    {% if user.gender == "FEMALE" %}
+                        <img src="{% static 'images/female_profile_icon.png' %}" 
+                            alt="Female Avatar" 
+                            class="w-full h-full object-cover">
+                    {% else %}
+                        <img src="{% static 'images/icon_for_men.jpg' %}" 
+                            alt="Male Avatar" 
+                            class="w-full h-full object-cover">
+                    {% endif %}
                 </div>
                 <div>
-                    <h3 class="font-semibold">John Cena</h3>
+                    <h3 class="font-semibold text-white">{{ user.fullname }}</h3>
                     <p class="text-sm text-gray-300">Premium Member</p>
                 </div>
             </div>
+
         </div>
         
         <nav class="p-2">
