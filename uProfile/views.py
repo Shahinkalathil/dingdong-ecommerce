@@ -104,17 +104,7 @@ def edit_profile(request, id):
         "show_sidebar": False,
         'user' : user
     } 
-    return render(request, 'user_side/profile/edit_profile.html', context)
-
-@login_required
-def set_default_address(request, address_id):
-    address = get_object_or_404(Address, id=address_id, user=request.user)
-    request.user.addresses.update(is_default=False)
-    address.is_default = True
-    address.save()
-
-    messages.success(request, "Default address updated successfully.")
-    return redirect('profile')  
+    return render(request, 'user_side/profile/edit_profile.html', context) 
 
 @login_required
 def add_address(request):
@@ -304,13 +294,14 @@ def add_address(request):
 
 @login_required
 def edit_address(request, address_id):
+    """
+    Edit an existing address with validation and duplicate prevention
+    """
+    # Get the address or return 404 if not found or doesn't belong to user
     address = get_object_or_404(Address, id=address_id, user=request.user)
     
     if request.method == 'POST':
-        errors = {}
-        is_valid = True
-        
-        # Get form data
+        # Get and clean form data
         country = request.POST.get('country', '').strip()
         full_name = request.POST.get('full_name', '').strip()
         mobile_number = request.POST.get('mobile_number', '').strip()
@@ -323,198 +314,208 @@ def edit_address(request, address_id):
         address_type = request.POST.get('address_type', '').strip()
         is_default = request.POST.get('is_default') == 'on'
         
-        # Validation for country
-        if not country:
-            is_valid = False
-            errors["country"] = "Please select a country"
-            messages.error(request, errors["country"])
-        elif country not in dict(Address.COUNTRY_CHOICES):
-            is_valid = False
-            errors["country"] = "Please select a valid country"
-            messages.error(request, errors["country"])
+        errors = {}
         
-        # Validation for full name
+        # Validate Country
+        if not country or country == 'Select Country':
+            errors['country'] = 'Please select a country'
+        
+        # Validate Full Name
         if not full_name:
-            is_valid = False
-            errors["full_name"] = "Full name is required"
-            messages.error(request, errors["full_name"])
-        elif len(full_name) < 3:
-            is_valid = False
-            errors["full_name"] = "Full name must be at least 3 characters long"
-            messages.error(request, errors["full_name"])
-        elif len(full_name) > 100:
-            is_valid = False
-            errors["full_name"] = "Full name must not exceed 100 characters"
-            messages.error(request, errors["full_name"])
-        elif not re.fullmatch(r'^[a-zA-Z\s.]+$', full_name):
-            is_valid = False
-            errors["full_name"] = "Full name can only contain letters, spaces, and dots"
-            messages.error(request, errors["full_name"])
+            errors['full_name'] = 'Full name is required'
+        elif len(full_name) < 2:
+            errors['full_name'] = 'Full name must be at least 2 characters'
+        elif not re.match(r'^[a-zA-Z\s]+$', full_name):
+            errors['full_name'] = 'Full name should only contain letters and spaces'
         
-        # Validation for mobile number
+        # Validate Mobile Number
         if not mobile_number:
-            is_valid = False
-            errors["mobile_number"] = "Mobile number is required"
-            messages.error(request, errors["mobile_number"])
-        elif not re.fullmatch(r'^\d{10,15}$', mobile_number):
-            is_valid = False
-            errors["mobile_number"] = "Mobile number must contain 10-15 digits only"
-            messages.error(request, errors["mobile_number"])
+            errors['mobile_number'] = 'Mobile number is required'
+        elif not re.match(r'^[0-9]{10,15}$', mobile_number):
+            errors['mobile_number'] = 'Mobile number must be 10-15 digits'
         
-        # Validation for pincode
+        # Validate Pincode
         if not pincode:
-            is_valid = False
-            errors["pincode"] = "Pincode is required"
-            messages.error(request, errors["pincode"])
-        elif not re.fullmatch(r'^\d{6}$', pincode):
-            is_valid = False
-            errors["pincode"] = "Pincode must be exactly 6 digits"
-            messages.error(request, errors["pincode"])
+            errors['pincode'] = 'Pincode is required'
+        elif not re.match(r'^[0-9]{6}$', pincode):
+            errors['pincode'] = 'Pincode must be 6 digits'
         
-        # Validation for area/street
+        # Validate Area/Street
         if not area_street:
-            is_valid = False
-            errors["area_street"] = "Area/Street is required"
-            messages.error(request, errors["area_street"])
+            errors['area_street'] = 'Area/Street is required'
         elif len(area_street) < 3:
-            is_valid = False
-            errors["area_street"] = "Area/Street must be at least 3 characters long"
-            messages.error(request, errors["area_street"])
-        elif len(area_street) > 255:
-            is_valid = False
-            errors["area_street"] = "Area/Street must not exceed 255 characters"
-            messages.error(request, errors["area_street"])
+            errors['area_street'] = 'Area/Street must be at least 3 characters'
         
-        # Validation for flat/house
+        # Validate Flat/House
         if not flat_house:
-            is_valid = False
-            errors["flat_house"] = "Flat/House number is required"
-            messages.error(request, errors["flat_house"])
+            errors['flat_house'] = 'Flat/House details are required'
         elif len(flat_house) < 2:
-            is_valid = False
-            errors["flat_house"] = "Flat/House number must be at least 2 characters long"
-            messages.error(request, errors["flat_house"])
-        elif len(flat_house) > 255:
-            is_valid = False
-            errors["flat_house"] = "Flat/House number must not exceed 255 characters"
-            messages.error(request, errors["flat_house"])
+            errors['flat_house'] = 'Flat/House details must be at least 2 characters'
         
-        # Validation for landmark (optional)
-        if landmark and len(landmark) > 100:
-            is_valid = False
-            errors["landmark"] = "Landmark must not exceed 100 characters"
-            messages.error(request, errors["landmark"])
-        
-        # Validation for town/city
+        # Validate Town/City
         if not town_city:
-            is_valid = False
-            errors["town_city"] = "Town/City is required"
-            messages.error(request, errors["town_city"])
+            errors['town_city'] = 'Town/City is required'
         elif len(town_city) < 2:
-            is_valid = False
-            errors["town_city"] = "Town/City must be at least 2 characters long"
-            messages.error(request, errors["town_city"])
-        elif len(town_city) > 100:
-            is_valid = False
-            errors["town_city"] = "Town/City must not exceed 100 characters"
-            messages.error(request, errors["town_city"])
-        elif not re.fullmatch(r'^[a-zA-Z\s.]+$', town_city):
-            is_valid = False
-            errors["town_city"] = "Town/City can only contain letters, spaces, and dots"
-            messages.error(request, errors["town_city"])
+            errors['town_city'] = 'Town/City must be at least 2 characters'
+        elif not re.match(r'^[a-zA-Z\s]+$', town_city):
+            errors['town_city'] = 'Town/City should only contain letters and spaces'
         
-        # Validation for state
+        # Validate State
         if not state or state == 'Select':
-            is_valid = False
-            errors["state"] = "Please select a state"
-            messages.error(request, errors["state"])
-        elif state not in dict(Address.STATE_CHOICES):
-            is_valid = False
-            errors["state"] = "Please select a valid state"
-            messages.error(request, errors["state"])
+            errors['state'] = 'Please select a state'
         
-        # Validation for address type
+        # Validate Address Type
         if not address_type:
-            is_valid = False
-            errors["address_type"] = "Please select an address type"
-            messages.error(request, errors["address_type"])
-        elif address_type not in dict(Address.ADDRESS_TYPE_CHOICES):
-            is_valid = False
-            errors["address_type"] = "Please select a valid address type"
-            messages.error(request, errors["address_type"])
+            errors['address_type'] = 'Please select an address type'
         
-        # Check for duplicate addresses (exclude current address)
-        duplicate_check = Address.objects.filter(
-            user=request.user,
-            country=country,
-            full_name=full_name,
-            mobile_number=mobile_number,
-            pincode=pincode,
-            area_street=area_street,
-            flat_house=flat_house,
-            town_city=town_city,
-            state=state
-        ).exclude(id=address_id)
+        # Check for duplicate address (excluding current address being edited)
+        if not errors:
+            duplicate = Address.objects.filter(
+                user=request.user,
+                country=country,
+                full_name=full_name,
+                mobile_number=mobile_number,
+                pincode=pincode,
+                area_street=area_street,
+                flat_house=flat_house,
+                town_city=town_city,
+                state=state
+            ).exclude(id=address_id).exists()
+            
+            if duplicate:
+                errors['duplicate'] = 'This address already exists'
+                messages.error(request, 'This address already exists in your saved addresses.')
         
-        if duplicate_check.exists():
-            is_valid = False
-            errors["duplicate"] = "This address already exists in your saved addresses"
-            messages.error(request, errors["duplicate"])
-        
-        # If all validations pass, update the address
-        if is_valid:
-            try:
-                # Handle default address logic
-                if is_default and not address.is_default:
-                    # Remove default flag from all other addresses
-                    Address.objects.filter(user=request.user, is_default=True).exclude(id=address_id).update(is_default=False)
-                elif not is_default and address.is_default:
-                    # Check if this is the only address
-                    if Address.objects.filter(user=request.user).count() == 1:
-                        is_default = True
-                        messages.warning(request, "Cannot remove default status from your only address")
-                    else:
-                        # Make the next most recent address default
-                        next_default = Address.objects.filter(user=request.user).exclude(id=address_id).first()
-                        if next_default:
-                            next_default.is_default = True
-                            next_default.save()
-                address.country = country
-                address.full_name = full_name
-                address.mobile_number = mobile_number
-                address.pincode = pincode
-                address.area_street = area_street
-                address.flat_house = flat_house
-                address.landmark = landmark if landmark else None
-                address.town_city = town_city
-                address.state = state
-                address.address_type = address_type
-                address.is_default = is_default
-                address.save()
-                
-                messages.success(request, "Address updated successfully!")
-                return redirect('profile')
-                
-            except Exception as e:
-                messages.error(request, f"An error occurred while updating the address: {str(e)}")
-                return render(request, 'user_side/profile/edit_address.html', {
-                    'address': address,
-                    'errors': errors,
-                    'form_data': request.POST
-                })
-        else:
-           
-            return render(request, 'user_side/profile/edit_address.html', {
+        # If there are validation errors
+        if errors:
+            context = {
                 'address': address,
                 'errors': errors,
-                'form_data': request.POST
-            })
+                'form_data': {
+                    'country': country,
+                    'full_name': full_name,
+                    'mobile_number': mobile_number,
+                    'pincode': pincode,
+                    'area_street': area_street,
+                    'flat_house': flat_house,
+                    'landmark': landmark,
+                    'town_city': town_city,
+                    'state': state,
+                    'address_type': address_type,
+                    'is_default': is_default,
+                }
+            }
+            return render(request, 'user_side/profile/edit_address.html', context)
+        
+        # Update the address if validation passes
+        try:
+            address.country = country
+            address.full_name = full_name
+            address.mobile_number = mobile_number
+            address.pincode = pincode
+            address.area_street = area_street
+            address.flat_house = flat_house
+            address.landmark = landmark if landmark else None
+            address.town_city = town_city
+            address.state = state
+            address.address_type = address_type
+            address.is_default = is_default
+            
+            # Save (model's save method handles default address logic)
+            address.save()
+            
+            messages.success(request, f'{address_type} address updated successfully!')
+            return redirect('profile')
+            
+        except Exception as e:
+            messages.error(request, f'Error updating address: {str(e)}')
+            context = {
+                'address': address,
+                'errors': {},
+                'form_data': {
+                    'country': country,
+                    'full_name': full_name,
+                    'mobile_number': mobile_number,
+                    'pincode': pincode,
+                    'area_street': area_street,
+                    'flat_house': flat_house,
+                    'landmark': landmark,
+                    'town_city': town_city,
+                    'state': state,
+                    'address_type': address_type,
+                    'is_default': is_default,
+                }
+            }
+            return render(request, 'user_side/profile/edit_address.html', context)
     
-    
-    return render(request, 'user_side/profile/edit_address.html', {
-        'address': address
-    })
+    # GET request - show form with existing address data
+    context = {
+        'address': address,
+        'errors': {},
+        'form_data': {}
+    }
+    return render(request, 'user_side/profile/edit_address.html', context)
 
+@login_required
+def set_default_address(request, address_id):
+    """
+    Set an address as the default address for the user
+    """
+    address = get_object_or_404(Address, id=address_id, user=request.user)
+    
+    # Don't allow setting default if already default
+    if address.is_default:
+        messages.info(request, 'This address is already your default address.')
+        return redirect('profile')
+    
+    try:
+        # Set this address as default (model save method handles removing default from others)
+        address.is_default = True
+        address.save()
+        
+        messages.success(
+            request, 
+            f'{address.address_type} address has been set as your default address.'
+        )
+    except Exception as e:
+        messages.error(request, f'Error setting default address: {str(e)}')
+    
+    return redirect('profile')
+
+
+@login_required
+def delete_address(request, address_id):
+    """
+    Delete an address with proper handling of default address transfer
+    """
+    address = get_object_or_404(Address, id=address_id, user=request.user)
+    
+    # Check if user has only one address
+    if Address.objects.filter(user=request.user).count() == 1:
+        messages.warning(request, 'You cannot delete your only address. Please add another address first.')
+        return redirect('profile')
+    
+    # Store address details for message
+    address_type = address.address_type
+    is_default = address.is_default
+    
+    try:
+        # The delete() method in the model already handles setting a new default
+        address.delete()
+        
+        # Success message
+        if is_default:
+            messages.success(
+                request, 
+                f'{address_type} address deleted successfully. Another address has been set as default.'
+            )
+        else:
+            messages.success(request, f'{address_type} address deleted successfully.')
+        
+    except Exception as e:
+        messages.error(request, f'Error deleting address: {str(e)}')
+    
+    return redirect('profile')
 
 def order(request):
     return render(request, 'user_side/profile/order.html')
