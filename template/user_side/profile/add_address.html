@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -25,24 +26,39 @@
             <h1 class="text-2xl font-semibold text-gray-900">Add Address</h1>
         </div>
 
-        <button class="flex items-center text-gray-600 hover:text-gray-800 transition-colors mb-4">
-                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-                </svg>
-                Back
-        </button>
+        <a href="{% url 'profile' %}" class="flex items-center text-gray-600 hover:text-gray-800 transition-colors mb-4">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+            </svg>
+            Back
+        </a>
+
+        <!-- Display Django Messages -->
+        {% if messages %}
+            <div class="mb-4 space-y-2">
+                {% for message in messages %}
+                    <div class="{% if message.tags == 'error' %}bg-red-50 border-red-200 text-red-800{% elif message.tags == 'success' %}bg-green-50 border-green-200 text-green-800{% else %}bg-blue-50 border-blue-200 text-blue-800{% endif %} border rounded-lg p-4">
+                        <p class="text-sm">{{ message }}</p>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <form class="space-y-6">
+            <form method="POST" class="space-y-6">
+                {% csrf_token %}
                 
+                <!-- Country/Region -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Country/Region</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Country/Region <span class="text-red-500">*</span></label>
                     <div class="relative">
-                        <select class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white">
-                            <option selected>India</option>
-                            <option>United States</option>
-                            <option>United Kingdom</option>
-                            <option>Canada</option>
-                            <option>Australia</option>
+                        <select name="country" class="w-full px-3 py-2 border {% if errors.country %}border-red-500{% else %}border-gray-300{% endif %} rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white">
+                            <option value="" {% if not form_data.country %}selected{% endif %}>Select Country</option>
+                            <option value="India" {% if form_data.country == 'India' or not form_data %}selected{% endif %}>India</option>
+                            <option value="United States" {% if form_data.country == 'United States' %}selected{% endif %}>United States</option>
+                            <option value="United Kingdom" {% if form_data.country == 'United Kingdom' %}selected{% endif %}>United Kingdom</option>
+                            <option value="Canada" {% if form_data.country == 'Canada' %}selected{% endif %}>Canada</option>
+                            <option value="Australia" {% if form_data.country == 'Australia' %}selected{% endif %}>Australia</option>
                         </select>
                         <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
                             <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -52,61 +68,61 @@
                     </div>
                 </div>
 
-                
+                <!-- Full Name and Mobile Number -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Full name</label>
-                        <input type="text" value="Jhon cena-" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Full name <span class="text-red-500">*</span></label>
+                        <input type="text" name="full_name" value="{{ form_data.full_name }}" class="w-full px-3 py-2 border {% if errors.full_name %}border-red-500{% else %}border-gray-300{% endif %} rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Enter full name">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Mobile number</label>
-                        <input type="tel" value="9207384248" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Mobile number <span class="text-red-500">*</span></label>
+                        <input type="tel" name="mobile_number" value="{{ form_data.mobile_number }}" class="w-full px-3 py-2 border {% if errors.mobile_number %}border-red-500{% else %}border-gray-300{% endif %} rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="10 digits">
                     </div>
                 </div>
 
-                
+                <!-- Pincode and Area/Street -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Pincode</label>
-                        <input type="text" value="673121" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Pincode <span class="text-red-500">*</span></label>
+                        <input type="text" name="pincode" value="{{ form_data.pincode }}" class="w-full px-3 py-2 border {% if errors.pincode %}border-red-500{% else %}border-gray-300{% endif %} rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="6 digits" maxlength="6">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Area, Street, Sector, Village</label>
-                        <input type="text" value="kalpetta" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Area, Street, Sector, Village <span class="text-red-500">*</span></label>
+                        <input type="text" name="area_street" value="{{ form_data.area_street }}" class="w-full px-3 py-2 border {% if errors.area_street %}border-red-500{% else %}border-gray-300{% endif %} rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Enter area/street">
                     </div>
                 </div>
 
-                
+                <!-- Flat/House and Landmark -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Flat, House no., Building, Company, Apartment</label>
-                        <input type="text" value="vp house" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Flat, House no., Building, Company, Apartment <span class="text-red-500">*</span></label>
+                        <input type="text" name="flat_house" value="{{ form_data.flat_house }}" class="w-full px-3 py-2 border {% if errors.flat_house %}border-red-500{% else %}border-gray-300{% endif %} rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Enter flat/house details">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Landmark</label>
-                        <input type="text" placeholder="Optional" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <input type="text" name="landmark" value="{{ form_data.landmark }}" class="w-full px-3 py-2 border {% if errors.landmark %}border-red-500{% else %}border-gray-300{% endif %} rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Optional">
                     </div>
                 </div>
 
-                 
+                <!-- Town/City and State -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Town/City</label>
-                        <input type="text" value="kalpetta" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Town/City <span class="text-red-500">*</span></label>
+                        <input type="text" name="town_city" value="{{ form_data.town_city }}" class="w-full px-3 py-2 border {% if errors.town_city %}border-red-500{% else %}border-gray-300{% endif %} rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Enter city">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">State</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">State <span class="text-red-500">*</span></label>
                         <div class="relative">
-                            <select class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white">
-                                <option>Select</option>
-                                <option>Kerala</option>
-                                <option>Karnataka</option>
-                                <option>Tamil Nadu</option>
-                                <option>Maharashtra</option>
-                                <option>Delhi</option>
-                                <option>Gujarat</option>
-                                <option>Rajasthan</option>
-                                <option>West Bengal</option>
+                            <select name="state" class="w-full px-3 py-2 border {% if errors.state %}border-red-500{% else %}border-gray-300{% endif %} rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white">
+                                <option value="Select" {% if not form_data.state or form_data.state == 'Select' %}selected{% endif %}>Select</option>
+                                <option value="Kerala" {% if form_data.state == 'Kerala' %}selected{% endif %}>Kerala</option>
+                                <option value="Karnataka" {% if form_data.state == 'Karnataka' %}selected{% endif %}>Karnataka</option>
+                                <option value="Tamil Nadu" {% if form_data.state == 'Tamil Nadu' %}selected{% endif %}>Tamil Nadu</option>
+                                <option value="Maharashtra" {% if form_data.state == 'Maharashtra' %}selected{% endif %}>Maharashtra</option>
+                                <option value="Delhi" {% if form_data.state == 'Delhi' %}selected{% endif %}>Delhi</option>
+                                <option value="Gujarat" {% if form_data.state == 'Gujarat' %}selected{% endif %}>Gujarat</option>
+                                <option value="Rajasthan" {% if form_data.state == 'Rajasthan' %}selected{% endif %}>Rajasthan</option>
+                                <option value="West Bengal" {% if form_data.state == 'West Bengal' %}selected{% endif %}>West Bengal</option>
                             </select>
                             <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
                                 <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -116,43 +132,46 @@
                         </div>
                     </div>
                 </div>
-                <div class="mt-6 bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-                    <h3 class="text-sm font-medium text-gray-900 mb-3">Address Type</h3>
+
+                <!-- Address Type -->
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+                    <h3 class="text-sm font-medium text-gray-900 mb-3">Address Type <span class="text-red-500">*</span></h3>
                     <div class="flex flex-wrap gap-2">
                         <label class="flex items-center">
-                            <input type="radio" name="address-type" value="home" class="sr-only peer">
+                            <input type="radio" name="address_type" value="Home" {% if form_data.address_type == 'Home' or not form_data %}checked{% endif %} class="sr-only peer">
                             <div class="px-4 py-2 border border-gray-300 rounded-full text-sm cursor-pointer hover:bg-gray-50 peer-checked:bg-blue-50 peer-checked:border-blue-500 peer-checked:text-blue-700 transition-colors">
                                 🏠 Home
                             </div>
                         </label>
                         <label class="flex items-center">
-                            <input type="radio" name="address-type" value="work" class="sr-only peer">
+                            <input type="radio" name="address_type" value="Work" {% if form_data.address_type == 'Work' %}checked{% endif %} class="sr-only peer">
                             <div class="px-4 py-2 border border-gray-300 rounded-full text-sm cursor-pointer hover:bg-gray-50 peer-checked:bg-blue-50 peer-checked:border-blue-500 peer-checked:text-blue-700 transition-colors">
                                 🏢 Work
                             </div>
                         </label>
                         <label class="flex items-center">
-                            <input type="radio" name="address-type" value="other" class="sr-only peer">
+                            <input type="radio" name="address_type" value="Other" {% if form_data.address_type == 'Other' %}checked{% endif %} class="sr-only peer">
                             <div class="px-4 py-2 border border-gray-300 rounded-full text-sm cursor-pointer hover:bg-gray-50 peer-checked:bg-blue-50 peer-checked:border-blue-500 peer-checked:text-blue-700 transition-colors">
                                 📍 Other
                             </div>
                         </label>
                     </div>
                 </div>
-                 
+
+                <!-- Default Address Checkbox -->
                 <div class="flex items-center">
-                    <input type="checkbox" id="default-address" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
-                    <label for="default-address" class="ml-2 text-sm text-gray-700">Make this is my default address</label>
+                    <input type="checkbox" name="is_default" id="default-address" {% if form_data.is_default %}checked{% endif %} class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                    <label for="default-address" class="ml-2 text-sm text-gray-700">Make this my default address</label>
                 </div>
 
-                
+                <!-- Buttons -->
                 <div class="flex flex-col sm:flex-row gap-3 pt-6">
                     <button type="submit" class="flex-1 bg-black text-white py-3 px-6 rounded-md font-medium hover:bg-gray-800 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2">
                         Add address
                     </button>
-                    <button type="button" class="flex-1 bg-white text-gray-700 py-3 px-6 rounded-md font-medium border border-gray-300 hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                    <a href="{% url 'add_address' %}" class="flex-1 bg-white text-gray-700 py-3 px-6 rounded-md font-medium border border-gray-300 hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 text-center">
                         Cancel
-                    </button>
+                    </a>
                 </div>
             </form>
         </div>
