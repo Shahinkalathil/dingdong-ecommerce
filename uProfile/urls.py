@@ -8,8 +8,12 @@ urlpatterns = [
     path("change-password/", views.change_password, name="change_password"),
 
 
-    path("address/add/", views.add_address, name="add_address"),
-    path("address/edit/", views.edit_address, name="edit_address"),
+    path('profile/address/add/', views.add_address, name='add_address'),
+    path("address/set-default/<int:address_id>/", views.set_default_address, name="set_default_address"),
+
+    # Add these for future functionality
+    path('profile/address/edit/<int:address_id>/', views.edit_address, name='edit_address'),
+    # path('profile/address/delete/<int:address_id>/', views.delete_address, name='delete_address'),
 
 
 

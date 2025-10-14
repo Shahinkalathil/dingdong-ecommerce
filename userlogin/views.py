@@ -12,6 +12,7 @@ from .utils import send_otp_email, send_forget_password_mail
 from django.views.decorators.cache import never_cache
 from .utils import redirect_authenticated
 
+
 @redirect_authenticated
 @never_cache
 def sign_up(request):
@@ -134,8 +135,6 @@ def sign_up(request):
         return redirect("otp")
     return render(request, 'user_side/auth/sign_up.html')
 
-
-from django.contrib.auth import login
 
 def otp(request):
     if "user_id" not in request.session:
