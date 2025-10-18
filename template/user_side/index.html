@@ -5,45 +5,6 @@
 
 {% block content %}
 
-<!-- Categories Section -->
-{% if categories %}
-<section class="container mx-auto px-4 py-8">
-  <div class="flex items-center justify-between mb-6">
-    <h2 class="text-2xl md:text-3xl font-bold">Shop by Category</h2>
-    <a href="{% url 'products' %}" class="text-blue-600 hover:text-blue-800 font-semibold flex items-center">
-      View All <i class="fas fa-arrow-right ml-2"></i>
-    </a>
-  </div>
-  
-  <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-    {% for category in categories %}
-    <a href="{% url 'products' %}?category={{ category.id }}" class="group">
-      <div class="bg-white rounded-lg p-6 shadow hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 text-center">
-        
-        <!-- Category Image -->
-        <div class="w-16 h-16 mx-auto mb-4 rounded-full overflow-hidden flex items-center justify-center group-hover:scale-110 transition-transform">
-          {% if category.image %}
-            <img src="{{ category.image.url }}" alt="{{ category.name }}" class="w-full h-full object-cover">
-          {% else %}
-            <!-- Fallback icon if no image -->
-            <div class="w-full h-full bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center">
-              <i class="fas fa-tag text-2xl text-blue-600"></i>
-            </div>
-          {% endif %}
-        </div>
-        
-        <!-- Category Name -->
-        <h3 class="font-semibold text-sm mb-1">{{ category.name }}</h3>
-        
-        <!-- Product Count -->
-        <p class="text-xs text-gray-500">{{ category.product_count }} Product{{ category.product_count|pluralize }}</p>
-      </div>
-    </a>
-    {% endfor %}
-  </div>
-</section>
-{% endif %}
-
 <!-- Hero Banner Carousel -->
 <section class="container mx-auto px-4 py-6">
   {% if has_banners %}
@@ -213,7 +174,44 @@
   </div>
 </section>
 
-
+<!-- Categories Section -->
+{% if categories %}
+<section class="container mx-auto px-4 py-8">
+  <div class="flex items-center justify-between mb-6">
+    <h2 class="text-2xl md:text-3xl font-bold">Shop by Category</h2>
+    <a href="{% url 'products' %}" class="text-blue-600 hover:text-blue-800 font-semibold flex items-center">
+      View All <i class="fas fa-arrow-right ml-2"></i>
+    </a>
+  </div>
+  
+  <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+    {% for category in categories %}
+    <a href="{% url 'products' %}?category={{ category.id }}" class="group">
+      <div class="bg-white rounded-lg p-6 shadow hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 text-center">
+        
+        <!-- Category Image -->
+        <div class="w-16 h-16 mx-auto mb-4 rounded-full overflow-hidden flex items-center justify-center group-hover:scale-110 transition-transform">
+          {% if category.image %}
+            <img src="{{ category.image.url }}" alt="{{ category.name }}" class="w-full h-full object-cover">
+          {% else %}
+            <!-- Fallback icon if no image -->
+            <div class="w-full h-full bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center">
+              <i class="fas fa-tag text-2xl text-blue-600"></i>
+            </div>
+          {% endif %}
+        </div>
+        
+        <!-- Category Name -->
+        <h3 class="font-semibold text-sm mb-1">{{ category.name }}</h3>
+        
+        <!-- Product Count -->
+        <p class="text-xs text-gray-500">{{ category.product_count }} Product{{ category.product_count|pluralize }}</p>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
 
 
 <script>
