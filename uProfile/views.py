@@ -6,63 +6,86 @@ from django.http import JsonResponse
 from django.contrib.auth import update_session_auth_hash
 from .models import Address
 import re
+import logging
+from django.views.decorators.http import require_http_methods
 
-
-# Create your views here.
 @login_required
 def overview(request):
     user = request.user
     addresses = user.addresses.all()
     context = {
         "show_sidebar": True,
-        "user" : user,
+        "user": user,
         "last_login": user.last_login,
-        "addresses" : addresses,
+        "addresses": addresses,
     }
     return render(request, 'user_side/profile/overview.html', context)
 
+
+
+logger = logging.getLogger(__name__)
 @login_required
+@require_http_methods(["POST"])
 def change_password(request):
-    if request.method == "POST":
-        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-            old = request.POST.get('oldPassword')
-            new = request.POST.get('newPassword')
-            confirm = request.POST.get('confirmPassword')
-            errors = {}
+    """
+    Handle password change via AJAX request
+    """
+    if not request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        return JsonResponse({
+            'success': False, 
+            'errors': {'general': 'Invalid request'}
+        }, status=400)
+    old_password = request.POST.get('oldPassword', '').strip()
+    new_password = request.POST.get('newPassword', '').strip()
+    confirm_password = request.POST.get('confirmPassword', '').strip()
+    
+    errors = {}
+    logger.info(f"Password change attempt by user: {request.user.username}")
+    if not old_password:
+        errors['oldPassword'] = "Old password is required"
+    else:
+        if not request.user.check_password(old_password):
+            errors['oldPassword'] = "Old password is incorrect"
+            logger.warning(f"Incorrect old password for user: {request.user.username}")
+    # Validate New Password=
+    if not new_password:
+        errors['newPassword'] = "New password is required"
+    elif len(new_password) < 8:
+        errors['newPassword'] = "Password must be at least 8 characters long"
+    elif not any(char.isdigit() for char in new_password):
+        errors['newPassword'] = "Password must contain at least one number"
+    elif not any(char.isupper() for char in new_password):
+        errors['newPassword'] = "Password must contain at least one uppercase letter"
+    elif old_password and new_password == old_password:
+        errors['newPassword'] = "New password must be different from old password"
+    # Validate Confirm Password
+    if not confirm_password:
+        errors['confirmPassword'] = "Please confirm your new password"
+    elif new_password and confirm_password != new_password:
+        errors['confirmPassword'] = "Passwords do not match"
+    if errors:
+        logger.info(f"Password change validation failed for {request.user.username}: {errors}")
+        return JsonResponse({
+            'success': False, 
+            'errors': errors
+        })
+    try:
 
-            if not old:
-                errors['oldPassword'] = "Old password is required"
-            elif not request.user.check_password(old):
-                errors['oldPassword'] = "Old password is incorrect"
-            
-            if not new:
-                errors['newPassword'] = "New password is required"
-            elif len(new) < 8:
-                errors['newPassword'] = "Password must be at least 8 characters long"
-            elif new == old:
-                errors['newPassword'] = "New password must be different from old password"
-
-            if not confirm:
-                errors['confirmPassword'] = "Please confirm your new password"
-            elif new != confirm:
-                errors['confirmPassword'] = "Passwords do not match"
-
-            if errors:
-                return JsonResponse({'success': False, 'errors': errors})
-
-            request.user.set_password(new)
-            request.user.save()
-
-            update_session_auth_hash(request, request.user)
-            
-            return JsonResponse({
-                'success': True, 
-                'message': 'Password changed successfully!'
-            })
+        request.user.set_password(new_password)
+        request.user.save()
+        update_session_auth_hash(request, request.user)
+        logger.info(f"Password changed successfully for user: {request.user.username}")
+        return JsonResponse({
+            'success': True, 
+            'message': 'Password changed successfully!'
+        })
         
-    return redirect('profile')
-
-
+    except Exception as e:
+        logger.error(f"Error changing password for {request.user.username}: {str(e)}")
+        return JsonResponse({
+            'success': False, 
+            'errors': {'general': 'An error occurred. Please try again.'}
+        })
 
 
 @login_required
@@ -111,8 +134,6 @@ def add_address(request):
     if request.method == 'POST':
         errors = {}
         is_valid = True
-        
-        # Get form data
         country = request.POST.get('country', '').strip()
         full_name = request.POST.get('full_name', '').strip()
         mobile_number = request.POST.get('mobile_number', '').strip()
@@ -201,7 +222,7 @@ def add_address(request):
             errors["flat_house"] = "Flat/House number must not exceed 255 characters"
             messages.error(request, errors["flat_house"])
         
-        # Validation for landmark (optional)
+        # Validation for landmark
         if landmark and len(landmark) > 100:
             is_valid = False
             errors["landmark"] = "Landmark must not exceed 100 characters"
@@ -248,16 +269,11 @@ def add_address(request):
         
         if is_valid:
             try:
-                # Handle default address logic
                 if is_default:
-                    # Remove default flag from all other addresses of this user
                     Address.objects.filter(user=request.user, is_default=True).update(is_default=False)
                 else:
-                    # If this is the first address, make it default automatically
                     if not Address.objects.filter(user=request.user).exists():
                         is_default = True
-                
-                # Create the address
                 address = Address.objects.create(
                     user=request.user,
                     country=country,
@@ -274,7 +290,7 @@ def add_address(request):
                 )
                 
                 messages.success(request, "Address added successfully!")
-                return redirect('profile')  # Redirect to profile page
+                return redirect('profile')
                 
             except Exception as e:
                 messages.error(request, f"An error occurred while saving the address: {str(e)}")
@@ -283,7 +299,6 @@ def add_address(request):
                     'form_data': request.POST
                 })
         else:
-            # Return form with errors
             return render(request, 'user_side/profile/add_address.html', {
                 'errors': errors,
                 'form_data': request.POST
@@ -297,11 +312,9 @@ def edit_address(request, address_id):
     """
     Edit an existing address with validation and duplicate prevention
     """
-    # Get the address or return 404 if not found or doesn't belong to user
     address = get_object_or_404(Address, id=address_id, user=request.user)
     
     if request.method == 'POST':
-        # Get and clean form data
         country = request.POST.get('country', '').strip()
         full_name = request.POST.get('full_name', '').strip()
         mobile_number = request.POST.get('mobile_number', '').strip()
@@ -385,8 +398,6 @@ def edit_address(request, address_id):
             if duplicate:
                 errors['duplicate'] = 'This address already exists'
                 messages.error(request, 'This address already exists in your saved addresses.')
-        
-        # If there are validation errors
         if errors:
             context = {
                 'address': address,
@@ -406,8 +417,6 @@ def edit_address(request, address_id):
                 }
             }
             return render(request, 'user_side/profile/edit_address.html', context)
-        
-        # Update the address if validation passes
         try:
             address.country = country
             address.full_name = full_name
@@ -420,8 +429,6 @@ def edit_address(request, address_id):
             address.state = state
             address.address_type = address_type
             address.is_default = is_default
-            
-            # Save (model's save method handles default address logic)
             address.save()
             
             messages.success(request, f'{address_type} address updated successfully!')
@@ -447,8 +454,6 @@ def edit_address(request, address_id):
                 }
             }
             return render(request, 'user_side/profile/edit_address.html', context)
-    
-    # GET request - show form with existing address data
     context = {
         'address': address,
         'errors': {},
@@ -462,14 +467,11 @@ def set_default_address(request, address_id):
     Set an address as the default address for the user
     """
     address = get_object_or_404(Address, id=address_id, user=request.user)
-    
-    # Don't allow setting default if already default
     if address.is_default:
         messages.info(request, 'This address is already your default address.')
         return redirect('profile')
     
     try:
-        # Set this address as default (model save method handles removing default from others)
         address.is_default = True
         address.save()
         
@@ -489,21 +491,14 @@ def delete_address(request, address_id):
     Delete an address with proper handling of default address transfer
     """
     address = get_object_or_404(Address, id=address_id, user=request.user)
-    
-    # Check if user has only one address
     if Address.objects.filter(user=request.user).count() == 1:
         messages.warning(request, 'You cannot delete your only address. Please add another address first.')
         return redirect('profile')
-    
-    # Store address details for message
     address_type = address.address_type
     is_default = address.is_default
     
     try:
-        # The delete() method in the model already handles setting a new default
         address.delete()
-        
-        # Success message
         if is_default:
             messages.success(
                 request, 

@@ -16,5 +16,5 @@ urlpatterns = [
     
 
     path("orders/", views.order, name="order"),
-    path("order_detail", views.order_detail, name='order_detail')
+    path("order-detail", views.order_detail, name='order_detail')
 ]

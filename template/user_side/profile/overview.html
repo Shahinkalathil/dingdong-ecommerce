@@ -387,144 +387,155 @@
                     </div>
                 </div>
 
-
-
-                <!-- Security Section -->
-                <div id="security" class="bg-white rounded-lg shadow-sm border p-6">
-                    <h2 class="text-2xl font-bold text-gray-900 mb-6">Security Settings</h2>
-                    
-                    <div class="space-y-6">
-                        <div class="hover-popup border rounded-lg p-6 hover:shadow-md transition-all duration-200">
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <h3 class="font-semibold text-gray-900 mb-1">Password</h3>
-                                    <p class="text-sm text-gray-500">Last changed {{ last_login|timesince }} months ago</p>
-                                </div>
-                                <button 
-                                    id="openModalBtn"
-                                    class="bg-accent text-white px-4 py-2 rounded-md hover:bg-accent/90 transition-colors duration-200">
-                                    Change Password
-                                </button>
-                            </div>
-                        </div>
+            <!-- Security Section -->
+                    <div id="security" class="bg-white rounded-lg shadow-sm border p-6">
+                        <h2 class="text-2xl font-bold text-gray-900 mb-6">Security Settings</h2>
                         
-                        <div class="hover-popup border rounded-lg p-6 hover:shadow-md transition-all duration-200">
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <h3 class="font-semibold text-gray-900 mb-1">Two-Factor Authentication</h3>
-                                    <p class="text-sm text-gray-500">Add an extra layer of security to your account</p>
+                        <div class="space-y-6">
+                            <div class="hover-popup border rounded-lg p-6 hover:shadow-md transition-all duration-200">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <h3 class="font-semibold text-gray-900 mb-1">Password</h3>
+                                        <p class="text-sm text-gray-500">Keep your account secure</p>
+                                    </div>
+                                    <button 
+                                        id="openModalBtn"
+                                        class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors duration-200">
+                                        Change Password
+                                    </button>
                                 </div>
-                                <button class="bg-success text-white px-4 py-2 rounded-md hover:bg-success/90 transition-colors duration-200">
-                                    Enable 2FA
-                                </button>
-                            </div>
-                        </div>
-                        
-                        <div class="hover-popup border rounded-lg p-6 hover:shadow-md transition-all duration-200">
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <h3 class="font-semibold text-gray-900 mb-1">Login Activity</h3>
-                                    <p class="text-sm text-gray-500">Monitor your account access</p>
-                                </div>
-                                <button class="bg-accent text-white px-4 py-2 rounded-md hover:bg-accent/90 transition-colors duration-200">
-                                    View Activity
-                                </button>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- Change Password Modal -->
-                <div 
-                    id="passwordModal" 
-                    class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 transition-opacity duration-300"
-                >
-                    <div class="bg-white rounded-xl shadow-2xl w-full max-w-md mx-4 transform transition-all duration-300 scale-95 opacity-0 relative" id="modalContent">
-                        
-                        <!-- Modal Header -->
-                        <div class="flex items-center justify-between p-6 border-b border-gray-200">
-                            <h2 class="text-xl font-semibold text-gray-800">Change Password</h2>
-                            <button id="closeModalBtn" class="text-gray-400 hover:text-gray-600 transition-colors duration-200">
-                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                                </svg>
-                            </button>
+            <!-- Change Password Modal -->
+            <div 
+                id="passwordModal" 
+                class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50"
+            >
+                <div class="bg-white rounded-xl shadow-2xl w-full max-w-md mx-4" id="modalContent">
+                    
+                    <!-- Modal Header -->
+                    <div class="flex items-center justify-between p-6 border-b border-gray-200">
+                        <h2 class="text-xl font-semibold text-gray-800">Change Password</h2>
+                        <button id="closeModalBtn" class="text-gray-400 hover:text-gray-600 transition-colors">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <!-- Success Message -->
+                    <div id="successMessage" class="hidden mx-6 mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+                        <div class="flex items-center">
+                            <svg class="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                            </svg>
+                            <span class="text-green-800 font-medium">Password changed successfully!</span>
                         </div>
+                    </div>
 
-                        <!-- Success Message -->
-                        <div id="successMessage" class="hidden mx-6 mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-                            <div class="flex items-center">
-                                <svg class="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                                </svg>
-                                <span class="text-green-800 font-medium">Password changed successfully!</span>
-                            </div>
+                    <!-- General Error Message -->
+                    <div id="generalError" class="hidden mx-6 mt-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                        <div class="flex items-center">
+                            <svg class="w-5 h-5 text-red-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                            </svg>
+                            <span id="generalErrorText" class="text-red-800 font-medium"></span>
                         </div>
+                    </div>
 
-                        <!-- Modal Body -->
-                        <div class="p-6">
-                            <form id="passwordForm" method="POST" action="" class="space-y-4">
-                                
-                                <!-- Old Password -->
-                                <div>
-                                    <label for="oldPassword" class="block text-sm font-medium text-gray-700 mb-2">Old Password</label>
-                                    <div class="relative">
-                                        <input type="password" id="oldPassword" name="oldPassword" placeholder="Enter old password" class="w-full px-4 py-3 border rounded-lg pr-10 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                                        <button type="button" id="toggleOldPassword" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600">
-                                            <svg id="eyeOld" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                            </svg>
-                                        </button>
-                                    </div>
-                                    <p id="oldPasswordError" class="text-red-600 text-sm mt-1 hidden"></p>
-                                </div>
-
-                                <!-- New Password -->
-                                <div>
-                                    <label for="newPassword" class="block text-sm font-medium text-gray-700 mb-2">New Password</label>
-                                    <div class="relative">
-                                        <input type="password" id="newPassword" name="newPassword" placeholder="Enter new password" class="w-full px-4 py-3 border rounded-lg pr-10 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                                        <button type="button" id="toggleNewPassword" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600">
-                                            <svg id="eyeNew" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                            </svg>
-                                        </button>
-                                    </div>
-                                    <p id="newPasswordError" class="text-red-600 text-sm mt-1 hidden"></p>
-                                </div>
-
-                                <!-- Confirm New Password -->
-                                <div>
-                                    <label for="confirmPassword" class="block text-sm font-medium text-gray-700 mb-2">Confirm New Password</label>
-                                    <div class="relative">
-                                        <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Confirm new password" class="w-full px-4 py-3 border rounded-lg pr-10 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                                        <button type="button" id="toggleConfirmPassword" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600">
-                                            <svg id="eyeConfirm" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                            </svg>
-                                        </button>
-                                    </div>
-                                    <p id="confirmPasswordError" class="text-red-600 text-sm mt-1 hidden"></p>
-                                </div>
-
-                                <div class="pt-4">
-                                    <button type="submit" id="submitBtn" class="w-full bg-black text-white py-3 rounded-lg hover:bg-gray-800 transition-colors duration-200 font-medium">
-                                        Save Changes
+                    <!-- Modal Body -->
+                    <div class="p-6">
+                        <form id="passwordForm" method="POST">
+                            
+                            <!-- Old Password -->
+                            <div class="mb-4">
+                                <label for="oldPassword" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Old Password <span class="text-red-500">*</span>
+                                </label>
+                                <div class="relative">
+                                    <input 
+                                        type="password" 
+                                        id="oldPassword" 
+                                        name="oldPassword" 
+                                        placeholder="Enter your current password" 
+                                        class="w-full px-4 py-3 border border-gray-300 rounded-lg pr-10 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                                    >
+                                    <button type="button" class="toggle-password absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                                        <svg class="eye-icon h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                        </svg>
                                     </button>
                                 </div>
-                            </form>
-                        </div>
+                                <p id="oldPasswordError" class="text-red-600 text-sm mt-1 hidden"></p>
+                            </div>
+
+                            <!-- New Password -->
+                            <div class="mb-4">
+                                <label for="newPassword" class="block text-sm font-medium text-gray-700 mb-2">
+                                    New Password <span class="text-red-500">*</span>
+                                </label>
+                                <div class="relative">
+                                    <input 
+                                        type="password" 
+                                        id="newPassword" 
+                                        name="newPassword" 
+                                        placeholder="Enter new password" 
+                                        class="w-full px-4 py-3 border border-gray-300 rounded-lg pr-10 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                                    >
+                                    <button type="button" class="toggle-password absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                                        <svg class="eye-icon h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                        </svg>
+                                    </button>
+                                </div>
+                                <p id="newPasswordError" class="text-red-600 text-sm mt-1 hidden"></p>
+                                <p class="text-xs text-gray-500 mt-1">Must be at least 8 characters, include uppercase and number</p>
+                            </div>
+
+                            <!-- Confirm New Password -->
+                            <div class="mb-6">
+                                <label for="confirmPassword" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Confirm New Password <span class="text-red-500">*</span>
+                                </label>
+                                <div class="relative">
+                                    <input 
+                                        type="password" 
+                                        id="confirmPassword" 
+                                        name="confirmPassword" 
+                                        placeholder="Confirm new password" 
+                                        class="w-full px-4 py-3 border border-gray-300 rounded-lg pr-10 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                                    >
+                                    <button type="button" class="toggle-password absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                                        <svg class="eye-icon h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                        </svg>
+                                    </button>
+                                </div>
+                                <p id="confirmPasswordError" class="text-red-600 text-sm mt-1 hidden"></p>
+                            </div>
+
+                            <button 
+                                type="submit" 
+                                id="submitBtn" 
+                                class="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors duration-200 font-medium disabled:bg-gray-400 disabled:cursor-not-allowed"
+                            >
+                                Save Changes
+                            </button>
+                        </form>
                     </div>
                 </div>
             </div>
+        </div>
     </section>
     </main>
 <script>
     // ========================================
-    // PASSWORD CHANGE MODAL
+    // PASSWORD CHANGE MODAL 
     // ========================================
 
     // Modal Elements
@@ -534,9 +545,11 @@
     const closePasswordBtn = document.getElementById('closeModalBtn');
     const passwordForm = document.getElementById('passwordForm');
     const successMessage = document.getElementById('successMessage');
+    const generalError = document.getElementById('generalError');
+    const generalErrorText = document.getElementById('generalErrorText');
     const submitBtn = document.getElementById('submitBtn');
 
-    // Get CSRF token
+    // Get CSRF token from cookies
     function getCookie(name) {
         let cookieValue = null;
         if (document.cookie && document.cookie !== '') {
@@ -552,8 +565,9 @@
         return cookieValue;
     }
 
-    // Clear all password errors
-    function clearPasswordErrors() {
+    // Clear all errors
+    function clearAllErrors() {
+        // Clear field-specific errors
         ['oldPasswordError', 'newPasswordError', 'confirmPasswordError'].forEach(id => {
             const errorElement = document.getElementById(id);
             if (errorElement) {
@@ -563,168 +577,146 @@
         });
         
         // Remove error border styling
-        document.querySelectorAll('#passwordForm input[type="password"]').forEach(input => {
+        document.querySelectorAll('#passwordForm input[type="password"], #passwordForm input[type="text"]').forEach(input => {
             input.classList.remove('border-red-500');
+            input.classList.add('border-gray-300');
         });
         
-        if (successMessage) {
-            successMessage.classList.add('hidden');
-        }
+        // Hide success and general error messages
+        if (successMessage) successMessage.classList.add('hidden');
+        if (generalError) generalError.classList.add('hidden');
     }
 
-    // Show password error
-    function showPasswordError(field, message) {
+    // Show field-specific error
+    function showError(field, message) {
         const errorElement = document.getElementById(field + 'Error');
         const inputElement = document.getElementById(field);
         
         if (errorElement && inputElement) {
             errorElement.textContent = message;
             errorElement.classList.remove('hidden');
+            inputElement.classList.remove('border-gray-300');
             inputElement.classList.add('border-red-500');
         }
     }
 
-    // Open Password Modal
-    function openPasswordModal() {
-        if (passwordModal) {
-            passwordModal.classList.remove('hidden');
-            passwordModal.classList.add('flex');
-            
-            setTimeout(() => {
-                passwordModal.classList.remove('bg-opacity-50');
-                passwordModal.classList.add('bg-opacity-50');
-                if (passwordModalContent) {
-                    passwordModalContent.classList.remove('scale-95', 'opacity-0');
-                    passwordModalContent.classList.add('scale-100', 'opacity-100');
-                }
-            }, 10);
+    // Show general error
+    function showGeneralError(message) {
+        if (generalError && generalErrorText) {
+            generalErrorText.textContent = message;
+            generalError.classList.remove('hidden');
         }
     }
 
-    // Close Password Modal
-    function closePasswordModal() {
-        if (passwordModalContent) {
-            passwordModalContent.classList.remove('scale-100', 'opacity-100');
-            passwordModalContent.classList.add('scale-95', 'opacity-0');
-        }
-        
+    // Open Modal
+    function openPasswordModal() {
+        clearAllErrors();
+        passwordModal.classList.remove('hidden');
+        passwordModal.classList.add('flex');
         setTimeout(() => {
-            if (passwordModal) {
-                passwordModal.classList.add('hidden');
-                passwordModal.classList.remove('flex');
-            }
-            if (passwordForm) {
-                passwordForm.reset();
-            }
-            clearPasswordErrors();
+            passwordModalContent.classList.add('scale-100', 'opacity-100');
+        }, 10);
+    }
+
+    // Close Modal
+    function closePasswordModal() {
+        passwordModalContent.classList.remove('scale-100', 'opacity-100');
+        setTimeout(() => {
+            passwordModal.classList.add('hidden');
+            passwordModal.classList.remove('flex');
+            passwordForm.reset();
+            clearAllErrors();
         }, 300);
     }
 
-    // Password Modal Event Listeners
-    if (openPasswordBtn) {
-        openPasswordBtn.addEventListener('click', openPasswordModal);
-    }
+    // Event Listeners for Modal
+    openPasswordBtn.addEventListener('click', openPasswordModal);
+    closePasswordBtn.addEventListener('click', closePasswordModal);
 
-    if (closePasswordBtn) {
-        closePasswordBtn.addEventListener('click', closePasswordModal);
-    }
+    // Close on outside click
+    passwordModal.addEventListener('click', (e) => {
+        if (e.target === passwordModal) closePasswordModal();
+    });
 
-    // Close password modal on click outside
-    if (passwordModal) {
-        passwordModal.addEventListener('click', e => {
-            if (e.target === passwordModal) closePasswordModal();
-        });
-    }
-
-    // Close password modal with Escape key
-    document.addEventListener('keydown', e => {
-        if (e.key === 'Escape' && passwordModal && !passwordModal.classList.contains('hidden')) {
+    // Close on Escape key
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && !passwordModal.classList.contains('hidden')) {
             closePasswordModal();
         }
     });
 
-    // Toggle Password visibility
-    function togglePassword(inputId, buttonId, eyeId) {
-        const input = document.getElementById(inputId);
-        const button = document.getElementById(buttonId);
-        const eye = document.getElementById(eyeId);
-
-        if (button && input && eye) {
-            button.addEventListener('click', () => {
-                const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
-                input.setAttribute('type', type);
-                
-                // Toggle eye icon
-                if (type === 'text') {
-                    eye.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/>`;
-                } else {
-                    eye.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />`;
-                }
-            });
-        }
-    }
-
-    // Initialize password toggles
-    togglePassword('oldPassword', 'toggleOldPassword', 'eyeOld');
-    togglePassword('newPassword', 'toggleNewPassword', 'eyeNew');
-    togglePassword('confirmPassword', 'toggleConfirmPassword', 'eyeConfirm');
-
-    // Password Form submit with AJAX
-    if (passwordForm) {
-        passwordForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            clearPasswordErrors();
-
-            const formData = new FormData(passwordForm);
-            if (submitBtn) {
-                submitBtn.disabled = true;
-                submitBtn.textContent = 'Saving...';
-            }
-
-            try {
-                const response = await fetch(passwordForm.action, {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRFToken': getCookie('csrftoken'),
-                        'X-Requested-With': 'XMLHttpRequest'
-                    },
-                    body: formData
-                });
-
-                const data = await response.json();
-
-                if (data.success) {
-                    // Show success message
-                    if (successMessage) {
-                        successMessage.classList.remove('hidden');
-                    }
-                    passwordForm.reset();
-                    
-                    // Close modal after 2 seconds
-                    setTimeout(() => {
-                        closePasswordModal();
-                    }, 2000);
-                } else {
-                    // Show errors
-                    if (data.errors) {
-                        Object.keys(data.errors).forEach(field => {
-                            showPasswordError(field, data.errors[field]);
-                        });
-                    }
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                showPasswordError('oldPassword', 'An error occurred. Please try again.');
-            } finally {
-                if (submitBtn) {
-                    submitBtn.disabled = false;
-                    submitBtn.textContent = 'Save Changes';
-                }
+    // Toggle Password Visibility
+    document.querySelectorAll('.toggle-password').forEach(button => {
+        button.addEventListener('click', function() {
+            const input = this.previousElementSibling;
+            const icon = this.querySelector('.eye-icon');
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/>`;
+            } else {
+                input.type = 'password';
+                icon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />`;
             }
         });
-    }
+    });
 
+    // Form Submit Handler
+    passwordForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        clearAllErrors();
 
+        // Disable submit button
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Saving...';
+
+        // Prepare form data
+        const formData = new FormData(passwordForm);
+        const csrftoken = getCookie('csrftoken');
+
+        try {
+            const response = await fetch('/profile/change-password/', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrftoken,
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: formData
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                // Show success message
+                successMessage.classList.remove('hidden');
+                passwordForm.reset();
+                
+                // Close modal after 2 seconds
+                setTimeout(() => {
+                    closePasswordModal();
+                }, 2000);
+            } else {
+                // Show errors
+                if (data.errors) {
+                    // Show field-specific errors
+                    Object.keys(data.errors).forEach(field => {
+                        if (field === 'general') {
+                            showGeneralError(data.errors[field]);
+                        } else {
+                            showError(field, data.errors[field]);
+                        }
+                    });
+                }
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            showGeneralError('Network error. Please check your connection and try again.');
+        } finally {
+            // Re-enable submit button
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Save Changes';
+        }
+    });
     // ========================================
     // DELETE ADDRESS MODAL
     // ========================================

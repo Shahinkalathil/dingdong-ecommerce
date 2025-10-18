@@ -4,401 +4,221 @@
 {% block title %}DINGDONG - Authorized Brand Store{% endblock %}
 
 {% block content %}
+
+<!-- Categories Section -->
+{% if categories %}
+<section class="container mx-auto px-4 py-8">
+  <div class="flex items-center justify-between mb-6">
+    <h2 class="text-2xl md:text-3xl font-bold">Shop by Category</h2>
+    <a href="{% url 'products' %}" class="text-blue-600 hover:text-blue-800 font-semibold flex items-center">
+      View All <i class="fas fa-arrow-right ml-2"></i>
+    </a>
+  </div>
+  
+  <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+    {% for category in categories %}
+    <a href="{% url 'products' %}?category={{ category.id }}" class="group">
+      <div class="bg-white rounded-lg p-6 shadow hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 text-center">
+        
+        <!-- Category Image -->
+        <div class="w-16 h-16 mx-auto mb-4 rounded-full overflow-hidden flex items-center justify-center group-hover:scale-110 transition-transform">
+          {% if category.image %}
+            <img src="{{ category.image.url }}" alt="{{ category.name }}" class="w-full h-full object-cover">
+          {% else %}
+            <!-- Fallback icon if no image -->
+            <div class="w-full h-full bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center">
+              <i class="fas fa-tag text-2xl text-blue-600"></i>
+            </div>
+          {% endif %}
+        </div>
+        
+        <!-- Category Name -->
+        <h3 class="font-semibold text-sm mb-1">{{ category.name }}</h3>
+        
+        <!-- Product Count -->
+        <p class="text-xs text-gray-500">{{ category.product_count }} Product{{ category.product_count|pluralize }}</p>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
 <!-- Hero Banner Carousel -->
 <section class="container mx-auto px-4 py-6">
+  {% if has_banners %}
   <div class="relative rounded-lg overflow-hidden bg-gray-900 h-[300px] md:h-[400px]">
     <div class="carousel-container relative w-full h-full">
-
-      <!-- Banner 1 -->
-      <div class="carousel-slide active absolute inset-0 transition-all duration-500 ease-in-out opacity-100 translate-x-0 z-10">
-        <img src="https://via.placeholder.com/1200x400?text=Banner+1" alt="Banner 1" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105">
-        <div class="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center"></div>
+      
+      {% for banner in banners %}
+      <div class="carousel-slide {% if forloop.first %}active{% endif %} absolute inset-0 transition-all duration-500 ease-in-out">
+        <img src="{{ banner.image.url }}" alt="Banner {{ forloop.counter }}" class="w-full h-full object-cover">
       </div>
-
-      <!-- Banner 2 -->
-      <div class="carousel-slide absolute inset-0 transition-all duration-500 ease-in-out opacity-0 translate-x-full z-0">
-        <img src="https://via.placeholder.com/1200x400?text=Banner+2" alt="Banner 2" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105">
-        <div class="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center">
-          <div class="text-center text-white">
-            <h2 class="text-3xl md:text-5xl font-bold mb-4">G-SHOCK Series</h2>
-            <p class="text-lg md:text-xl mb-6">Tough & Durable</p>
-            <button class="bg-red-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-red-700 transition-colors">
-              Explore G-SHOCK
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Banner 3 -->
-      <div class="carousel-slide absolute inset-0 transition-all duration-500 ease-in-out opacity-0 translate-x-full z-0">
-        <img src="https://via.placeholder.com/1200x400?text=Banner+3" alt="Banner 3" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105">
-        <div class="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center">
-          <div class="text-center text-white">
-            <h2 class="text-3xl md:text-5xl font-bold mb-4">Vintage Collection</h2>
-            <p class="text-lg md:text-xl mb-6">Classic Timepieces</p>
-            <button class="bg-yellow-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-yellow-700 transition-colors">
-              View Collection
-            </button>
-          </div>
-        </div>
-      </div>
+      {% endfor %}
     </div>
 
     <!-- Navigation -->
-    <button class="carousel-prev absolute left-4 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-3 rounded-full hover:bg-opacity-75 hover:scale-110 transition-all z-10">
+    {% if banners|length > 1 %}
+    <button class="carousel-prev absolute left-4 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-3 rounded-full hover:bg-opacity-75 hover:scale-110 transition-all z-20">
       <i class="fas fa-chevron-left text-lg"></i>
     </button>
-    <button class="carousel-next absolute right-4 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-3 rounded-full hover:bg-opacity-75 hover:scale-110 transition-all z-10">
+    <button class="carousel-next absolute right-4 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-3 rounded-full hover:bg-opacity-75 hover:scale-110 transition-all z-20">
       <i class="fas fa-chevron-right text-lg"></i>
     </button>
 
     <!-- Dots -->
-    <div class="absolute bottom-4 left-0 right-0 flex justify-center space-x-3 z-10">
-      <button class="carousel-dot w-4 h-4 rounded-full bg-white opacity-100" data-slide="0"></button>
-      <button class="carousel-dot w-4 h-4 rounded-full bg-white opacity-50" data-slide="1"></button>
-      <button class="carousel-dot w-4 h-4 rounded-full bg-white opacity-50" data-slide="2"></button>
+    <div class="absolute bottom-4 left-0 right-0 flex justify-center space-x-3 z-20">
+      {% for banner in banners %}
+      <button class="carousel-dot w-3 h-3 rounded-full bg-white transition-opacity duration-300 {% if forloop.first %}opacity-100{% else %}opacity-50{% endif %}" data-slide="{{ forloop.counter0 }}"></button>
+      {% endfor %}
+    </div>
+    {% endif %}
+  </div>
+  {% else %}
+  <!-- Default Banner if no banners available -->
+  <div class="relative rounded-lg overflow-hidden h-[300px] md:h-[400px]" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+    <div class="absolute inset-0" style="background: radial-gradient(circle at 30% 50%, rgba(255,255,255,0.1) 0%, transparent 50%), radial-gradient(circle at 70% 50%, rgba(255,255,255,0.05) 0%, transparent 50%);"></div>
+    <div class="absolute inset-0 flex items-center justify-center">
+      <div class="text-center text-white px-4">
+        <div class="mb-6">
+          <i class="fas fa-watch text-6xl md:text-8xl opacity-90 animate-pulse"></i>
+        </div>
+        <h2 class="text-3xl md:text-5xl font-bold mb-4">Welcome to DINGDONG</h2>
+        <p class="text-lg md:text-xl mb-6 opacity-90">Discover Premium Watches & Accessories</p>
+        <a href="{% url 'products' %}" class="inline-block bg-white text-purple-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors shadow-lg">
+          Shop Now
+        </a>
+      </div>
     </div>
   </div>
+  {% endif %}
 </section>
 
-<!-- Product Row -->
-<section class="container mx-auto px-4 md:px-4 py-6">
-  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
+<!-- Brands Section -->
+{% if brands %}
+<section class="container mx-auto px-4 py-8 bg-gray-50">
+  <div class="flex items-center justify-between mb-6">
+    <h2 class="text-2xl md:text-3xl font-bold">Popular Brands</h2>
+    <a href="{% url 'products' %}" class="text-blue-600 hover:text-blue-800 font-semibold flex items-center">
+      View All <i class="fas fa-arrow-right ml-2"></i>
+    </a>
+  </div>
+  
+  <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
+    {% for brand in brands %}
+    <a href="{% url 'products' %}?brand={{ brand.id }}" class="group bg-white rounded-lg p-4 shadow hover:shadow-lg transition-all duration-300 transform hover:scale-105">
+      <div class="flex flex-col items-center justify-center h-24">
+        
+        <!-- Brand Image -->
+        <div class="w-16 h-16 mb-2 rounded-lg overflow-hidden flex items-center justify-center group-hover:scale-110 transition-transform">
+          {% if brand.image %}
+            <img src="{{ brand.image.url }}" alt="{{ brand.name }}" class="w-full h-full object-contain">
+          {% else %}
+            <!-- Fallback icon if no image -->
+            <div class="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+              <i class="fas fa-store text-2xl text-gray-600"></i>
+            </div>
+          {% endif %}
+        </div>
+        
+        <!-- Brand Name -->
+        <div class="text-center">
+          <h3 class="font-bold text-sm truncate max-w-full">{{ brand.name }}</h3>
+          <p class="text-xs text-gray-500 mt-1">{{ brand.product_count }} item{{ brand.product_count|pluralize }}</p>
+        </div>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
 
-    <!-- Product Card Example -->
+<!-- Products Section -->
+<section class="container mx-auto px-4 py-8">
+  <div class="flex items-center justify-between mb-6">
+    <h2 class="text-2xl md:text-3xl font-bold">Featured Products</h2>
+    <a href="{% url 'products' %}" class="text-blue-600 hover:text-blue-800 font-semibold flex items-center">
+      View All <i class="fas fa-arrow-right ml-2"></i>
+    </a>
+  </div>
+  
+  {% if products_data %}
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
+    {% for item in products_data %}
     <div class="bg-white p-4 rounded-lg shadow hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 group">
       <div class="relative">
-        <img src="https://via.placeholder.com/200x200" alt="Product 1" class="w-full h-48 object-contain">
+        {% if item.image %}
+        <img src="{{ item.image.image.url }}" alt="{{ item.product.name }}" class="w-full h-48 object-contain">
+        {% else %}
+        <img src="https://via.placeholder.com/200x200?text=No+Image" alt="{{ item.product.name }}" class="w-full h-48 object-contain">
+        {% endif %}
+        
         <button class="wishlist-btn absolute top-2 right-2 text-gray-400 hover:text-red-500 group-hover:text-red-500 transition-colors duration-300">
           <i class="far fa-heart text-lg"></i>
         </button>
+        
+        {% if item.variant.stock < 10 %}
+        <span class="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded">Low Stock</span>
+        {% endif %}
       </div>
+      
       <div class="mt-4">
-        <h3 class="text-xs font-bold uppercase line-clamp-2 overflow-hidden" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">CASIO</h3>
+        <h3 class="text-xs font-bold uppercase line-clamp-2 overflow-hidden" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">
+          {{ item.product.name }}
+        </h3>
+        
         <div class="flex items-center mt-2">
-          <p class="text-xs text-gray-600 mt-1 font-medium">Casio Brand</p>
+          <p class="text-xs text-gray-600 font-medium">{{ item.product.brand.name }}</p>
           <div class="flex text-yellow-400 ml-2">
             <i class="fas fa-star text-xs"></i>
             <i class="fas fa-star text-xs"></i>
             <i class="fas fa-star text-xs"></i>
-            <i class="far fa-star text-xs"></i>
+            <i class="fas fa-star text-xs"></i>
             <i class="far fa-star text-xs"></i>
           </div>
-          <span class="text-xs text-gray-500 ml-1">(3.0)</span>
+          <span class="text-xs text-gray-500 ml-1">(4.0)</span>
         </div>
-        <div class="mt-2">
-          <span class="font-bold">₹ 2999.00</span>
-          <span class="text-xs text-gray-500 line-through ml-2">₹ 3999.00</span>
+        
+        <div class="mt-2 flex items-center justify-between">
+          <div>
+            <span class="font-bold text-lg">₹ {{ item.price }}</span>
+          </div>
+          <span class="text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded">{{ item.variant.color_name }}</span>
         </div>
-      </div>
-    </div>
-
-        <div class="bg-white p-4 rounded-lg shadow hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 group">
-      <div class="relative">
-        <img src="https://via.placeholder.com/200x200" alt="Product 1" class="w-full h-48 object-contain">
-        <button class="wishlist-btn absolute top-2 right-2 text-gray-400 hover:text-red-500 group-hover:text-red-500 transition-colors duration-300">
-          <i class="far fa-heart text-lg"></i>
+        
+        <button class="w-full mt-3 bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700 transition-colors opacity-0 group-hover:opacity-100">
+          Add to Cart
         </button>
       </div>
-      <div class="mt-4">
-        <h3 class="text-xs font-bold uppercase line-clamp-2 overflow-hidden" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">CASIO</h3>
-        <div class="flex items-center mt-2">
-          <p class="text-xs text-gray-600 mt-1 font-medium">Casio Brand</p>
-          <div class="flex text-yellow-400 ml-2">
-            <i class="fas fa-star text-xs"></i>
-            <i class="fas fa-star text-xs"></i>
-            <i class="fas fa-star text-xs"></i>
-            <i class="far fa-star text-xs"></i>
-            <i class="far fa-star text-xs"></i>
-          </div>
-          <span class="text-xs text-gray-500 ml-1">(3.0)</span>
-        </div>
-        <div class="mt-2">
-          <span class="font-bold">₹ 2999.00</span>
-          <span class="text-xs text-gray-500 line-through ml-2">₹ 3999.00</span>
-        </div>
-      </div>
     </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="text-center py-12">
+    <i class="fas fa-box-open text-6xl text-gray-300 mb-4"></i>
+    <p class="text-gray-500 text-lg">No products available at the moment</p>
+  </div>
+  {% endif %}
+</section>
 
-
-        <div class="bg-white p-4 rounded-lg shadow hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 group">
-      <div class="relative">
-        <img src="https://via.placeholder.com/200x200" alt="Product 1" class="w-full h-48 object-contain">
-        <button class="wishlist-btn absolute top-2 right-2 text-gray-400 hover:text-red-500 group-hover:text-red-500 transition-colors duration-300">
-          <i class="far fa-heart text-lg"></i>
-        </button>
-      </div>
-      <div class="mt-4">
-        <h3 class="text-xs font-bold uppercase line-clamp-2 overflow-hidden" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">CASIO</h3>
-        <div class="flex items-center mt-2">
-          <p class="text-xs text-gray-600 mt-1 font-medium">Casio Brand</p>
-          <div class="flex text-yellow-400 ml-2">
-            <i class="fas fa-star text-xs"></i>
-            <i class="fas fa-star text-xs"></i>
-            <i class="fas fa-star text-xs"></i>
-            <i class="far fa-star text-xs"></i>
-            <i class="far fa-star text-xs"></i>
-          </div>
-          <span class="text-xs text-gray-500 ml-1">(3.0)</span>
-        </div>
-        <div class="mt-2">
-          <span class="font-bold">₹ 2999.00</span>
-          <span class="text-xs text-gray-500 line-through ml-2">₹ 3999.00</span>
-        </div>
-      </div>
-    </div>
-
-
-        <div class="bg-white p-4 rounded-lg shadow hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 group">
-      <div class="relative">
-        <img src="https://via.placeholder.com/200x200" alt="Product 1" class="w-full h-48 object-contain">
-        <button class="wishlist-btn absolute top-2 right-2 text-gray-400 hover:text-red-500 group-hover:text-red-500 transition-colors duration-300">
-          <i class="far fa-heart text-lg"></i>
-        </button>
-      </div>
-      <div class="mt-4">
-        <h3 class="text-xs font-bold uppercase line-clamp-2 overflow-hidden" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">CASIO</h3>
-        <div class="flex items-center mt-2">
-          <p class="text-xs text-gray-600 mt-1 font-medium">Casio Brand</p>
-          <div class="flex text-yellow-400 ml-2">
-            <i class="fas fa-star text-xs"></i>
-            <i class="fas fa-star text-xs"></i>
-            <i class="fas fa-star text-xs"></i>
-            <i class="far fa-star text-xs"></i>
-            <i class="far fa-star text-xs"></i>
-          </div>
-          <span class="text-xs text-gray-500 ml-1">(3.0)</span>
-        </div>
-        <div class="mt-2">
-          <span class="font-bold">₹ 2999.00</span>
-          <span class="text-xs text-gray-500 line-through ml-2">₹ 3999.00</span>
-        </div>
-      </div>
-    </div>
-
-
-        <div class="bg-white p-4 rounded-lg shadow hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 group">
-      <div class="relative">
-        <img src="https://via.placeholder.com/200x200" alt="Product 1" class="w-full h-48 object-contain">
-        <button class="wishlist-btn absolute top-2 right-2 text-gray-400 hover:text-red-500 group-hover:text-red-500 transition-colors duration-300">
-          <i class="far fa-heart text-lg"></i>
-        </button>
-      </div>
-      <div class="mt-4">
-        <h3 class="text-xs font-bold uppercase line-clamp-2 overflow-hidden" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">CASIO</h3>
-        <div class="flex items-center mt-2">
-          <p class="text-xs text-gray-600 mt-1 font-medium">Casio Brand</p>
-          <div class="flex text-yellow-400 ml-2">
-            <i class="fas fa-star text-xs"></i>
-            <i class="fas fa-star text-xs"></i>
-            <i class="fas fa-star text-xs"></i>
-            <i class="far fa-star text-xs"></i>
-            <i class="far fa-star text-xs"></i>
-          </div>
-          <span class="text-xs text-gray-500 ml-1">(3.0)</span>
-        </div>
-        <div class="mt-2">
-          <span class="font-bold">₹ 2999.00</span>
-          <span class="text-xs text-gray-500 line-through ml-2">₹ 3999.00</span>
-        </div>
-      </div>
-    </div>
-
-
-        <div class="bg-white p-4 rounded-lg shadow hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 group">
-      <div class="relative">
-        <img src="https://via.placeholder.com/200x200" alt="Product 1" class="w-full h-48 object-contain">
-        <button class="wishlist-btn absolute top-2 right-2 text-gray-400 hover:text-red-500 group-hover:text-red-500 transition-colors duration-300">
-          <i class="far fa-heart text-lg"></i>
-        </button>
-      </div>
-      <div class="mt-4">
-        <h3 class="text-xs font-bold uppercase line-clamp-2 overflow-hidden" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">CASIO</h3>
-        <div class="flex items-center mt-2">
-          <p class="text-xs text-gray-600 mt-1 font-medium">Casio Brand</p>
-          <div class="flex text-yellow-400 ml-2">
-            <i class="fas fa-star text-xs"></i>
-            <i class="fas fa-star text-xs"></i>
-            <i class="fas fa-star text-xs"></i>
-            <i class="far fa-star text-xs"></i>
-            <i class="far fa-star text-xs"></i>
-          </div>
-          <span class="text-xs text-gray-500 ml-1">(3.0)</span>
-        </div>
-        <div class="mt-2">
-          <span class="font-bold">₹ 2999.00</span>
-          <span class="text-xs text-gray-500 line-through ml-2">₹ 3999.00</span>
-        </div>
-      </div>
-    </div>
-
-
-
-
-        <div class="bg-white p-4 rounded-lg shadow hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 group">
-      <div class="relative">
-        <img src="https://via.placeholder.com/200x200" alt="Product 1" class="w-full h-48 object-contain">
-        <button class="wishlist-btn absolute top-2 right-2 text-gray-400 hover:text-red-500 group-hover:text-red-500 transition-colors duration-300">
-          <i class="far fa-heart text-lg"></i>
-        </button>
-      </div>
-      <div class="mt-4">
-        <h3 class="text-xs font-bold uppercase line-clamp-2 overflow-hidden" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">CASIO</h3>
-        <div class="flex items-center mt-2">
-          <p class="text-xs text-gray-600 mt-1 font-medium">Casio Brand</p>
-          <div class="flex text-yellow-400 ml-2">
-            <i class="fas fa-star text-xs"></i>
-            <i class="fas fa-star text-xs"></i>
-            <i class="fas fa-star text-xs"></i>
-            <i class="far fa-star text-xs"></i>
-            <i class="far fa-star text-xs"></i>
-          </div>
-          <span class="text-xs text-gray-500 ml-1">(3.0)</span>
-        </div>
-        <div class="mt-2">
-          <span class="font-bold">₹ 2999.00</span>
-          <span class="text-xs text-gray-500 line-through ml-2">₹ 3999.00</span>
-        </div>
-      </div>
-    </div>
-
-
-
-
-        <div class="bg-white p-4 rounded-lg shadow hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 group">
-      <div class="relative">
-        <img src="https://via.placeholder.com/200x200" alt="Product 1" class="w-full h-48 object-contain">
-        <button class="wishlist-btn absolute top-2 right-2 text-gray-400 hover:text-red-500 group-hover:text-red-500 transition-colors duration-300">
-          <i class="far fa-heart text-lg"></i>
-        </button>
-      </div>
-      <div class="mt-4">
-        <h3 class="text-xs font-bold uppercase line-clamp-2 overflow-hidden" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">CASIO</h3>
-        <div class="flex items-center mt-2">
-          <p class="text-xs text-gray-600 mt-1 font-medium">Casio Brand</p>
-          <div class="flex text-yellow-400 ml-2">
-            <i class="fas fa-star text-xs"></i>
-            <i class="fas fa-star text-xs"></i>
-            <i class="fas fa-star text-xs"></i>
-            <i class="far fa-star text-xs"></i>
-            <i class="far fa-star text-xs"></i>
-          </div>
-          <span class="text-xs text-gray-500 ml-1">(3.0)</span>
-        </div>
-        <div class="mt-2">
-          <span class="font-bold">₹ 2999.00</span>
-          <span class="text-xs text-gray-500 line-through ml-2">₹ 3999.00</span>
-        </div>
-      </div>
-    </div>
-
-
-
-
-
-        <div class="bg-white p-4 rounded-lg shadow hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 group">
-      <div class="relative">
-        <img src="https://via.placeholder.com/200x200" alt="Product 1" class="w-full h-48 object-contain">
-        <button class="wishlist-btn absolute top-2 right-2 text-gray-400 hover:text-red-500 group-hover:text-red-500 transition-colors duration-300">
-          <i class="far fa-heart text-lg"></i>
-        </button>
-      </div>
-      <div class="mt-4">
-        <h3 class="text-xs font-bold uppercase line-clamp-2 overflow-hidden" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">CASIO</h3>
-        <div class="flex items-center mt-2">
-          <p class="text-xs text-gray-600 mt-1 font-medium">Casio Brand</p>
-          <div class="flex text-yellow-400 ml-2">
-            <i class="fas fa-star text-xs"></i>
-            <i class="fas fa-star text-xs"></i>
-            <i class="fas fa-star text-xs"></i>
-            <i class="far fa-star text-xs"></i>
-            <i class="far fa-star text-xs"></i>
-          </div>
-          <span class="text-xs text-gray-500 ml-1">(3.0)</span>
-        </div>
-        <div class="mt-2">
-          <span class="font-bold">₹ 2999.00</span>
-          <span class="text-xs text-gray-500 line-through ml-2">₹ 3999.00</span>
-        </div>
-      </div>
-    </div>
-
-
-
-
-
-        <div class="bg-white p-4 rounded-lg shadow hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 group">
-      <div class="relative">
-        <img src="https://via.placeholder.com/200x200" alt="Product 1" class="w-full h-48 object-contain">
-        <button class="wishlist-btn absolute top-2 right-2 text-gray-400 hover:text-red-500 group-hover:text-red-500 transition-colors duration-300">
-          <i class="far fa-heart text-lg"></i>
-        </button>
-      </div>
-      <div class="mt-4">
-        <h3 class="text-xs font-bold uppercase line-clamp-2 overflow-hidden" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">CASIO</h3>
-        <div class="flex items-center mt-2">
-          <p class="text-xs text-gray-600 mt-1 font-medium">Casio Brand</p>
-          <div class="flex text-yellow-400 ml-2">
-            <i class="fas fa-star text-xs"></i>
-            <i class="fas fa-star text-xs"></i>
-            <i class="fas fa-star text-xs"></i>
-            <i class="far fa-star text-xs"></i>
-            <i class="far fa-star text-xs"></i>
-          </div>
-          <span class="text-xs text-gray-500 ml-1">(3.0)</span>
-        </div>
-        <div class="mt-2">
-          <span class="font-bold">₹ 2999.00</span>
-          <span class="text-xs text-gray-500 line-through ml-2">₹ 3999.00</span>
-        </div>
-      </div>
-    </div>
-
-
-
-
-
-        <div class="bg-white p-4 rounded-lg shadow hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 group">
-      <div class="relative">
-        <img src="https://via.placeholder.com/200x200" alt="Product 1" class="w-full h-48 object-contain">
-        <button class="wishlist-btn absolute top-2 right-2 text-gray-400 hover:text-red-500 group-hover:text-red-500 transition-colors duration-300">
-          <i class="far fa-heart text-lg"></i>
-        </button>
-      </div>
-      <div class="mt-4">
-        <h3 class="text-xs font-bold uppercase line-clamp-2 overflow-hidden" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">CASIO</h3>
-        <div class="flex items-center mt-2">
-          <p class="text-xs text-gray-600 mt-1 font-medium">Casio Brand</p>
-          <div class="flex text-yellow-400 ml-2">
-            <i class="fas fa-star text-xs"></i>
-            <i class="fas fa-star text-xs"></i>
-            <i class="fas fa-star text-xs"></i>
-            <i class="far fa-star text-xs"></i>
-            <i class="far fa-star text-xs"></i>
-          </div>
-          <span class="text-xs text-gray-500 ml-1">(3.0)</span>
-        </div>
-        <div class="mt-2">
-          <span class="font-bold">₹ 2999.00</span>
-          <span class="text-xs text-gray-500 line-through ml-2">₹ 3999.00</span>
-        </div>
-      </div>
-    </div>
-
-
-
-
-    
-
-    <!-- You can duplicate product cards as needed -->
-    
+<!-- Promotional Banner -->
+<section class="container mx-auto px-4 py-8">
+  <div class="rounded-lg p-8 md:p-12 text-center text-white bg-cover bg-center bg-no-repeat"
+       style="background-image: linear-gradient(135deg, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)), url('{% static 'images/offer_image.png' %}');">
+    <h2 class="text-3xl md:text-4xl font-bold mb-4">Special Offer</h2>
+    <p class="text-lg md:text-xl mb-6">Get up to 30% off on selected watches</p>
+    <a href="{% url 'products' %}" class="inline-block bg-white text-purple-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors">
+      Shop Now
+    </a>
   </div>
 </section>
-{% endblock %}
 
-{% block extra_scripts %}
+
+
+
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+  // Wishlist functionality
   document.querySelectorAll('.wishlist-btn').forEach(btn => {
     btn.addEventListener('click', function (e) {
       e.preventDefault();
@@ -410,59 +230,111 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
 
-  let currentSlide = 0;
+  // Carousel functionality
   const slides = document.querySelectorAll('.carousel-slide');
   const dots = document.querySelectorAll('.carousel-dot');
   const prevBtn = document.querySelector('.carousel-prev');
   const nextBtn = document.querySelector('.carousel-next');
   const totalSlides = slides.length;
+  
+  if (totalSlides === 0) return; // Exit if no slides
+  
+  let currentSlide = 0;
+  let autoPlayInterval = null;
 
   function showSlide(index) {
+    // Ensure index is within bounds
+    if (index < 0) index = totalSlides - 1;
+    if (index >= totalSlides) index = 0;
+    
+    // Update slides
     slides.forEach((slide, i) => {
-      slide.classList.remove('active');
       if (i === index) {
         slide.style.opacity = '1';
-        slide.style.transform = 'translateX(0)';
+        slide.style.zIndex = '10';
         slide.classList.add('active');
-        slide.classList.remove('z-0');
-        slide.classList.add('z-10');
       } else {
         slide.style.opacity = '0';
-        slide.style.transform = i < index ? 'translateX(-100%)' : 'translateX(100%)';
-        slide.classList.remove('z-10');
-        slide.classList.add('z-0');
+        slide.style.zIndex = '0';
+        slide.classList.remove('active');
       }
     });
+    
+    // Update dots
     dots.forEach((dot, i) => {
       if (i === index) {
-        dot.classList.remove('opacity-50');
-        dot.classList.add('opacity-100');
+        dot.style.opacity = '1';
       } else {
-        dot.classList.remove('opacity-100');
-        dot.classList.add('opacity-50');
+        dot.style.opacity = '0.5';
       }
     });
+    
     currentSlide = index;
   }
 
-  function nextSlide() { showSlide((currentSlide + 1) % totalSlides); }
-  function prevSlide() { showSlide((currentSlide - 1 + totalSlides) % totalSlides); }
-
-  nextBtn.addEventListener('click', e => { e.preventDefault(); nextSlide(); });
-  prevBtn.addEventListener('click', e => { e.preventDefault(); prevSlide(); });
-
-  dots.forEach((dot, index) => {
-    dot.addEventListener('click', e => { e.preventDefault(); showSlide(index); });
-  });
-
-  let autoPlayInterval = setInterval(nextSlide, 4000);
-  const carouselContainer = document.querySelector('.carousel-container')?.parentElement;
-  if (carouselContainer) {
-    carouselContainer.addEventListener('mouseenter', () => clearInterval(autoPlayInterval));
-    carouselContainer.addEventListener('mouseleave', () => autoPlayInterval = setInterval(nextSlide, 4000));
+  function nextSlide() {
+    showSlide(currentSlide + 1);
   }
 
+  function prevSlide() {
+    showSlide(currentSlide - 1);
+  }
+
+  // Event listeners for navigation buttons
+  if (nextBtn) {
+    nextBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      nextSlide();
+      resetAutoPlay();
+    });
+  }
+
+  if (prevBtn) {
+    prevBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      prevSlide();
+      resetAutoPlay();
+    });
+  }
+
+  // Event listeners for dots
+  dots.forEach((dot, index) => {
+    dot.addEventListener('click', function(e) {
+      e.preventDefault();
+      showSlide(index);
+      resetAutoPlay();
+    });
+  });
+
+  // Auto-play functionality
+  function startAutoPlay() {
+    if (totalSlides > 1) {
+      autoPlayInterval = setInterval(nextSlide, 4000);
+    }
+  }
+
+  function stopAutoPlay() {
+    if (autoPlayInterval) {
+      clearInterval(autoPlayInterval);
+      autoPlayInterval = null;
+    }
+  }
+
+  function resetAutoPlay() {
+    stopAutoPlay();
+    startAutoPlay();
+  }
+
+  // Pause on hover
+  const carouselContainer = document.querySelector('.carousel-container');
+  if (carouselContainer && totalSlides > 1) {
+    carouselContainer.addEventListener('mouseenter', stopAutoPlay);
+    carouselContainer.addEventListener('mouseleave', startAutoPlay);
+  }
+
+  // Initialize
   showSlide(0);
+  startAutoPlay();
 });
 </script>
 {% endblock %}
