@@ -1,6 +1,3 @@
-# Django core imports
-import base64
-import io
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import user_passes_test
 from django.views.decorators.cache import cache_control
@@ -12,9 +9,9 @@ from django.db.models import Q
 from PIL import Image
 from io import BytesIO
 from .models import Category, Product, Brand, ProductVariant, ProductImage
+import base64
+import io
 
-
-# Category Management
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 @user_passes_test(lambda u: u.is_superuser, login_url="admin_login")
 def categories(request):
@@ -23,7 +20,6 @@ def categories(request):
     current_super = request.user
     categories_list = Category.objects.all().order_by("-id")
     
-
     paginator = Paginator(categories_list, 3)  
     page_number = request.GET.get('page')
     categories = paginator.get_page(page_number)
@@ -31,7 +27,7 @@ def categories(request):
     if request.method == "POST":
         category_id = request.POST.get("category_id")  
         
-        if category_id:  
+        if category_id:  # Edit existing category
             category = get_object_or_404(Category, id=category_id)
             new_name = request.POST.get("category_name", "").strip()
             
@@ -42,13 +38,18 @@ def categories(request):
             if Category.objects.filter(name__iexact=new_name).exclude(id=category_id).exists():
                 messages.error(request, "This category already exists.")
                 return redirect("admin_category")
-                
+            
             category.name = new_name
+            
+            # Handle image upload for edit
+            if request.FILES.get("category_image"):
+                category.image = request.FILES["category_image"]
+            
             category.save()
             messages.success(request, f"Category '{new_name}' updated successfully.")
             return redirect("admin_category")
             
-        else:  
+        else:  # Add new category
             name = request.POST.get("category_name", "").strip()
             
             if not name:
@@ -58,8 +59,14 @@ def categories(request):
             if Category.objects.filter(name__iexact=name).exists():
                 messages.error(request, "This category already exists.")
                 return redirect("admin_category")
-                
-            Category.objects.create(name=name, is_listed=True)
+            
+            # Create category with image
+            category = Category(name=name, is_listed=True)
+            
+            if request.FILES.get("category_image"):
+                category.image = request.FILES["category_image"]
+            
+            category.save()
             messages.success(request, f"Category '{name}' added successfully.")
             return redirect("admin_category")
     

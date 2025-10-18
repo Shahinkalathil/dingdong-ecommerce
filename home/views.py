@@ -3,19 +3,80 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
 from products.models import Product, ProductVariant, Category, Brand
+from .models import Banner
 from django.core.paginator import Paginator
-from django.db.models import Q, Min
+from django.db.models import Min, Count, Q
 import random
 from decimal import Decimal
 
 
 
 def home(request):
-    if request.user.is_authenticated:
-        return render(request, 'user_side/index.html')
-    else:
+    if not request.user.is_authenticated:
         return redirect('sign_in')
-
+    
+    # Get active banners (one for each position: main, secondary, promotional)
+    banners = Banner.get_active_banners()
+    
+    # Get featured categories (with products and images) - Random 5 categories
+    all_categories = list(Category.objects.filter(
+        is_listed=True,
+        products__is_listed=True
+    ).annotate(
+        product_count=Count('products', filter=Q(products__is_listed=True))
+    ).filter(product_count__gt=0).select_related())
+    
+    # Randomly select 5 categories (or less if not enough categories)
+    featured_categories = random.sample(all_categories, min(5, len(all_categories))) if all_categories else []
+    
+    # Get active brands (with products and images) - Random 8 brands
+    all_brands = list(Brand.objects.filter(
+        is_listed=True,
+        products__is_listed=True
+    ).annotate(
+        product_count=Count('products', filter=Q(products__is_listed=True))
+    ).filter(product_count__gt=0).select_related())
+    
+    # Randomly select 8 brands (or less if not enough brands)
+    brands = random.sample(all_brands, min(8, len(all_brands))) if all_brands else []
+    
+    # Get featured products with their minimum price
+    featured_products = Product.objects.filter(
+        is_listed=True,
+        category__is_listed=True,
+        brand__is_listed=True,
+        variants__is_listed=True,
+        variants__stock__gt=0
+    ).annotate(
+        min_price=Min('variants__price')
+    ).distinct()[:12]
+    
+    # Get product data with images and prices
+    products_data = []
+    for product in featured_products:
+        variant = product.variants.filter(
+            is_listed=True,
+            stock__gt=0
+        ).first()
+        
+        if variant:
+            image = variant.images.first()
+            products_data.append({
+                'product': product,
+                'variant': variant,
+                'image': image,
+                'price': variant.price
+            })
+    
+    context = {
+        'banners': banners,
+        'categories': featured_categories,
+        'brands': brands,
+        'products_data': products_data,
+        'has_banners': len(banners) > 0
+    }
+    
+    return render(request, 'user_side/index.html', context)
 
 @login_required
 def user_logout(request):

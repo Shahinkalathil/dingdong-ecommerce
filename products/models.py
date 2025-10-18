@@ -3,6 +3,7 @@ from django.db import models
 # Create your models here.
 class Category(models.Model):
     name = models.CharField(max_length=50)
+    image = models.ImageField(upload_to='categories/', blank=True, null=True)
     is_listed = models.BooleanField(default=True)
 
     def __str__(self):
@@ -12,6 +13,7 @@ class Category(models.Model):
 # Model for Brands
 class Brand(models.Model):
     name = models.CharField(max_length=50)
+    image = models.ImageField(upload_to='brands/', blank=True, null=True)
     is_listed = models.BooleanField(default=True)
 
     def __str__(self):
