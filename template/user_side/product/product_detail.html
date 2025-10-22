@@ -104,7 +104,7 @@
 
                 <!-- Stock Status -->
                 <div id="stockStatus" class="space-y-2">
-                    {% if default_variant.stock > 0 %}
+                    {% if default_variant.stock > 1 %}
                         <!-- In Stock Version -->
                         <div id="inStockSection" class="flex items-center space-x-2">
                             <div class="w-3 h-3 bg-green-500 rounded-full"></div>
@@ -113,20 +113,11 @@
                     {% else %}
                         <!-- Out of Stock Version -->
                         <div id="outOfStockSection" class="bg-gray-100 p-4 rounded-lg border">
-                            <h3 class="text-lg font-semibold text-gray-900 mb-2">Sold Out</h3>
-                            <p class="text-gray-600 mb-4">This color is currently out of stock</p>
-                            {% if total_stock > 0 %}
+                            <h3 class="text-lg font-semibold text-gray-900 mb-2">Not Available</h3>
+                            <p class="text-gray-600 mb-4">{% if default_variant.stock == 1 %}Only 1 item left - Try another color variant{% else %}This color is currently out of stock{% endif %}</p>
+                            {% if total_stock > 1 %}
                                 <p class="text-sm text-blue-600 mb-4">Try selecting a different color - other variants are available</p>
                             {% endif %}
-                            <div class="flex space-x-2">
-                                <input type="email" 
-                                       id="notifyEmail"
-                                       placeholder="Enter email to get notified" 
-                                       class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                <button id="notifyBtn" class="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-md font-medium transition-colors">
-                                    NOTIFY ME
-                                </button>
-                            </div>
                         </div>
                     {% endif %}
                 </div>
@@ -159,28 +150,25 @@
                     </div>
                 {% endif %}
 
-        
-
                 <!-- Action Buttons -->
                 <div id="actionButtons" class="space-y-3">
                     {% if default_variant.stock > 0 %}
-                        <button id="addToCartBtn" class="w-full bg-white border-2 border-gray-900 text-gray-900 py-3 rounded-md font-medium hover:bg-gray-50 transition-colors">
+                        <a href="{% url 'add_to_cart' default_variant.id %}" 
+                            class="w-full bg-white border-2 border-gray-900 text-gray-900 py-3 rounded-md font-medium hover:bg-gray-50 transition-colors text-center block">
                             ADD TO CART
-                        </button>
+                        </a>
+
                         <button id="buyNowBtn" class="w-full bg-gray-900 text-white py-3 rounded-md font-medium hover:bg-gray-800 transition-colors">
                             BUY NOW
                         </button>
                     {% else %}
                         <button class="w-full bg-gray-400 text-white py-3 rounded-md font-medium cursor-not-allowed" disabled>
-                            OUT OF STOCK - TRY OTHER COLORS
+                            TRY ANOTHER COLOR VARIANT
                         </button>
-                        {% if total_stock > 0 %}
+                        {% if total_stock > 1 %}
                             <p class="text-center text-sm text-blue-600">Other colors are available above</p>
                         {% endif %}
                     {% endif %}
-                    <button class="w-full bg-purple-600 text-white py-3 rounded-md font-medium hover:bg-purple-700 transition-colors">
-                        SAVE 5% ON THIS PRODUCT
-                    </button>
                 </div>
             </div>
 
@@ -449,7 +437,7 @@
                 this.initializeTabs();
                 this.initializeFAQ();
                 this.initializeButtons();
-                this.initializeColorSelection(); // AJAX-based color switching
+                this.initializeColorSelection();
             }
 
             initializeZoom() {
@@ -517,7 +505,6 @@
                 });
             }
 
-            // ---------- Thumbnails ----------
             initializeThumbnails() {
                 const mainImage = document.getElementById('mainImage');
                 const zoomImage = document.getElementById('zoomImage');
@@ -533,7 +520,6 @@
                 });
             }
 
-            // ---------- Tabs ----------
             initializeTabs() {
                 const tabButtons = document.querySelectorAll('.tab-btn');
                 const tabContents = document.querySelectorAll('.tab-content');
@@ -549,7 +535,6 @@
                 });
             }
 
-            // ---------- FAQ ----------
             initializeFAQ() {
                 const faqButtons = document.querySelectorAll('.faq-btn');
 
@@ -564,15 +549,16 @@
                 });
             }
 
-   
-            // ---------- Buttons ----------
             initializeButtons() {
                 const addToCartBtn = document.getElementById('addToCartBtn');
                 const buyNowBtn = document.getElementById('buyNowBtn');
 
                 if (addToCartBtn) {
                     addToCartBtn.addEventListener('click', () => {
-                        alert('Added to cart!');
+                        const variantId = this.currentVariantId; 
+                        const urlTemplate = "{% url 'add_to_cart' 0 %}";  
+                        const addToCartUrl = urlTemplate.replace("0", variantId);
+                        window.location.href = addToCartUrl;  
                     });
                 }
 
@@ -583,7 +569,6 @@
                 }
             }
 
-            // ---------- Color Selection with AJAX ----------
             initializeColorSelection() {
                 const colorOptions = document.querySelectorAll('.color-option');
                 
@@ -683,42 +668,67 @@
                         thumbnailContainer.appendChild(thumb);
                     });
                 }
+                
+                // Re-initialize thumbnails after adding new ones
+                this.initializeThumbnails();
 
                 // Update price
                 document.getElementById('currentPrice').textContent = `₹ ${variantData.price}`;
+                
+                const originalPriceEl = document.getElementById('originalPrice');
+                const discountBadgeEl = document.getElementById('discountBadge');
+                
                 if (variantData.original_price && variantData.discount_percentage > 0) {
-                    document.getElementById('originalPrice').textContent = `₹ ${variantData.original_price}`;
-                    document.getElementById('discountBadge').textContent = `${variantData.discount_percentage}% OFF`;
+                    if (originalPriceEl) originalPriceEl.textContent = `₹ ${variantData.original_price}`;
+                    if (discountBadgeEl) discountBadgeEl.textContent = `${variantData.discount_percentage}% OFF`;
                 }
 
-                // Update stock
+                // Update stock status and action buttons
                 const stockStatus = document.getElementById('stockStatus');
+                const actionButtons = document.getElementById('actionButtons');
+                
                 if (variantData.stock > 0) {
+                    // In Stock - Show Add to Cart and Buy Now buttons
                     stockStatus.innerHTML = `
                         <div id="inStockSection" class="flex items-center space-x-2">
                             <div class="w-3 h-3 bg-green-500 rounded-full"></div>
                             <span class="text-green-600 font-medium">In Stock - <span id="stockCount">${variantData.stock}</span> items left</span>
                         </div>
                     `;
+                    
+                    actionButtons.innerHTML = `
+                        <button id="addToCartBtn" class="w-full bg-white border-2 border-gray-900 text-gray-900 py-3 rounded-md font-medium hover:bg-gray-50 transition-colors">
+                            ADD TO CART
+                        </button>
+                        <button id="buyNowBtn" class="w-full bg-gray-900 text-white py-3 rounded-md font-medium hover:bg-gray-800 transition-colors">
+                            BUY NOW
+                        </button>
+                    `;
+                    
+                    // Re-attach event listeners for new buttons
+                    this.initializeButtons();
                 } else {
+                    // Out of Stock or Only 1 left - Show Try Another Color
                     stockStatus.innerHTML = `
                         <div id="outOfStockSection" class="bg-gray-100 p-4 rounded-lg border">
-                            <h3 class="text-lg font-semibold text-gray-900 mb-2">Sold Out</h3>
-                            <p class="text-gray-600 mb-4">This color is currently out of stock</p>
-                            <div class="flex space-x-2">
-                                <input type="email" id="notifyEmail"
-                                    placeholder="Enter email to get notified" 
-                                    class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                <button id="notifyBtn" class="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-md font-medium transition-colors">
-                                    NOTIFY ME
-                                </button>
-                            </div>
+                            <h3 class="text-lg font-semibold text-gray-900 mb-2">Not Available</h3>
+                            <p class="text-gray-600 mb-4">${variantData.stock === 1 ? 'Only 1 item left - Try another color variant' : 'This color is currently out of stock'}</p>
                         </div>
+                    `;
+                    
+                    actionButtons.innerHTML = `
+                        <button class="w-full bg-gray-400 text-white py-3 rounded-md font-medium cursor-not-allowed" disabled>
+                            TRY ANOTHER COLOR VARIANT
+                        </button>
+                        <p class="text-center text-sm text-blue-600">Other colors may be available above</p>
                     `;
                 }
 
-                // ✅ Update color name
-                document.getElementById('currentColorName').textContent = variantData.color_name;
+                // Update color name
+                const colorNameEl = document.getElementById('currentColorName');
+                if (colorNameEl) {
+                    colorNameEl.textContent = variantData.color_name;
+                }
             }
 
             showLoading(show) {
@@ -737,7 +747,7 @@
             }
         }
 
-        // Init
+        // Initialize on DOM load
         document.addEventListener('DOMContentLoaded', () => {
             new ProductDetail();
         });

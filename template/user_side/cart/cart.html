@@ -2,259 +2,451 @@
 {% load static %}
 
 {% block title %}DINGDONG - Cart{% endblock %}
-{% block Script %}
 
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#000000',
-                        secondary: '#6b7280',
-                        success: '#10b981',
-                        danger: '#ef4444',
-                        warning: '#f59e0b'
-                    }
+{% block Script %}
+<script>
+    tailwind.config = {
+        theme: {
+            extend: {
+                colors: {
+                    primary: '#000000',
+                    secondary: '#6b7280',
+                    success: '#10b981',
+                    danger: '#ef4444',
+                    warning: '#f59e0b'
                 }
             }
         }
-    </script>
+    }
+</script>
 {% endblock %}
+
 {% block content %}
-</head>
 <body class="bg-gray-50 font-sans">
     <div class="min-h-screen py-8">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            
+            <!-- Messages Container for Popups -->
+            <div id="messagePopups" class="fixed top-4 right-4 space-y-2"></div>
+
             <!-- Cart Header -->
             <div class="flex items-center justify-between mb-8">
-                <h1 class="text-3xl font-bold text-gray-900">Cart</h1>
+                <h1 class="text-3xl font-bold text-gray-900">Shopping Cart</h1>
+                <span class="text-gray-600">{{ total_items }} item{{ total_items|pluralize }}</span>
             </div>
+
+            {% if cart_items %}
+            <!-- Stylish Floating Warning Popup -->
+            {% if has_out_of_stock or has_unlisted %}
+            <div id="cart-warning"
+                class="fixed top-8 left-1/2 transform -translate-x-1/2 w-[90%] max-w-lg bg-white border-l-4 border-red-500 shadow-lg rounded-xl p-5 z-50 animate-slide-in">
+                <div class="flex items-start">
+                    <!-- Icon -->
+                    <svg class="w-6 h-6 text-red-500 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                    </svg>
+
+                    <!-- Text -->
+                    <div class="flex-1">
+                        <h3 class="text-red-800 font-semibold mb-1">Cannot Proceed to Checkout</h3>
+                        <p class="text-red-700 text-sm leading-relaxed">
+                            {% if has_out_of_stock %}Some items in your cart are out of stock.{% endif %}
+                            {% if has_unlisted %} Some items are no longer available.{% endif %}
+                            Please remove or update these items to continue.
+                        </p>
+                    </div>
+
+                    <!-- Close Button -->
+                    <button onclick="document.getElementById('cart-warning').remove()" 
+                            class="ml-3 text-red-400 hover:text-red-600 focus:outline-none">
+                        ✕
+                    </button>
+                </div>
+            </div>
+
+            <!-- Animation -->
+            <style>
+            @keyframes slideIn {
+                from {
+                    opacity: 0;
+                    transform: translate(-50%, -20px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translate(-50%, 0);
+                }
+            }
+            .animate-slide-in {
+                animation: slideIn 0.4s ease-out;
+            }
+            </style>
+            {% endif %}
+
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <!-- Cart Items -->
                 <div class="lg:col-span-2 space-y-6" id="cartItems">
-                    <!-- Cart Item 1 -->
-                    <div class="cart-item bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow duration-200">
+                    {% for item in cart_items %}
+                    <div class="cart-item bg-white rounded-lg shadow-sm border {% if not item.stock_available or not item.is_available %}border-red-300 bg-red-50{% else %}border-gray-200{% endif %} p-6 hover:shadow-md transition-shadow duration-200" data-item-id="{{ item.id }}">
+                        
+                        <!-- Unlisted/Blocked Badge -->
+                        {% if not item.is_available %}
+                            <div class="mb-4 flex items-center space-x-2">
+                                <span class="bg-red-600 text-white px-3 py-1 rounded-full text-xs font-semibold">PRODUCT NO LONGER AVAILABLE</span>
+                            </div>
+                        {% endif %}
+
                         <div class="flex items-start space-x-4">
                             <!-- Product Image -->
                             <div class="flex-shrink-0 relative">
-                                <img src="/placeholder.svg?height=120&width=120" 
-                                    class="w-20 h-20 object-cover rounded-lg border border-gray-200">
+                                {% if item.first_image %}
+                                    <img src="{{ item.first_image.image.url }}" 
+                                        alt="{{ item.variant.product.name }}"
+                                        class="w-24 h-24 object-cover rounded-lg border border-gray-200 {% if not item.is_available %}opacity-50{% endif %}">
+                                {% else %}
+                                    <div class="w-24 h-24 bg-gray-200 rounded-lg border border-gray-200 flex items-center justify-center">
+                                        <span class="text-gray-400 text-xs">No Image</span>
+                                    </div>
+                                {% endif %}
+                                
+                                {% if not item.is_available %}
+                                    <div class="absolute inset-0 bg-black bg-opacity-20 rounded-lg flex items-center justify-center">
+                                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path>
+                                        </svg>
+                                    </div>
+                                {% endif %}
                             </div>
                             
                             <!-- Product Details -->
                             <div class="flex-1 min-w-0">
-                                <h3 class="text-lg font-semibold text-gray-900 mb-1">
-                                    Longines CONQUEST CLASSIC L2.386.4.52.6
+                                <h3 class="text-lg font-semibold text-gray-900 mb-1 {% if not item.is_available %}line-through text-gray-500{% endif %}">
+                                    {{ item.variant.product.name }}
                                 </h3>
-                                <p class="text-sm text-gray-600 mb-2">L23864526</p>
+                                <p class="text-sm text-gray-600 mb-2">
+                                    Brand: {{ item.variant.product.brand.name }}
+                                </p>
                                 
-                                <!-- Price -->
-                                <div class="flex items-center space-x-2 mb-4">
-                                    <span class="item-price text-xl font-bold text-gray-900" data-price="9000">₹9,000.00</span>
-                                    <span class="text-sm text-gray-500 line-through">₹52,000.00</span>
+                                <!-- Color -->
+                                <div class="flex items-center space-x-2 mb-3">
+                                    <span class="text-sm text-gray-600">Color:</span>
+                                    <div class="flex items-center space-x-2">
+                                        <div class="w-5 h-5 rounded-full border border-gray-300" 
+                                             style="background-color: {{ item.variant.color_code }}"
+                                             title="{{ item.variant.color_name }}"></div>
+                                        <span class="text-sm text-gray-700">{{ item.variant.color_name }}</span>
+                                    </div>
+                                </div>
+                                
+                                <!-- Price Details -->
+                                <div class="space-y-1 mb-4">
+                                    <!-- Unit Price -->
+                                    <p class="text-lg text-gray-800">
+                                        <span class="font-semibold">Price:</span>
+                                        ₹{{ item.variant.price|floatformat:2 }}
+                                    </p>
+                                    <!-- Total Calculation -->
+                                    <p class="text-lg text-gray-800">
+                                        <span class="font-semibold">Total:</span>
+                                        <span class="font-bold text-gray-900">₹{{ item.get_subtotal|floatformat:2 }}</span>
+                                    </p>
                                 </div>
                                 
                                 <!-- Quantity Selector -->
+                                {% if item.is_available %}
                                 <div class="flex items-center space-x-3 mb-4">
                                     <div class="flex items-center border border-gray-300 rounded-full">
-                                        <button class="decrement-btn p-2 hover:bg-gray-100 rounded-l-full transition-colors duration-200">
-                                            <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path>
-                                            </svg>
-                                        </button>
-                                        <span class="quantity px-4 py-2 text-sm font-medium">1</span>
-                                        <button class="increment-btn p-2 hover:bg-gray-100 rounded-r-full transition-colors duration-200">
-                                            <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                                            </svg>
-                                        </button>
+                                        <!-- Decrement Form -->
+                                        <form method="POST" action="{% url 'update_cart_quantity' item.id %}" class="inline-flex">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="action" value="decrement">
+                                            <button type="submit" class="decrement-btn p-2 hover:bg-gray-100 rounded-l-full transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed" 
+                                                    {% if item.quantity <= 1 %}disabled{% endif %}>
+                                                <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path>
+                                                </svg>
+                                            </button>
+                                        </form>
+                                        <!-- Quantity Display -->
+                                        <span class="quantity px-4 py-2 text-sm font-medium" data-quantity="{{ item.quantity }}">
+                                            {{ item.quantity }}
+                                        </span>
+                                        <!-- Increment Form -->
+                                        <form method="POST" action="{% url 'update_cart_quantity' item.id %}" class="inline-flex">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="action" value="increment">
+                                            <button type="submit" class="increment-btn p-2 hover:bg-gray-100 rounded-r-full transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                                                    data-max-stock="{{ item.variant.stock }}"
+                                                    {% if item.quantity >= item.variant.stock %}disabled{% endif %}>
+                                                <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                                                </svg>
+                                            </button>
+                                        </form>
                                     </div>
+                                    <span class="text-sm text-gray-500">
+                                        ({{ item.variant.stock }} available)
+                                    </span>
                                 </div>
+                                {% endif %}
                                 
-                                <!-- Shipping Info -->
+                                <!-- Stock Status & Shipping Info -->
                                 <div class="flex items-center justify-between text-sm">
                                     <div class="flex items-center space-x-2">
-                                        <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">In stock</span>
+                                        {% if not item.is_available %}
+                                            <span class="bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs font-medium">Product Blocked/Unlisted</span>
+                                        {% elif not item.stock_available %}
+                                            <span class="bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs font-medium">Out of Stock</span>
+                                        {% else %}
+                                            <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">In Stock</span>
+                                        {% endif %}
                                     </div>
-                                    <span class="font-medium text-green-600">Free Delivery</span>
+                                    {% if item.is_available and item.stock_available %}
+                                        <span class="font-medium text-green-600">Free Delivery</span>
+                                    {% endif %}
                                 </div>
                             </div>
 
                             <!-- Delete Button -->
                             <div class="flex-shrink-0">
-                                <button class="delete-btn p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors duration-200">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                    </svg>
-                                </button>
+                                <form method="POST" action="{% url 'remove_from_cart' item.id %}" class="delete-form" data-item-id="{{ item.id }}">
+                                    {% csrf_token %}
+                                    <button type="button" class="delete-btn p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors duration-200" onclick="showDeleteModal('{{ item.id }}', '{{ item.variant.product.name|escapejs }}')">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                        </svg>
+                                    </button>
+                                </form>
                             </div>
                         </div>
                     </div>
-                    
-                    <!-- Cart Item 2 -->
-                    <div class="cart-item bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow duration-200">
-                        <div class="flex items-start space-x-4">
-                            <!-- Product Image -->
-                            <div class="flex-shrink-0 relative">
-                                <img src="/placeholder.svg?height=120&width=120" 
-                                    class="w-20 h-20 object-cover rounded-lg border border-gray-200">
-                            </div>
-                            
-                            <!-- Product Details -->
-                            <div class="flex-1 min-w-0">
-                                <h3 class="text-lg font-semibold text-gray-900 mb-1">
-                                    Longines CONQUEST CLASSIC L2.386.4.52.6
-                                </h3>
-                                <p class="text-sm text-gray-600 mb-2">L23864526</p>
-                                
-                                <!-- Price -->
-                                <div class="flex items-center space-x-2 mb-4">
-                                    <span class="item-price text-xl font-bold text-gray-900" data-price="9000">₹9,000.00</span>
-                                    <span class="text-sm text-gray-500 line-through">₹52,000.00</span>
-                                </div>
-                                
-                                <!-- Quantity Selector -->
-                                <div class="flex items-center space-x-3 mb-4">
-                                    <div class="flex items-center border border-gray-300 rounded-full">
-                                        <button class="decrement-btn p-2 hover:bg-gray-100 rounded-l-full transition-colors duration-200">
-                                            <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path>
-                                            </svg>
-                                        </button>
-                                        <span class="quantity px-4 py-2 text-sm font-medium">1</span>
-                                        <button class="increment-btn p-2 hover:bg-gray-100 rounded-r-full transition-colors duration-200">
-                                            <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                                            </svg>
-                                        </button>
-                                    </div>
-                                </div>
-                                
-                                <!-- Shipping Info -->
-                                <div class="flex items-center justify-between text-sm">
-                                    <div class="flex items-center space-x-2">
-                                        <span class="bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs font-medium">Out Of Stock</span>
-                                    </div>
-                                    <span class="font-medium text-green-600">Free Delivery</span>
-                                </div>
-                            </div>
-
-                            <!-- Delete Button -->
-                            <div class="flex-shrink-0">
-                                <button class="delete-btn p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors duration-200">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
+                    {% endfor %}
                 </div>
 
                 <!-- Order Summary -->
                 <div class="lg:col-span-1">
                     <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 sticky top-8">
-                        <h2 class="text-xl font-bold text-gray-900 mb-6">Summary</h2>
+                        <h2 class="text-xl font-bold text-gray-900 mb-6">Order Summary</h2>
                         
                         <!-- Order Details -->
                         <div class="space-y-4 mb-6">
                             <div class="flex justify-between">
-                                <span class="text-gray-600">Sub Total</span>
-                                <span class="font-semibold" id="subtotal">₹18,000.00</span>
+                                <span class="text-gray-600">Subtotal ({{ total_items }} items)</span>
+                                <span class="font-semibold" id="subtotal">₹{{ subtotal|floatformat:2 }}</span>
                             </div>
                             <div class="flex justify-between">
-                                <span class="text-gray-600">Estimated delivery charge</span>
-                                <span class="font-semibold text-green-600">Free Delivery</span>
+                                <span class="text-gray-600">Delivery Charge</span>
+                                <span class="font-semibold text-green-600">Free</span>
                             </div>
                             <hr class="border-gray-200">
                             <div class="flex justify-between text-lg font-bold">
                                 <span>Total</span>
-                                <span id="total">₹18,000.00</span>
+                                <span id="total">₹{{ total|floatformat:2 }}</span>
                             </div>
                         </div>
                         
                         <!-- Checkout Button -->
-                        <a href="{% url 'checkout' %}" 
-                            class="block w-full text-center bg-black text-white py-3 px-4 rounded-lg font-semibold hover:bg-gray-800 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2">
-                            Checkout
-                        </a>
-
+                        {% if can_checkout %}
+                            <a href="{% url 'checkout' %}" 
+                                class="block w-full text-center bg-black text-white py-3 px-4 rounded-lg font-semibold hover:bg-gray-800 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2">
+                                Proceed to Checkout
+                            </a>
+                        {% else %}
+                            <button disabled
+                                class="block w-full text-center bg-gray-400 text-white py-3 px-4 rounded-lg font-semibold cursor-not-allowed">
+                                Cannot Checkout
+                            </button>
+                            <p class="text-xs text-red-600 mt-2 text-center">Remove unavailable items to continue</p>
+                        {% endif %}
                         
                         <!-- Continue Shopping -->
-                        <button class="w-full mt-3 bg-gray-100 text-gray-700 py-3 px-4 rounded-lg font-semibold hover:bg-gray-200 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2">
+                        <a href="{% url 'home' %}" 
+                            class="block w-full text-center mt-3 bg-gray-100 text-gray-700 py-3 px-4 rounded-lg font-semibold hover:bg-gray-200 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2">
                             Continue Shopping
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            {% else %}
+            <!-- Empty Cart -->
+            <div class="text-center py-16">
+                <svg class="mx-auto h-24 w-24 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+                </svg>
+                <h3 class="mt-4 text-2xl font-semibold text-gray-900">Your cart is empty</h3>
+                <p class="mt-2 text-gray-600">Start shopping to add items to your cart</p>
+                <a href="{% url 'home' %}" 
+                    class="mt-6 inline-block bg-black text-white px-8 py-3 rounded-lg font-semibold hover:bg-gray-800 transition-colors duration-200">
+                    Continue Shopping
+                </a>
+            </div>
+            {% endif %}
+
+            <!-- Delete Confirmation Modal -->
+            <div id="deleteModal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center hidden">
+                <div class="bg-white rounded-lg shadow-lg p-6 max-w-md w-full">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-gray-900">Confirm Removal</h3>
+                        <button id="closeModal" class="text-gray-400 hover:text-gray-600">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    <p class="text-gray-600 mb-6">Are you sure you want to remove "<span id="itemName"></span>" from your cart?</p>
+                    <div class="flex justify-end space-x-3">
+                        <button id="cancelDelete" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors duration-200">
+                            Cancel
+                        </button>
+                        <button id="confirmDelete" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors duration-200">
+                            Remove
                         </button>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</body>
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const cartContainer = document.getElementById('cartItems');
-    
-    // Function to update totals
-    function updateTotals() {
-        let subtotal = 0;
-        const cartItems = document.querySelectorAll('.cart-item');
-        
-        cartItems.forEach(item => {
-            const quantity = parseInt(item.querySelector('.quantity').textContent);
-            const price = parseInt(item.querySelector('.item-price').dataset.price);
-            subtotal += quantity * price;
+    // Handle quantity form submissions
+    document.querySelectorAll('.cart-item form').forEach(form => {
+        form.addEventListener('submit', function(e) {
+            const button = e.submitter;
+            button.disabled = true;
+            button.classList.add('opacity-50', 'cursor-not-allowed');
         });
-        
-        document.getElementById('subtotal').textContent = `₹${subtotal.toLocaleString()}.00`;
-        document.getElementById('total').textContent = `₹${subtotal.toLocaleString()}.00`;
+    });
+
+    // Modal handling for delete confirmation
+    const modal = document.getElementById('deleteModal');
+    const itemNameSpan = document.getElementById('itemName');
+    const closeModalBtn = document.getElementById('closeModal');
+    const cancelDeleteBtn = document.getElementById('cancelDelete');
+    const confirmDeleteBtn = document.getElementById('confirmDelete');
+    let activeForm = null;
+
+    function showDeleteModal(itemId, itemName) {
+        itemNameSpan.textContent = itemName;
+        activeForm = document.querySelector(`form[data-item-id="${itemId}"]`);
+        modal.classList.remove('hidden');
     }
-    
-    // Event delegation for increment buttons
-    cartContainer.addEventListener('click', function(e) {
-        if (e.target.closest('.increment-btn')) {
-            const cartItem = e.target.closest('.cart-item');
-            const quantityElement = cartItem.querySelector('.quantity');
-            const currentQuantity = parseInt(quantityElement.textContent);
-            
-            quantityElement.textContent = currentQuantity + 1;
-            updateTotals();
-            console.log('Quantity increased to:', currentQuantity + 1);
+
+    function closeModal() {
+        modal.classList.add('hidden');
+        activeForm = null;
+        itemNameSpan.textContent = '';
+    }
+
+    // Event listeners for modal buttons
+    closeModalBtn.addEventListener('click', closeModal);
+    cancelDeleteBtn.addEventListener('click', closeModal);
+    confirmDeleteBtn.addEventListener('click', () => {
+        if (activeForm) {
+            activeForm.submit();
+        }
+        closeModal();
+    });
+
+    // Close modal when clicking outside
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            closeModal();
         }
     });
-    
-    // Event delegation for decrement buttons
-    cartContainer.addEventListener('click', function(e) {
-        if (e.target.closest('.decrement-btn')) {
-            const cartItem = e.target.closest('.cart-item');
-            const quantityElement = cartItem.querySelector('.quantity');
-            const currentQuantity = parseInt(quantityElement.textContent);
-            
-            if (currentQuantity > 1) {
-                quantityElement.textContent = currentQuantity - 1;
-                updateTotals();
-                console.log('Quantity decreased to:', currentQuantity - 1);
-            }
-        }
+
+    // Open modal on delete button click
+    document.querySelectorAll('.delete-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const form = this.closest('form');
+            const itemId = form.dataset.itemId;
+            const itemName = this.closest('.cart-item').querySelector('h3').textContent;
+            showDeleteModal(itemId, itemName);
+        });
     });
+
+    // Message popup handling
+    const messagePopupsContainer = document.getElementById('messagePopups');
     
-    // Event delegation for delete buttons
-    cartContainer.addEventListener('click', function(e) {
-        if (e.target.closest('.delete-btn')) {
-            const cartItem = e.target.closest('.cart-item');
-            
-            if (confirm('Are you sure you want to remove this item from your cart?')) {
-                cartItem.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
-                cartItem.style.opacity = '0';
-                cartItem.style.transform = 'translateX(100%)';
-                
-                setTimeout(() => {
-                    cartItem.remove();
-                    updateTotals();
-                    console.log('Item removed from cart');
-                }, 300);
+    // Django messages passed from template
+    const messages = [
+        {% for message in messages %}
+            {
+                text: "{{ message|escapejs }}",
+                tag: "{{ message.tags|escapejs }}"
+            }{% if not forloop.last %},{% endif %}
+        {% endfor %}
+    ];
+
+    function showMessagePopup(message, tag) {
+        // Determine popup styling based on message tag
+        const bgColor = {
+            'success': 'bg-green-100 text-green-800 border-green-300',
+            'error': 'bg-red-100 text-red-800 border-red-300',
+            'warning': 'bg-yellow-100 text-yellow-800 border-yellow-300',
+            'info': 'bg-blue-100 text-blue-800 border-blue-300'
+        }[tag] || 'bg-blue-100 text-blue-800 border-blue-300';
+
+        // Create popup element
+        const popup = document.createElement('div');
+        popup.className = `w-80 bg-white rounded-lg shadow-xl border p-4 transform transition-all duration-300 ${bgColor} opacity-0 scale-0`;
+        popup.innerHTML = `
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-sm font-semibold">${tag.charAt(0).toUpperCase() + tag.slice(1)}</span>
+                <button class="close-message text-gray-400 hover:text-gray-600">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <p class="text-sm">${message}</p>
+        `;
+
+        // Append to container
+        messagePopupsContainer.appendChild(popup);
+
+        // Trigger animation
+        setTimeout(() => {
+            popup.classList.remove('scale-0', 'opacity-0');
+            popup.classList.add('scale-100', 'opacity-100');
+        }, 100);
+
+        // Auto-close after 5 seconds
+        setTimeout(() => {
+            closeMessagePopup(popup);
+        }, 5000);
+
+        // Close button event listener
+        popup.querySelector('.close-message').addEventListener('click', () => {
+            closeMessagePopup(popup);
+        });
+    }
+
+    function closeMessagePopup(popup) {
+        popup.classList.remove('scale-100', 'opacity-100');
+        popup.classList.add('scale-0', 'opacity-0');
+        setTimeout(() => {
+            if (popup.parentNode) {
+                popup.parentNode.removeChild(popup);
             }
+        }, 300);
+    }
+
+    // Show all messages as popups
+    messages.forEach(msg => {
+        showMessagePopup(msg.text, msg.tag);
+    });
+
+    // Close message popup when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('#messagePopups') && !e.target.closest('.delete-btn') && !e.target.closest('#deleteModal')) {
+            document.querySelectorAll('#messagePopups > div').forEach(popup => {
+                if (popup.classList.contains('scale-100')) {
+                    closeMessagePopup(popup);
+                }
+            });
         }
     });
 });
