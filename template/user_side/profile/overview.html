@@ -248,7 +248,7 @@
                 <div id="addresses" class="bg-white rounded-lg shadow-sm border p-6 mb-6">
                     <div class="flex items-center justify-between mb-6">
                         <h2 class="text-2xl font-bold text-gray-900">Saved Addresses</h2>
-                        <a href="{% url 'add_address' %}" class="hover-popup bg-success text-white px-4 py-2 rounded-md hover:bg-success/90 transition-colors duration-200">
+                        <a href="{% url 'add_address' %}?next={% url 'profile' %}" class="hover-popup bg-success text-white px-4 py-2 rounded-md hover:bg-success/90 transition-colors duration-200">
                             + Add New Address
                         </a>
                     </div>
@@ -275,7 +275,7 @@
                                             <!-- Action buttons -->
                                             <div class="flex gap-2 address-action-btn">
                                                 <!-- Edit icon link -->
-                                                <a href="{% url 'edit_address' address.id %}"
+                                                <a href="{% url 'edit_address' address.id %}?next={% url 'profile' %}"
                                                 class="text-gray-400 hover:text-blue-600 transition-colors"
                                                 title="Edit address"
                                                 onclick="event.stopPropagation()">

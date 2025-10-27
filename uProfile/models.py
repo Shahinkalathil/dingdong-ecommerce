@@ -54,23 +54,17 @@ class Address(models.Model):
         return f"{self.full_name} - {self.address_type} ({self.town_city})"
     
     def save(self, *args, **kwargs):
-        # If this address is being set as default
         if self.is_default:
-            # Remove default flag from all other addresses of this user
-            # Exclude current instance if it already exists (during update)
             Address.objects.filter(
                 user=self.user, 
                 is_default=True
             ).exclude(pk=self.pk).update(is_default=False)
         else:
-            # If this is the first address for the user, make it default automatically
             if not self.pk and not Address.objects.filter(user=self.user).exists():
                 self.is_default = True
-            # If user tries to unset default on the only/last default address
             elif self.pk and Address.objects.filter(user=self.user, is_default=True).count() == 1:
                 existing_default = Address.objects.filter(user=self.user, is_default=True).first()
                 if existing_default and existing_default.pk == self.pk:
-                    # Don't allow unsetting default if it's the only address
                     if Address.objects.filter(user=self.user).count() == 1:
                         self.is_default = True
         
@@ -85,12 +79,9 @@ class Address(models.Model):
         user = self.user
         
         super().delete(*args, **kwargs)
-        
-        # If we deleted a default address, set another one as default
         if is_default_being_deleted:
             remaining_addresses = Address.objects.filter(user=user)
             if remaining_addresses.exists():
-                # Make the most recent address the default
                 new_default = remaining_addresses.first()
                 new_default.is_default = True
                 new_default.save()
