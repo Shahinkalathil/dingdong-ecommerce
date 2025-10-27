@@ -4,6 +4,7 @@
 {% block title %}DINGDONG - Cart{% endblock %}
 {% block Script %}
     <script>
+        //  Tailwind runtime theme config 
         tailwind.config = {
             theme: {
                 extend: {
@@ -23,75 +24,74 @@
 </head>
 {% block content %}
 <body class="bg-gray-50 font-sans">
+    <!-- Page container -->
     <div class="min-h-screen py-8">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
              
+            <!-- Page heading  -->
             <div class="text-center mb-8">
                 <h1 class="text-3xl font-bold text-gray-900">CHECKOUT</h1>
             </div>
 
+            <!--  Main grid layout (content + summary) --> 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 
-
+                <!--  Left column: Items + Address + Payment  -->
                 <div class="lg:col-span-2 space-y-8">
                     
-                    
+                    <!--  Order items list  -->
                     <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                         <h2 class="text-xl font-semibold text-gray-900 mb-6">Order Items</h2>
                         
-                        
+                        {% for item in cart_items %}
                         <div class="flex items-center space-x-4 pb-6 border-b border-gray-200 mb-6">
-                            <img src="/placeholder.svg?height=80&width=80" 
-                                 alt="Longines Conquest Classic" 
-                                 class="w-20 h-20 object-cover rounded-lg border border-gray-200">
-                            <div class="flex-1">
-                                <h3 class="font-semibold text-gray-900">Longines CONQUEST CLASSIC L2.386.4.52.6</h3>
-                                <p class="text-sm text-gray-600">L23864526</p>
-                                <div class="flex items-center mt-2">
-                                    <span class="text-sm text-gray-600">Qty: 1</span>
-                                    <span class="mx-2 text-gray-400">|</span>
-                                    <span class="text-sm font-medium text-gray-900">₹9,000.00</span>
-                                    <span class="ml-2 text-sm text-gray-500 line-through">₹52,000.00</span>
-                                </div>
-                            </div>
-                        </div>
+                            <!-- Product Image -->
+                            {% if item.first_image %}
+                                <img src="{{ item.first_image.image.url }}" 
+                                    alt="{{ item.variant.product.name }}" 
+                                    class="w-20 h-20 object-cover rounded-lg border border-gray-200">
+                            {% else %}
+                                <img src="/static/img/placeholder.svg" 
+                                    alt="No image" 
+                                    class="w-20 h-20 object-cover rounded-lg border border-gray-200">
+                            {% endif %}
 
-                       
-                        <div class="flex items-center space-x-4 pb-6 border-b border-gray-200 mb-6">
-                            <img src="/placeholder.svg?height=80&width=80" 
-                                 alt="Rado True Thinline" 
-                                 class="w-20 h-20 object-cover rounded-lg border border-gray-200">
                             <div class="flex-1">
-                                <h3 class="font-semibold text-gray-900">Rado True Thinline Les Couleurs™ Le Corbusier</h3>
-                                <p class="text-sm text-gray-600">R27091612 Unisex Watch</p>
-                                <div class="flex items-center mt-2">
-                                    <span class="text-sm text-gray-600">Qty: 1</span>
-                                    <span class="mx-2 text-gray-400">|</span>
-                                    <span class="text-sm font-medium text-gray-900">₹2,900.00</span>
-                                    <span class="ml-2 text-sm text-gray-500 line-through">₹52,000.00</span>
-                                </div>
-                            </div>
-                        </div>
+                                <h3 class="font-semibold text-gray-900">
+                                    {{ item.variant.product.name }}
+                                </h3>
 
-                    
-                        <div class="flex items-center space-x-4">
-                            <img src="/placeholder.svg?height=80&width=80" 
-                                 alt="Tissot T-Touch Connect Sport" 
-                                 class="w-20 h-20 object-cover rounded-lg border border-gray-200">
-                            <div class="flex-1">
-                                <h3 class="font-semibold text-gray-900">Tissot T-Touch Connect Sport T153.420.47.051.04</h3>
-                                <p class="text-sm text-gray-600">T153420470510</p>
+                                <!-- Color -->
+                                <div class="flex items-center space-x-2 mb-3">
+                                    <span class="text-sm text-gray-600">Color:</span>
+                                    <div class="flex items-center space-x-2">
+                                        <div class="w-5 h-5 rounded-full border border-gray-300" 
+                                            style="background-color: {{ item.variant.color_code }}"
+                                            title="{{ item.variant.color_name }}"></div>
+                                        <span class="text-sm text-gray-700">
+                                            {{ item.variant.color_name }}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <!-- Quantity and Prices -->
                                 <div class="flex items-center mt-2">
-                                    <span class="text-sm text-gray-600">Qty: 1</span>
+                                    <span class="text-sm text-gray-600">Qty: {{ item.quantity }}</span>
                                     <span class="mx-2 text-gray-400">|</span>
-                                    <span class="text-sm font-medium text-gray-900">₹1,400.00</span>
-                                    <span class="ml-2 text-sm text-gray-500 line-through">₹52,000.00</span>
+                                    <span class="text-sm font-medium text-gray-900">
+                                        ₹{{ item.variant.price }} × {{ item.quantity }} |
+                                    </span>
+                                    <span class="ml-2 text-sm font-medium text-gray-900">
+                                        ₹{{ item.get_subtotal }}
+                                    </span>
                                 </div>
                             </div>
                         </div>
+                        {% endfor %}
                     </div>
 
-                    
+
+                    <!--  Delivery address selection  -->
                     <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                         <div class="flex items-center justify-between mb-6">
                             <h2 class="text-xl font-semibold text-gray-900">1. Delivery Address</h2>
@@ -100,8 +100,9 @@
                             </button>
                         </div>
 
-                        
+                        <!-- Saved addresses -->
                         <div class="space-y-4">
+                            <!-- Default address -->
                             <div class="border-2 border-blue-500 rounded-lg p-4 bg-blue-50">
                                 <div class="flex items-start justify-between">
                                     <div class="flex items-start space-x-3">
@@ -124,7 +125,7 @@
                                 </div>
                             </div>
 
-                           
+                            <!-- Work address -->
                             <div class="border border-gray-200 rounded-lg p-4 hover:border-gray-300 transition-colors duration-200">
                                 <div class="flex items-start justify-between">
                                     <div class="flex items-start space-x-3">
@@ -144,7 +145,7 @@
                                 </div>
                             </div>
 
-                           
+                            <!-- Add new address CTA -->
                             <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 hover:border-gray-400 transition-colors duration-200">
                                 <button class="w-full text-left">
                                     <div class="flex items-center space-x-3">
@@ -162,7 +163,7 @@
                             </div>
                         </div>
 
-                        
+                        <!-- Delivery instructions CTA -->
                         <div class="mt-6 pt-6 border-t border-gray-200">
                             <button class="text-blue-600 hover:text-blue-800 font-medium text-sm">
                                 Add Delivery Instructions
@@ -170,12 +171,12 @@
                         </div>
                     </div>
 
-                    
+                    <!-- Payment method selection -->
                     <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                         <h2 class="text-xl font-semibold text-gray-900 mb-6">2. Select a Payment Method</h2>
                         
                         <div class="space-y-4">
-                             Credit/Debit Card 
+                            <!-- Card -->
                             <div class="border border-gray-200 rounded-lg p-4 hover:border-blue-300 transition-colors duration-200">
                                 <label class="flex items-start space-x-3 cursor-pointer">
                                     <input type="radio" name="payment" value="card" 
@@ -191,6 +192,7 @@
                                 </label>
                             </div>
 
+                            <!-- Net banking -->
                             <div class="border border-gray-200 rounded-lg p-4 hover:border-blue-300 transition-colors duration-200">
                                 <label class="flex items-start space-x-3 cursor-pointer">
                                     <input type="radio" name="payment" value="netbanking" 
@@ -209,7 +211,7 @@
                                 </label>
                             </div>
 
-                        
+                            <!-- UPI -->
                             <div class="border border-gray-200 rounded-lg p-4 hover:border-blue-300 transition-colors duration-200">
                                 <label class="flex items-center space-x-3 cursor-pointer">
                                     <input type="radio" name="payment" value="upi" 
@@ -218,7 +220,7 @@
                                 </label>
                             </div>
 
-                        
+                            <!-- EMI -->
                             <div class="border border-gray-200 rounded-lg p-4 hover:border-blue-300 transition-colors duration-200">
                                 <label class="flex items-center space-x-3 cursor-pointer">
                                     <input type="radio" name="payment" value="emi" 
@@ -227,7 +229,7 @@
                                 </label>
                             </div>
 
-                           
+                            <!-- COD -->
                             <div class="border border-gray-200 rounded-lg p-4 hover:border-blue-300 transition-colors duration-200">
                                 <label class="flex items-center space-x-3 cursor-pointer">
                                     <input type="radio" name="payment" value="cod" 
@@ -239,19 +241,20 @@
                     </div>
                 </div>
 
-              
+                <!--  Right column: Order summary + Modal -->
                 <div class="lg:col-span-1">
                     <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 sticky top-8">
                         
+                        <!-- Cart total (top) -->
                         <div class="text-right mb-6">
                             <span class="text-2xl font-bold text-gray-900">₹ 13,300.00</span>
                         </div>
 
-                      
+                        <!-- Order summary card -->
                         <div class="bg-gray-50 rounded-lg p-4 mb-6">
                             <h3 class="text-lg font-semibold text-gray-900 mb-4">Order Summary</h3>
                             
-                           
+                            <!-- Promo code -->
                             <div class="mb-4">
                                 <label for="promo-code" class="block text-sm font-medium text-gray-700 mb-2">Promo code</label>
                                 <div class="flex space-x-2">
@@ -266,7 +269,7 @@
                                 </div>
                             </div>
                             
-                          
+                            <!-- Price breakdown -->
                             <div class="space-y-3 text-sm">
                                 <div class="flex justify-between">
                                     <span class="text-gray-600">Sub Total</span>
@@ -292,7 +295,6 @@
                             </div>
                         </div>
                         
-                        
                         <!-- Place Order Button -->
                         <div class="max-w-md mx-auto">
                             <button id="placeOrderBtn" class="w-full bg-yellow-400 text-white py-4 px-6 rounded-lg font-semibold text-lg hover:bg-yellow-500 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-2 shadow-lg">
@@ -300,7 +302,7 @@
                             </button>
                         </div>
                         
-                        
+                        <!-- Secure checkout note -->
                         <div class="mt-4 text-center">
                             <div class="flex items-center justify-center space-x-2 text-sm text-gray-600">
                                 <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -310,11 +312,12 @@
                             </div>
                         </div>
 
-                        <!-- Modal Overlay -->
+                        <!-- ========= Order confirmation modal ========= -->
                         <div id="orderModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 opacity-0 pointer-events-none transition-opacity duration-300">
-                            <!-- Modal Content -->
+                            <!-- Modal content -->
                             <div id="modalContent" class="bg-white rounded-3xl shadow-2xl p-6 max-w-sm w-full text-center relative transform scale-75 transition-transform duration-300" style="border-radius: 24px;">
-                                <!-- Success Icon -->
+                                
+                                <!-- Success icon (animated) -->
                                 <div class="relative mb-6">
                                     <div class="mx-auto w-16 h-16 relative">
                                         <svg class="w-16 h-16 mx-auto" viewBox="0 0 100 100">
@@ -344,7 +347,7 @@
                                     <div class="absolute inset-0 rounded-full bg-green-100 animate-pulse -z-10"></div>
                                 </div>
                                 
-                                <!-- Success Message -->
+                                <!-- Success message -->
                                 <div class="mb-6 opacity-0 animate-[fadeInUp_0.8s_ease-out_0.8s_forwards] transform translate-y-8">
                                     <h1 class="text-2xl font-bold text-gray-800 mb-2">
                                         Order Confirmed!
@@ -357,7 +360,7 @@
                                     </p>
                                 </div>
                                 
-                                <!-- Order Details -->
+                                <!-- Order details -->
                                 <div class="bg-gray-50 rounded-2xl p-4 mb-6 opacity-0 animate-[fadeInUp_0.8s_ease-out_1.2s_forwards] transform translate-y-8">
                                     <div class="flex justify-between items-center mb-2">
                                         <span class="text-gray-600 font-medium text-sm">Order Number:</span>
@@ -373,7 +376,7 @@
                                     </div>
                                 </div>
                                 
-                                <!-- Status Timeline -->
+                                <!-- Status timeline -->
                                 <div class="mb-6 opacity-0 animate-[fadeInUp_0.8s_ease-out_1.4s_forwards] transform translate-y-8">
                                     <h3 class="text-base font-semibold text-gray-800 mb-3">Order Status</h3>
                                     <div class="flex items-center justify-between">
@@ -409,7 +412,7 @@
                                     </div>
                                 </div>
                                 
-                                <!-- Action Buttons -->
+                                <!-- Modal actions -->
                                 <div class="space-y-3 opacity-0 animate-[fadeInUp_0.8s_ease-out_1.6s_forwards] transform translate-y-8">
                                     <button class="w-full bg-black text-white py-3 px-4 rounded-2xl font-semibold text-sm hover:bg-gray-800 transition-all duration-300 transform hover:scale-105 hover:shadow-lg">
                                         Track Your Order
@@ -420,6 +423,7 @@
                                 </div>
                             </div>
                         </div>
+                        <!-- ========= End modal ========= -->
                     </div>
                 </div>
             </div>
@@ -427,12 +431,13 @@
     </div>
 
    <script>
+        // Modal element refs
         const placeOrderBtn = document.getElementById('placeOrderBtn');
         const orderModal = document.getElementById('orderModal');
         const modalContent = document.getElementById('modalContent');
         const closeModal = document.getElementById('closeModal');
 
-        // Open modal
+        //  Open modal with scale + fade 
         placeOrderBtn.addEventListener('click', function() {
             orderModal.classList.remove('opacity-0', 'pointer-events-none');
             orderModal.classList.add('opacity-100', 'pointer-events-auto');
@@ -442,14 +447,14 @@
                 modalContent.classList.add('scale-100');
             }, 50);
 
-            // Animate progress bar
+            // Progress bar animation kickoff
             setTimeout(() => {
                 const progressBar = document.getElementById('progressBar');
                 progressBar.style.width = '50%';
             }, 2000);
         });
 
-        // Close modal
+        // Close modal helper 
         function closeModalFunction() {
             modalContent.classList.remove('scale-100');
             modalContent.classList.add('scale-75');
@@ -460,23 +465,24 @@
             }, 300);
         }
 
+        // Close via button
         closeModal.addEventListener('click', closeModalFunction);
 
-        // Close modal when clicking outside
+        // Close when clicking backdrop
         orderModal.addEventListener('click', function(e) {
             if (e.target === orderModal) {
                 closeModalFunction();
             }
         });
 
-        // Close modal with Escape key
+        // Close with Escape key
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape' && orderModal.classList.contains('opacity-100')) {
                 closeModalFunction();
             }
         });
 
-        // Add click animation to buttons
+        // Button click micro-interaction (scale) 
         document.querySelectorAll('button').forEach(button => {
             button.addEventListener('click', function() {
                 this.style.transform = 'scale(0.95)';
@@ -491,52 +497,30 @@
     </script>
 
     <style>
+        /*  SVG stroke draw animation (circle)  */
         @keyframes draw-circle {
-            0% {
-                stroke-dashoffset: 314;
-                opacity: 0;
-            }
-            50% {
-                opacity: 1;
-            }
-            100% {
-                stroke-dashoffset: 0;
-                opacity: 1;
-            }
+            0% { stroke-dashoffset: 314; opacity: 0; }
+            50% { opacity: 1; }
+            100% { stroke-dashoffset: 0; opacity: 1; }
         }
         
+        /*  SVG stroke draw animation (checkmark)  */
         @keyframes draw-checkmark {
-            0% {
-                stroke-dashoffset: 100;
-                opacity: 0;
-            }
-            50% {
-                opacity: 1;
-            }
-            100% {
-                stroke-dashoffset: 0;
-                opacity: 1;
-            }
+            0% { stroke-dashoffset: 100; opacity: 0; }
+            50% { opacity: 1; }
+            100% { stroke-dashoffset: 0; opacity: 1; }
         }
         
+        /*  Fade-in up utility for modal content  */
         @keyframes fadeInUp {
-            0% {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            100% {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            0% { opacity: 0; transform: translateY(30px); }
+            100% { opacity: 1; transform: translateY(0); }
         }
         
+        /* Status bar fill animation */
         @keyframes progress-bar {
-            0% {
-                width: 0%;
-            }
-            100% {
-                width: 50%;
-            }
+            0% { width: 0%; }
+            100% { width: 50%; }
         }
     </style>
 {% endblock %}

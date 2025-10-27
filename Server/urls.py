@@ -29,6 +29,7 @@ urlpatterns = [
     path('dashboard/', include('dashboard.urls')),
     path('profile/', include('uProfile.urls')),
     path('cart/', include('cart.urls')),
+    path('checkout/', include('checkout.urls')),
 ]
 
 # Serve static files during development
