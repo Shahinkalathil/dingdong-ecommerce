@@ -71,6 +71,7 @@ INSTALLED_APPS = [
     'products',
     'uProfile',
     'cart',
+    'checkout',
 
     'admin_panel',
     'dashboard',
