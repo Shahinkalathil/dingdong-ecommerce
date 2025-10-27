@@ -5,6 +5,7 @@ from userlogin.models import CustomUser
 from django.http import JsonResponse
 from django.contrib.auth import update_session_auth_hash
 from .models import Address
+from django.urls import reverse
 import re
 import logging
 from django.views.decorators.http import require_http_methods
@@ -131,6 +132,7 @@ def edit_profile(request, id):
 
 @login_required
 def add_address(request):
+    next_url = request.GET.get('next', None)
     if request.method == 'POST':
         errors = {}
         is_valid = True
@@ -290,22 +292,24 @@ def add_address(request):
                 )
                 
                 messages.success(request, "Address added successfully!")
+                if next_url:
+                    return redirect(next_url)
                 return redirect('profile')
                 
             except Exception as e:
                 messages.error(request, f"An error occurred while saving the address: {str(e)}")
                 return render(request, 'user_side/profile/add_address.html', {
                     'errors': errors,
-                    'form_data': request.POST
+                    'form_data': request.POST,
+                    'next': next_url, 
                 })
         else:
             return render(request, 'user_side/profile/add_address.html', {
                 'errors': errors,
-                'form_data': request.POST
+                'form_data': request.POST,
+                'next': next_url, 
             })
-    
-    
-    return render(request, 'user_side/profile/add_address.html')
+    return render(request, 'user_side/profile/add_address.html', {'next': next_url,})
 
 @login_required
 def edit_address(request, address_id):
@@ -313,8 +317,10 @@ def edit_address(request, address_id):
     Edit an existing address with validation and duplicate prevention
     """
     address = get_object_or_404(Address, id=address_id, user=request.user)
+    next_url = request.GET.get('next', reverse('profile'))
     
     if request.method == 'POST':
+        next_url = request.POST.get('next', next_url)
         country = request.POST.get('country', '').strip()
         full_name = request.POST.get('full_name', '').strip()
         mobile_number = request.POST.get('mobile_number', '').strip()
@@ -414,6 +420,7 @@ def edit_address(request, address_id):
                     'state': state,
                     'address_type': address_type,
                     'is_default': is_default,
+                    'next': next_url,
                 }
             }
             return render(request, 'user_side/profile/edit_address.html', context)
@@ -432,7 +439,7 @@ def edit_address(request, address_id):
             address.save()
             
             messages.success(request, f'{address_type} address updated successfully!')
-            return redirect('profile')
+            return redirect(next_url)
             
         except Exception as e:
             messages.error(request, f'Error updating address: {str(e)}')
@@ -451,13 +458,15 @@ def edit_address(request, address_id):
                     'state': state,
                     'address_type': address_type,
                     'is_default': is_default,
+                    'next': next_url,
                 }
             }
             return render(request, 'user_side/profile/edit_address.html', context)
     context = {
         'address': address,
         'errors': {},
-        'form_data': {}
+        'form_data': {},
+        'next': next_url,
     }
     return render(request, 'user_side/profile/edit_address.html', context)
 
