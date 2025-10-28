@@ -329,7 +329,7 @@
             
             <!-- Modal actions -->
             <div class="space-y-3 opacity-0" id="modalActions">
-                <a href="{% url 'order' %}" class="block w-full bg-white text-white py-3 px-4 rounded-2xl font-semibold text-sm hover:bg-gray-800 transition-all duration-300">
+                <a href="{% url 'order' %}" class="block w-full bg-white text-black border border-black py-3 px-4 rounded-2xl font-semibold text-sm transition-all duration-300">
                     track order
                 </a>
                 <a href="{% url 'home' %}" class="block w-full bg-black text-white py-3 px-4 rounded-2xl font-semibold text-sm hover:bg-gray-800 transition-all duration-300">
@@ -348,154 +348,163 @@
     </div>
     </div>
 <script>
-        // --- Utility: Get CSRF token ---
-        function getCookie(name) {
-            let cookieValue = null;
-            if (document.cookie && document.cookie !== '') {
-                const cookies = document.cookie.split(';');
-                for (let i = 0; i < cookies.length; i++) {
+    // --- Utility: Get CSRF token ---
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
                 const cookie = cookies[i].trim();
                 if (cookie.substring(0, name.length + 1) === (name + '=')) {
                     cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
                     break;
                 }
-                }
             }
-            return cookieValue;
-            }
+        }
+        return cookieValue;
+    }
 
-            // --- Modal Controls ---
-            function showMessageModal(title, message) {
-            document.getElementById('messageTitle').textContent = title;
-            document.getElementById('messageText').textContent = message;
-            document.getElementById('messageModal').classList.remove('hidden');
-            }
+    // --- Modal Controls ---
+    function showMessageModal(title, message) {
+        document.getElementById('messageTitle').textContent = title;
+        document.getElementById('messageText').textContent = message;
+        document.getElementById('messageModal').classList.remove('hidden');
+    }
 
-            function closeMessageModal() {
-            document.getElementById('messageModal').classList.add('hidden');
-            }
+    function closeMessageModal() {
+        document.getElementById('messageModal').classList.add('hidden');
+    }
 
-            // --- Form Submission Logic ---
-            const form = document.getElementById('placeOrderForm');
-            const loadingOverlay = document.getElementById('loadingOverlay');
-            const placeOrderBtn = document.getElementById('placeOrderBtn');
+    // --- Show Order Success Modal with Animation ---
+    function showOrderModal(orderData) {
+        const modal = document.getElementById('orderModal');
+        const modalContent = document.getElementById('modalContent');
+        const modalMessage = document.getElementById('modalMessage');
+        const modalDetails = document.getElementById('modalDetails');
+        const modalTimeline = document.getElementById('modalTimeline');
+        const modalActions = document.getElementById('modalActions');
+        const progressBar = document.getElementById('progressBar');
+        const successCircle = document.getElementById('successCircle');
+        const successCheck = document.getElementById('successCheck');
+        const orderNumber = document.getElementById('orderNumber');
+        const orderTotal = document.getElementById('orderTotal');
+        
+        // Set order data
+        orderNumber.textContent = '#' + orderData.order_number;
+        orderTotal.textContent = '₹' + orderData.total_amount;
+        
+        // Show modal
+        modal.classList.remove('hidden');
+        
+        // Animate modal entrance
+        setTimeout(() => {
+            modalContent.classList.remove('scale-0');
+            modalContent.classList.add('scale-100');
+            
+            // Animate SVG circle
+            setTimeout(() => {
+                successCircle.style.opacity = '1';
+                successCircle.style.strokeDashoffset = '0';
+                successCircle.style.transition = 'stroke-dashoffset 1s ease-in-out';
+            }, 200);
+            
+            // Animate SVG checkmark
+            setTimeout(() => {
+                successCheck.style.opacity = '1';
+                successCheck.style.strokeDashoffset = '0';
+                successCheck.style.transition = 'stroke-dashoffset 0.6s ease-in-out';
+            }, 800);
+            
+            // Fade in message section
+            setTimeout(() => { 
+                modalMessage.style.opacity = '1';
+                modalMessage.style.transition = 'opacity 0.8s ease-out';
+            }, 1000);
+            
+            // Fade in details section
+            setTimeout(() => { 
+                modalDetails.style.opacity = '1';
+                modalDetails.style.transition = 'opacity 0.8s ease-out';
+            }, 1200);
+            
+            // Fade in timeline section
+            setTimeout(() => { 
+                modalTimeline.style.opacity = '1';
+                modalTimeline.style.transition = 'opacity 0.8s ease-out';
+            }, 1400);
+            
+            // Fade in action buttons
+            setTimeout(() => { 
+                modalActions.style.opacity = '1';
+                modalActions.style.transition = 'opacity 0.8s ease-out';
+            }, 1600);
+            
+            // Progress bar animation
+            setTimeout(() => {
+                progressBar.style.width = '50%';
+            }, 1800);
+            
+            
+        }, 100);
+    }
 
-            if (form) {
-            form.addEventListener('submit', async function(e) {
-                e.preventDefault();
+    // --- Form Submission Logic ---
+    const form = document.getElementById('placeOrderForm');
+    const loadingOverlay = document.getElementById('loadingOverlay');
+    const placeOrderBtn = document.getElementById('placeOrderBtn');
 
-                // Show loading
-                loadingOverlay.classList.remove('hidden');
-                placeOrderBtn.disabled = true;
-                placeOrderBtn.textContent = 'Processing...';
+    if (form) {
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
 
-                try {
-                const response = await fetch('{% url "place_order" %}', {
+            // Show loading overlay
+            loadingOverlay.classList.remove('hidden');
+            placeOrderBtn.disabled = true;
+            placeOrderBtn.textContent = 'Processing...';
+
+            try {
+                const response = await fetch('/checkout/place-order/', { // Update with your actual URL
                     method: 'POST',
                     headers: {
-                    'X-CSRFToken': getCookie('csrftoken'),
-                    'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken'),
+                        'Content-Type': 'application/json',
                     },
                 });
 
                 const data = await response.json();
 
-                // Hide loading
+                // Hide loading overlay
                 loadingOverlay.classList.add('hidden');
 
                 if (data.success) {
-                    
-                    showMessageModal('Order Successful 🎉', 'Your order has been placed successfully!');
-                    placeOrderBtn.disabled = false;
-                    placeOrderBtn.textContent = 'Place Order';
+                    // Show success modal with order details
+                    showOrderModal({
+                        order_number: data.order.order_number || 'N/A',
+                        total_amount: data.order.total_amount || '0'
+                    });
                 } else {
-                    
+                    // Show error message
                     showMessageModal('Order Failed ⚠️', data.message || 'An error occurred while placing your order.');
                     placeOrderBtn.disabled = false;
                     placeOrderBtn.textContent = 'Place Order';
                 }
-                } catch (error) {
+            } catch (error) {
+                // Hide loading and show error
                 loadingOverlay.classList.add('hidden');
+                console.error('Order placement error:', error);
                 showMessageModal('Network Error', 'Please check your internet connection and try again.');
                 placeOrderBtn.disabled = false;
                 placeOrderBtn.textContent = 'Place Order';
-                }
-            });
+            }
+        });
+    }
+
+    // Optional: Close modal on clicking outside
+    document.getElementById('orderModal')?.addEventListener('click', function(e) {
+        if (e.target === this) {
+            // Don't close automatically - let user click buttons
+            this.classList.add('hidden');
         }
-        
-
-
-        // Show order modal with animation
-        function showOrderModal(orderData) {
-            const modal = document.getElementById('orderModal');
-            const modalContent = document.getElementById('modalContent');
-            const modalMessage = document.getElementById('modalMessage');
-            const modalDetails = document.getElementById('modalDetails');
-            const modalTimeline = document.getElementById('modalTimeline');
-            const modalActions = document.getElementById('modalActions');
-            const progressBar = document.getElementById('progressBar');
-            const successCircle = document.getElementById('successCircle');
-            const successCheck = document.getElementById('successCheck');
-            const orderNumber = document.getElementById('orderNumber');
-            const orderTotal = document.getElementById('orderTotal');
-            
-            // Set order data
-            orderNumber.textContent = '#' + orderData.order_number;
-            orderTotal.textContent = '₹' + orderData.total_amount;
-            
-            // Show modal
-            modal.classList.remove('hidden');
-            
-            // Animate modal
-            setTimeout(() => {
-                modalContent.classList.remove('scale-0');
-                modalContent.classList.add('scale-100');
-                
-                // Animate SVG circle
-                setTimeout(() => {
-                    successCircle.style.opacity = '1';
-                    successCircle.style.strokeDashoffset = '0';
-                    successCircle.style.transition = 'all 1s ease-in-out';
-                }, 200);
-                
-                // Animate SVG checkmark
-                setTimeout(() => {
-                    successCheck.style.opacity = '1';
-                    successCheck.style.strokeDashoffset = '0';
-                    successCheck.style.transition = 'all 1s ease-in-out';
-                }, 800);
-                
-                // Fade in sections
-                setTimeout(() => { 
-                    modalMessage.style.opacity = '1';
-                    modalMessage.style.transform = 'translateY(0)';
-                    modalMessage.style.transition = 'all 0.8s ease-out';
-                }, 600);
-                
-                setTimeout(() => { 
-                    modalDetails.style.opacity = '1';
-                    modalDetails.style.transform = 'translateY(0)';
-                    modalDetails.style.transition = 'all 0.8s ease-out';
-                }, 1000);
-                
-                setTimeout(() => { 
-                    modalTimeline.style.opacity = '1';
-                    modalTimeline.style.transform = 'translateY(0)';
-                    modalTimeline.style.transition = 'all 0.8s ease-out';
-                }, 1200);
-                
-                setTimeout(() => { 
-                    modalActions.style.opacity = '1';
-                    modalActions.style.transform = 'translateY(0)';
-                    modalActions.style.transition = 'all 0.8s ease-out';
-                }, 1400);
-                
-                // Progress bar animation
-                setTimeout(() => {
-                    progressBar.style.width = '50%';
-                }, 1800);
-            }, 100);
-        }
-
+    });
 </script>
 {% endblock %}
