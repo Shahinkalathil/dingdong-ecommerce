@@ -10,7 +10,9 @@ from orders.models import Order, OrderItem, OrderAddress
 
 
 def checkout(request):
-    """Display checkout page"""
+    """
+    Display checkout page
+    """
     cart, _ = Cart.objects.get_or_create(user=request.user)
     cart_items = (
         cart.items
@@ -18,6 +20,7 @@ def checkout(request):
         .prefetch_related('variant__images')
         .all()
     )
+    
     if not cart_items:
         messages.warning(request, 'Your cart is empty.')
         return redirect('cart')
@@ -33,13 +36,8 @@ def checkout(request):
         return redirect('add_address')
 
     subtotal = cart.get_total_price()
-
-    if subtotal >= 500:
-        delivery_charge = 0
-    else:
-        delivery_charge = 40
-    free_delivery = 500 - subtotal
-    
+    delivery_charge = 0 if subtotal >= 500 else 40
+    free_delivery = 500 - subtotal if subtotal < 500 else 0
     total = subtotal + delivery_charge
     
     context = {
@@ -59,18 +57,22 @@ def checkout(request):
 @require_POST
 @transaction.atomic
 def place_order(request):
-    """Process order placement via AJAX - only COD supported"""
-    
+    """
+    Process order placement via AJAX - only COD supported
+    """
     try:
+        # Get user's cart
         cart = Cart.objects.get(user=request.user)
         cart_items = cart.items.select_related('variant__product').all()
 
+        # Validate cart is not empty
         if not cart_items:
             return JsonResponse({
                 'success': False,
                 'message': 'Your cart is empty.'
             }, status=400)
 
+        # Get default delivery address
         default_address = get_default_address(request.user)
         if not default_address:
             return JsonResponse({
@@ -78,10 +80,12 @@ def place_order(request):
                 'message': 'Please add a delivery address.'
             }, status=400)
 
+        # Calculate totals
         subtotal = cart.get_total_price()
         delivery_charge = 0 if subtotal >= 500 else 40
         total = subtotal + delivery_charge
 
+        # Validate stock availability
         for cart_item in cart_items:
             if cart_item.variant.stock < cart_item.quantity:
                 return JsonResponse({
@@ -89,6 +93,7 @@ def place_order(request):
                     'message': f'Insufficient stock for {cart_item.variant.product.name}'
                 }, status=400)
 
+        # Create the order - COD with pending payment
         order = Order.objects.create(
             user=request.user,
             address=default_address,
@@ -96,9 +101,12 @@ def place_order(request):
             delivery_charge=delivery_charge,
             total_amount=total,
             payment_method='cod',
-            order_status='confirmed'
+            order_status='confirmed',
+            payment_status='pending',
+            is_paid=False
         )
         
+        # Create order address snapshot
         OrderAddress.objects.create(
             order=order,
             full_name=default_address.full_name,
@@ -111,6 +119,7 @@ def place_order(request):
             pincode=default_address.pincode
         )
         
+        # Create order items and update variant stock
         for cart_item in cart_items:
             variant = cart_item.variant
 
@@ -124,11 +133,14 @@ def place_order(request):
                 quantity=cart_item.quantity
             )
 
+            # Reduce stock
             variant.stock -= cart_item.quantity
             variant.save()
  
+        # Clear the cart
         cart.items.all().delete()
 
+        # Return success response
         return JsonResponse({
             'success': True,
             'message': 'Order placed successfully!',
@@ -144,9 +156,14 @@ def place_order(request):
             'message': 'Cart not found.'
         }, status=404)
     except Exception as e:
+        # Log error for debugging
+        import traceback
+        print(f"Order placement error: {str(e)}")
+        print(traceback.format_exc())
+        
         return JsonResponse({
             'success': False,
-            'message': f'An error occurred: {str(e)}'
+            'message': 'An error occurred while placing your order. Please try again.'
         }, status=500)
 
 

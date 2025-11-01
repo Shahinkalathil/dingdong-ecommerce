@@ -30,6 +30,7 @@ urlpatterns = [
     path('profile/', include('uProfile.urls')),
     path('cart/', include('cart.urls')),
     path('checkout/', include('checkout.urls')),
+    path('orders/', include('orders.urls')),
 ]
 
 # Serve static files during development

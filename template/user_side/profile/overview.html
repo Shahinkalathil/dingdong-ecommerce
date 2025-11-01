@@ -64,7 +64,7 @@
                             <div class="flex items-center justify-between">
                                 <div>
                                     <p class="text-blue-100">Total Orders</p>
-                                    <p class="text-2xl font-bold">24</p>
+                                    <p class="text-2xl font-bold">{{ total_orders }}</p>
                                 </div>
                                 <svg class="w-8 h-8 text-blue-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
@@ -99,47 +99,120 @@
 
                     <!-- Recent Orders -->
                     <div class="mb-8">
-                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Recent Orders</h3>
-                        <div class="space-y-4">
-                            <div class="hover-popup border rounded-lg p-4 hover:shadow-md transition-all duration-200">
-                                <div class="flex items-center justify-between">
-                                    <div class="flex items-center space-x-4">
-                                        <img src="/placeholder.svg?height=60&width=60" alt="Product" class="w-15 h-15 rounded-lg object-cover">
-                                        <div>
-                                            <h4 class="font-medium text-gray-900">Casio G-Shock Digital Watch</h4>
-                                            <p class="text-sm text-gray-500">Order #ORD-2024-001</p>
-                                            <p class="text-sm text-gray-500">Delivered on Jan 15, 2024</p>
-                                        </div>
-                                    </div>
-                                    <div class="text-right">
-                                        <p class="font-semibold text-gray-900">₹1,795</p>
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-success/10 text-success">
-                                            Delivered
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="hover-popup border rounded-lg p-4 hover:shadow-md transition-all duration-200">
-                                <div class="flex items-center justify-between">
-                                    <div class="flex items-center space-x-4">
-                                        <img src="/placeholder.svg?height=60&width=60" alt="Product" class="w-15 h-15 rounded-lg object-cover">
-                                        <div>
-                                            <h4 class="font-medium text-gray-900">Wireless Bluetooth Headphones</h4>
-                                            <p class="text-sm text-gray-500">Order #ORD-2024-002</p>
-                                            <p class="text-sm text-gray-500">Expected delivery: Jan 25, 2024</p>
-                                        </div>
-                                    </div>
-                                    <div class="text-right">
-                                        <p class="font-semibold text-gray-900">₹2,999</p>
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-accent/10 text-accent">
-                                            In Transit
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-semibold text-gray-900">Recent Orders</h3>
+                            {% if recent_orders %}
+                            <a href="{% url 'order' %}" class="text-sm text-primary hover:text-primary/80 font-medium">
+                                View All →
+                            </a>
+                            {% endif %}
                         </div>
+                        
+                        {% if recent_orders %}
+                        <!-- Grid Layout: 2 columns -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {% for order in recent_orders %}
+                            <div class="hover-popup border rounded-lg p-4 hover:shadow-md transition-all duration-200">
+                                <div class="flex items-start gap-3">
+                                    <!-- Product Image (smaller) -->
+                                    <div class="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+                                        {% with first_item=order.items.first %}
+                                            {% if first_item.variant.images.first %}
+                                                <img src="{{ first_item.variant.images.first.image.url }}" 
+                                                    alt="{{ first_item.product_name }}" 
+                                                    class="w-full h-full object-cover">
+                                            {% else %}
+                                                <div class="w-full h-full flex items-center justify-center">
+                                                    <svg class="w-6 h-6 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm0 4a1 1 0 011-1h12a1 1 0 011 1v8a1 1 0 01-1 1H4a1 1 0 01-1-1V8z" clip-rule="evenodd"/>
+                                                    </svg>
+                                                </div>
+                                            {% endif %}
+                                        {% endwith %}
+                                    </div>
+                                    
+                                    <!-- Order Information -->
+                                    <div class="flex-1 min-w-0">
+                                        <h4 class="font-medium text-gray-900 text-sm truncate mb-1">
+                                            {{ order.items.first.product_name }}
+                                            {% if order.items.count > 1 %}
+                                                <span class="text-xs text-gray-500">+{{ order.items.count|add:"-1" }}</span>
+                                            {% endif %}
+                                        </h4>
+                                        <p class="text-xs text-gray-500 mb-1">{{ order.order_number }}</p>
+                                        <p class="text-xs text-gray-500 mb-2">
+                                            {% if order.order_status == 'delivered' %}
+                                                {{ order.updated_at|date:"M d, Y" }}
+                                            {% elif order.order_status == 'cancelled' %}
+                                                {{ order.updated_at|date:"M d, Y" }}
+                                            {% elif order.order_status == 'shipped' %}
+                                                {{ order.updated_at|date:"M d, Y" }}
+                                            {% else %}
+                                                {{ order.created_at|date:"M d, Y" }}
+                                            {% endif %}
+                                        </p>
+                                        
+                                        <!-- Price and Status -->
+                                        <div class="flex items-center justify-between mb-2">
+                                            <p class="font-semibold text-gray-900 text-sm">₹{{ order.total_amount }}</p>
+                                            
+                                            <!-- Status Badge (smaller) -->
+                                            {% if order.order_status == 'delivered' %}
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                    Delivered
+                                                </span>
+                                            {% elif order.order_status == 'shipped' %}
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                                                    Shipped
+                                                </span>
+                                            {% elif order.order_status == 'processing' %}
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+                                                    Processing
+                                                </span>
+                                            {% elif order.order_status == 'confirmed' %}
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                                    Confirmed
+                                                </span>
+                                            {% elif order.order_status == 'cancelled' %}
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                                    Cancelled
+                                                </span>
+                                            {% else %}
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                                    Pending
+                                                </span>
+                                            {% endif %}
+                                        </div>
+                                        
+                                        <!-- View Details Button -->
+                                        <a href="{% url 'order_detail' order.order_number %}" 
+                                        class="inline-flex items-center gap-1 text-xs text-primary hover:text-primary/80 font-medium">
+                                            <span>View Details</span>
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                                            </svg>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <!-- Empty State -->
+                        <div class="border rounded-lg p-8 text-center">
+                            <svg class="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+                            </svg>
+                            <h4 class="text-lg font-medium text-gray-900 mb-2">No Orders Yet</h4>
+                            <p class="text-gray-500 mb-4">You haven't placed any orders yet</p>
+                            <a href="{% url 'home' %}" 
+                            class="inline-flex items-center px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors">
+                                Start Shopping
+                            </a>
+                        </div>
+                        {% endif %}
                     </div>
+
                 </div>
 
                 <!-- Profile Details Section -->

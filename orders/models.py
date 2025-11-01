@@ -23,6 +23,7 @@ class Order(models.Model):
         ('delivered', 'Delivered'),
         ('cancelled', 'Cancelled'),
     ]
+    
     subtotal = models.DecimalField(max_digits=10, decimal_places=2)
     delivery_charge = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     total_amount = models.DecimalField(max_digits=10, decimal_places=2)
@@ -33,6 +34,17 @@ class Order(models.Model):
     order_number = models.CharField(max_length=50, unique=True, editable=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='orders')
     address = models.ForeignKey(Address, on_delete=models.SET_NULL, null=True)
+    payment_id = models.CharField(max_length=100, blank=True, null=True)  
+    payment_status = models.CharField(max_length=20,
+        choices=[
+            ('pending', 'Pending'),
+            ('paid', 'Paid'),
+            ('failed', 'Failed'),
+            ('refunded', 'Refunded'),
+        ],default='pending'
+    )
+    is_paid = models.BooleanField(default=False)
+    
     
     class Meta:
         ordering = ['-created_at']
@@ -41,10 +53,18 @@ class Order(models.Model):
         return f"{self.order_number} - {self.user.username}"
     
     def save(self, *args, **kwargs):
+        # Generate order number if it doesn't exist
         if not self.order_number:
             year = datetime.now().year
             unique_id = str(uuid.uuid4().int)[:6]
             self.order_number = f"DNG-{year}-{unique_id}"
+        
+        # Set payment_status to 'pending' for COD orders
+        if self.payment_method == 'cod':
+            self.payment_status = 'pending'
+            self.is_paid = False
+        
+        # Call save only ONCE
         super().save(*args, **kwargs)
 
 
@@ -79,5 +99,6 @@ class OrderAddress(models.Model):
     state = models.CharField(max_length=100)
     pincode = models.CharField(max_length=10)
     order = models.OneToOneField(Order, on_delete=models.CASCADE, related_name='delivery_address')
+
     def __str__(self):
         return f"{self.order.order_number} - {self.full_name}"

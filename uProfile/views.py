@@ -5,6 +5,7 @@ from userlogin.models import CustomUser
 from django.http import JsonResponse
 from django.contrib.auth import update_session_auth_hash
 from .models import Address
+from orders.models import Order
 from django.urls import reverse
 import re
 import logging
@@ -14,15 +15,21 @@ from django.views.decorators.http import require_http_methods
 def overview(request):
     user = request.user
     addresses = user.addresses.all()
+    total_orders = Order.objects.count()
+    # Get recent 4 orders
+    recent_orders = Order.objects.filter(user=user).prefetch_related(
+        'items__variant__images'
+    ).select_related('delivery_address')[:4]
+    
     context = {
         "show_sidebar": True,
         "user": user,
         "last_login": user.last_login,
         "addresses": addresses,
+        "total_orders": total_orders,
+        "recent_orders": recent_orders,
     }
     return render(request, 'user_side/profile/overview.html', context)
-
-
 
 logger = logging.getLogger(__name__)
 @login_required
@@ -521,9 +528,4 @@ def delete_address(request, address_id):
     
     return redirect('profile')
 
-def order(request):
-    return render(request, 'user_side/profile/order.html')
 
-
-def order_detail(request):
-    return render(request, 'user_side/profile/order_detail.html')
