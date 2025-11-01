@@ -19,7 +19,7 @@
     </script>
 </head>
 <body class="bg-gray-50 min-h-screen">
-     <!-- Header Section -->
+    <!-- Header Section -->
     <div class="bg-white shadow-sm border-b border-gray-200">
         <div class="max-w-4xl mx-auto px-4 py-6">
             <div class="text-center">
@@ -31,152 +31,157 @@
     </div>
 
     <div class="max-w-7xl mx-auto px-4 py-6">
-         <!-- Order Header  -->
-          <div class="max-w-7xl mx-auto">
+        <!-- Breadcrumb -->
+        <div class="max-w-7xl mx-auto">
             <div class="flex items-center space-x-2 text-sm text-gray-600">
                 <a href="{% url 'profile' %}" class="hover:text-primary">Home</a>
                 <span>></span>
                 <a href="{% url 'order' %}" class="hover:text-primary">Orders</a>
                 <span>></span>
-                <span class="text-gray-900 font-medium">ORDER#ORD240001</span>
+                <span class="text-gray-900 font-medium">ORDER#{{ order.order_number }}</span>
             </div>
         </div>
+
+        <!-- Order Header -->
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
             <div class="flex flex-col md:flex-row md:items-center md:justify-between">
                 <div>
-                    <h1 class="text-2xl font-bold text-gray-900 mb-2">Order #ORD240001</h1>
-                    <p class="text-gray-600">Placed on 04 Oct 2024</p>
+                    <h1 class="text-2xl font-bold text-gray-900 mb-2">Order #{{ order.order_number }}</h1>
+                    <p class="text-gray-600">Placed on {{ order.created_at|date:"d M Y" }}</p>
                 </div>
                 <div class="flex flex-col sm:flex-row gap-3 mt-4 md:mt-0">
-                    <button class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors">
+                    {% if can_download_invoice %}
+                    <a href="{% url 'download_invoice' order.order_number %}" 
+                       class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors text-center">
                         Download Invoice
-                    </button>
-                     <button class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
+                    </a>
+                    {% endif %}
+                    
+                    {% if can_cancel %}
+                    <button onclick="openCancelOrderModal()" 
+                            class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
                         Cancel Order
                     </button>
+                    {% endif %}
                 </div>
             </div>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-             <!-- Main Content  -->
+            <!-- Main Content -->
             <div class="lg:col-span-2 space-y-6">
-                 <!-- Order Status  -->
+                <!-- Order Status -->
                 <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                     <h2 class="text-lg font-semibold text-gray-900 mb-6">Order Status</h2>
                     <div class="flex items-center justify-between">
-                         <!-- Order Confirmed  -->
+                        <!-- Order Confirmed -->
                         <div class="flex flex-col items-center text-center">
-                            <div class="w-10 h-10 bg-primary rounded-full flex items-center justify-center mb-2">
-                                <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                            <div class="w-10 h-10 {{ status_steps.confirmed|yesno:'bg-primary,bg-gray-200' }} rounded-full flex items-center justify-center mb-2">
+                                <svg class="w-5 h-5 {{ status_steps.confirmed|yesno:'text-white,text-gray-400' }}" fill="currentColor" viewBox="0 0 20 20">
                                     <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
                                 </svg>
                             </div>
-                            <span class="text-sm font-medium text-gray-900">Order Confirmed</span>
-                            <span class="text-xs text-gray-500">04 Oct 2024</span>
+                            <span class="text-sm font-medium {{ status_steps.confirmed|yesno:'text-gray-900,text-gray-500' }}">Order Confirmed</span>
+                            {% if status_steps.confirmed %}
+                            <span class="text-xs text-gray-500">{{ order.created_at|date:"d M Y" }}</span>
+                            {% endif %}
                         </div>
                         
-                         <!-- Progress Line  -->
-                        <div class="flex-1 h-0.5 bg-gray-200 mx-4"></div>
+                        <!-- Progress Line -->
+                        <div class="flex-1 h-0.5 {{ status_steps.shipped|yesno:'bg-primary,bg-gray-200' }} mx-4"></div>
                         
-                         <!-- Shipped  -->
+                        <!-- Shipped -->
                         <div class="flex flex-col items-center text-center">
-                            <div class="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center mb-2">
-                                <svg class="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                            <div class="w-10 h-10 {{ status_steps.shipped|yesno:'bg-primary,bg-gray-200' }} rounded-full flex items-center justify-center mb-2">
+                                <svg class="w-5 h-5 {{ status_steps.shipped|yesno:'text-white,text-gray-400' }}" fill="currentColor" viewBox="0 0 20 20">
                                     <path d="M8 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"/>
                                     <path d="M3 4a1 1 0 00-1 1v10a1 1 0 001 1h1.05a2.5 2.5 0 014.9 0H10a1 1 0 001-1V5a1 1 0 00-1-1H3zM14 7a1 1 0 00-1 1v6.05A2.5 2.5 0 0115.95 16H17a1 1 0 001-1v-5a1 1 0 00-.293-.707L16 7.586V7a1 1 0 00-1-1h-1z"/>
                                 </svg>
                             </div>
-                            <span class="text-sm font-medium text-gray-500">Shipped</span>
+                            <span class="text-sm font-medium {{ status_steps.shipped|yesno:'text-gray-900,text-gray-500' }}">Shipped</span>
                         </div>
                         
-                         <!-- Progress Line  -->
-                        <div class="flex-1 h-0.5 bg-gray-200 mx-4"></div>
+                        <!-- Progress Line -->
+                        <div class="flex-1 h-0.5 {{ status_steps.out_for_delivery|yesno:'bg-primary,bg-gray-200' }} mx-4"></div>
                         
-                         <!-- Out for Delivery  -->
+                        <!-- Out for Delivery -->
                         <div class="flex flex-col items-center text-center">
-                            <div class="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center mb-2">
-                                <svg class="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                            <div class="w-10 h-10 {{ status_steps.out_for_delivery|yesno:'bg-primary,bg-gray-200' }} rounded-full flex items-center justify-center mb-2">
+                                <svg class="w-5 h-5 {{ status_steps.out_for_delivery|yesno:'text-white,text-gray-400' }}" fill="currentColor" viewBox="0 0 20 20">
                                     <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
                                 </svg>
                             </div>
-                            <span class="text-sm font-medium text-gray-500">Out for Delivery</span>
+                            <span class="text-sm font-medium {{ status_steps.out_for_delivery|yesno:'text-gray-900,text-gray-500' }}">Out for Delivery</span>
                         </div>
                         
-                         <!-- Progress Line  -->
-                        <div class="flex-1 h-0.5 bg-gray-200 mx-4"></div>
+                        <!-- Progress Line -->
+                        <div class="flex-1 h-0.5 {{ status_steps.delivered|yesno:'bg-primary,bg-gray-200' }} mx-4"></div>
                         
-                         <!-- Delivered  -->
+                        <!-- Delivered -->
                         <div class="flex flex-col items-center text-center">
-                            <div class="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center mb-2">
-                                <svg class="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                            <div class="w-10 h-10 {{ status_steps.delivered|yesno:'bg-primary,bg-gray-200' }} rounded-full flex items-center justify-center mb-2">
+                                <svg class="w-5 h-5 {{ status_steps.delivered|yesno:'text-white,text-gray-400' }}" fill="currentColor" viewBox="0 0 20 20">
                                     <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
                                 </svg>
                             </div>
-                            <span class="text-sm font-medium text-gray-500">Delivered</span>
+                            <span class="text-sm font-medium {{ status_steps.delivered|yesno:'text-gray-900,text-gray-500' }}">Delivered</span>
                         </div>
                     </div>
                 </div>
 
-                 <!-- Order Items  -->
+                <!-- Order Items -->
                 <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                     <h2 class="text-lg font-semibold text-gray-900 mb-6">Order Items</h2>
                     
-                     <!-- Item 1  -->
-                    <div class="flex items-start space-x-4 pb-6 border-b border-gray-200 mb-6">
-                        <div class="w-20 h-20 bg-gray-100 rounded-lg flex items-center justify-center">
+                    {% for item in order.items.all %}
+                    <div class="flex items-start space-x-4 {% if not forloop.last %}pb-6 border-b border-gray-200 mb-6{% endif %}" id="item-{{ item.id }}">
+                        <div class="w-20 h-20 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
+                            {% if item.variant.images.first %}
+                            <img src="{{ item.variant.images.first.image.url }}" alt="{{ item.product_name }}" class="w-full h-full object-cover">
+                            {% else %}
                             <svg class="w-10 h-10 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm0 4a1 1 0 011-1h12a1 1 0 011 1v8a1 1 0 01-1 1H4a1 1 0 01-1-1V8z" clip-rule="evenodd"/>
                             </svg>
+                            {% endif %}
                         </div>
                         <div class="flex-1">
-                            <h3 class="font-medium text-gray-900 mb-1">Black Xbox Pro Wireless - Bluetooth</h3>
-                            <p class="text-sm text-gray-600 mb-2">Gaming Controller</p>
-                            <p class="text-sm text-primary mb-2">You will get discount by 2 Dec 2024</p>
+                            <h3 class="font-medium text-gray-900 mb-1">{{ item.product_name }}</h3>
+                            <p class="text-sm text-gray-600 mb-1">Color: {{ item.color_name }}</p>
+                            <p class="text-sm text-gray-600 mb-2">Quantity: {{ item.quantity }}</p>
                             <div class="flex items-center justify-between">
-                                <span class="text-lg font-semibold text-gray-900">₹4,999.00</span>
-                                <button class="px-3 py-1 text-sm text-red-600 border border-red-600 rounded hover:bg-red-50 transition-colors">
+                                <span class="text-lg font-semibold text-gray-900">₹{{ item.subtotal }}</span>
+                                {% if can_cancel %}
+                                <button onclick="openCancelItemModal({{ item.id }}, '{{ item.product_name }}')" 
+                                        class="px-3 py-1 text-sm text-red-600 border border-red-600 rounded hover:bg-red-50 transition-colors">
                                     Cancel Item
                                 </button>
+                                {% endif %}
                             </div>
                         </div>
                     </div>
-
-                     <!-- Item 2  -->
-                    <div class="flex items-start space-x-4">
-                        <div class="w-20 h-20 bg-gray-100 rounded-lg flex items-center justify-center">
-                            <svg class="w-10 h-10 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm0 4a1 1 0 011-1h12a1 1 0 011 1v8a1 1 0 01-1 1H4a1 1 0 01-1-1V8z" clip-rule="evenodd"/>
-                            </svg>
-                        </div>
-                        <div class="flex-1">
-                            <h3 class="font-medium text-gray-900 mb-1">Red High Gaming Wired and USB-C for Controller - Bluetooth</h3>
-                            <p class="text-sm text-gray-600 mb-2">Gaming Controller</p>
-                            <p class="text-sm text-primary mb-2">You will get discount by 2 Dec 2024</p>
-                            <div class="flex items-center justify-between">
-                                <span class="text-lg font-semibold text-gray-900">₹4,999.00</span>
-                                <button class="px-3 py-1 text-sm text-red-600 border border-red-600 rounded hover:bg-red-50 transition-colors">
-                                    Cancel Item
-                                </button>
-                            </div>
-                        </div>
-                    </div>
+                    {% endfor %}
                 </div>
 
-                 <!-- Shipping & Payment Info  -->
+                <!-- Shipping & Payment Info -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                     <!-- Shipping Address  -->
+                    <!-- Shipping Address -->
                     <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                         <h3 class="text-lg font-semibold text-gray-900 mb-4">Shipping Address</h3>
+                        {% if order.delivery_address %}
                         <div class="text-sm text-gray-600 space-y-1">
-                            <p class="font-medium text-gray-900">John Doe</p>
-                            <p>123 Gaming Street</p>
-                            <p>Tech City, TC 12345</p>
-                            <p>Phone: +91 9876543210</p>
+                            <p class="font-medium text-gray-900">{{ order.delivery_address.full_name }}</p>
+                            <p>{{ order.delivery_address.flat_house }}</p>
+                            <p>{{ order.delivery_address.area_street }}</p>
+                            {% if order.delivery_address.landmark %}
+                            <p>{{ order.delivery_address.landmark }}</p>
+                            {% endif %}
+                            <p>{{ order.delivery_address.town_city }}, {{ order.delivery_address.state }} {{ order.delivery_address.pincode }}</p>
+                            <p>Phone: {{ order.delivery_address.phone_number }}</p>
                         </div>
+                        {% endif %}
                     </div>
 
-                     <!-- Payment Info  -->
+                    <!-- Payment Info -->
                     <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                         <h3 class="text-lg font-semibold text-gray-900 mb-4">Payment Info</h3>
                         <div class="flex items-center space-x-3">
@@ -186,15 +191,15 @@
                                 </svg>
                             </div>
                             <div>
-                                <p class="font-medium text-gray-900">UPI Payment</p>
-                                <p class="text-sm text-gray-600">Payment Status: Completed</p>
+                                <p class="font-medium text-gray-900">{{ order.get_payment_method_display }}</p>
+                                <p class="text-sm text-gray-600">Payment Status: {{ order.get_payment_status_display }}</p>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-             <!-- Order Summary Sidebar  -->
+            <!-- Order Summary Sidebar -->
             <div class="lg:col-span-1">
                 <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 sticky top-6">
                     <h3 class="text-lg font-semibold text-gray-900 mb-6">Order Summary</h3>
@@ -202,60 +207,40 @@
                     <div class="space-y-3 text-sm">
                         <div class="flex justify-between">
                             <span class="text-gray-600">Subtotal</span>
-                            <span class="text-gray-900">₹14,999.00</span>
+                            <span class="text-gray-900">₹{{ order.subtotal }}</span>
                         </div>
+                        {% if discount %}
                         <div class="flex justify-between">
                             <span class="text-gray-600">Discounts</span>
-                            <span class="text-green-600">-₹6,999.00</span>
+                            <span class="text-green-600">-₹{{ discount }}</span>
                         </div>
+                        {% endif %}
                         <div class="flex justify-between">
                             <span class="text-gray-600">Delivery Charges</span>
-                            <span class="text-gray-900">₹99.00</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="text-gray-600">GST</span>
-                            <span class="text-gray-900">₹1,800.00</span>
+                            <span class="text-gray-900">₹{{ order.delivery_charge }}</span>
                         </div>
                         <div class="flex justify-between">
                             <span class="text-gray-600">Order Total Savings</span>
-                            <span class="text-green-600">-₹6,999.00</span>
+                            <span class="text-green-600">-₹{{ order_savings }}</span>
                         </div>
                         <div class="border-t border-gray-200 pt-3">
                             <div class="flex justify-between items-center">
                                 <span class="text-lg font-semibold text-gray-900">Total</span>
-                                <span class="text-lg font-bold text-gray-900">₹9,999.00</span>
+                                <span class="text-lg font-bold text-gray-900">₹{{ order.total_amount }}</span>
                             </div>
                         </div>
                         <p class="text-xs text-gray-500 mt-2">Inclusive of all taxes and charges</p>
                     </div>
 
-                     <!-- Cancel Order Form  -->
-                    <div class="mt-6 pt-6 border-t border-gray-200">
-                        <h4 class="font-medium text-gray-900 mb-3">Cancel Order</h4>
-                        <form class="space-y-3">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Reason (Optional)</label>
-                                <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
-                                    <option value="">Select reason</option>
-                                    <option value="changed-mind">Changed my mind</option>
-                                    <option value="found-better-price">Found better price</option>
-                                    <option value="ordered-by-mistake">Ordered by mistake</option>
-                                    <option value="other">Other</option>
-                                </select>
-                            </div>
-                            <button type="submit" class="w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
-                                Cancel Order
-                            </button>
-                        </form>
-                    </div>
-
-                     <!-- Return Form  -->
+                    {% if can_return %}
+                    <!-- Return Form -->
                     <div class="mt-6 pt-6 border-t border-gray-200">
                         <h4 class="font-medium text-gray-900 mb-3">Return Order</h4>
-                        <form class="space-y-3">
+                        <form id="returnForm" class="space-y-3">
+                            {% csrf_token %}
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Return Reason *</label>
-                                <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent" required>
+                                <select id="returnReason" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent" required>
                                     <option value="">Select reason</option>
                                     <option value="defective">Product is defective</option>
                                     <option value="not-as-described">Not as described</option>
@@ -265,16 +250,194 @@
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Description *</label>
-                                <textarea class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent" rows="3" placeholder="Please describe the issue..." required></textarea>
+                                <textarea id="returnDescription" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent" rows="3" placeholder="Please describe the issue..." required></textarea>
                             </div>
                             <button type="submit" class="w-full px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors">
                                 Request Return
                             </button>
                         </form>
                     </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Cancel Order Modal -->
+    <div id="cancelOrderModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Cancel Order</h3>
+            <p class="text-gray-600 mb-4">Are you sure you want to cancel this order?</p>
+            <form id="cancelOrderForm">
+                {% csrf_token %}
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Reason (Optional)</label>
+                    <select id="cancelOrderReason" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+                        <option value="">Select reason</option>
+                        <option value="changed-mind">Changed my mind</option>
+                        <option value="found-better-price">Found better price</option>
+                        <option value="ordered-by-mistake">Ordered by mistake</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                <div class="flex gap-3">
+                    <button type="button" onclick="closeCancelOrderModal()" class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+                        Cancel
+                    </button>
+                    <button type="submit" class="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
+                        Confirm
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Cancel Item Modal -->
+    <div id="cancelItemModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Cancel Item</h3>
+            <p class="text-gray-600 mb-4">Are you sure you want to cancel <strong id="itemName"></strong>?</p>
+            <div class="flex gap-3">
+                <button type="button" onclick="closeCancelItemModal()" class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+                    Cancel
+                </button>
+                <button type="button" onclick="confirmCancelItem()" class="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
+                    Confirm
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentItemId = null;
+
+        // Cancel Order Modal
+        function openCancelOrderModal() {
+            document.getElementById('cancelOrderModal').classList.remove('hidden');
+        }
+
+        function closeCancelOrderModal() {
+            document.getElementById('cancelOrderModal').classList.add('hidden');
+        }
+
+        document.getElementById('cancelOrderForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const reason = document.getElementById('cancelOrderReason').value;
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            
+            try {
+                const response = await fetch('{% url "cancel_order" order.order_number %}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken
+                    },
+                    body: JSON.stringify({ reason: reason })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert(data.message);
+                    window.location.href = data.redirect_url;
+                } else {
+                    alert(data.message);
+                }
+            } catch (error) {
+                alert('Error cancelling order. Please try again.');
+            }
+            
+            closeCancelOrderModal();
+        });
+
+        // Cancel Item Modal
+        function openCancelItemModal(itemId, itemName) {
+            currentItemId = itemId;
+            document.getElementById('itemName').textContent = itemName;
+            document.getElementById('cancelItemModal').classList.remove('hidden');
+        }
+
+        function closeCancelItemModal() {
+            document.getElementById('cancelItemModal').classList.add('hidden');
+            currentItemId = null;
+        }
+
+        async function confirmCancelItem() {
+            if (!currentItemId) return;
+            
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            
+            try {
+                const response = await fetch(`{% url "order_detail" order.order_number %}`.replace('{{ order.order_number }}', '{{ order.order_number }}') + `item/${currentItemId}/cancel/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Remove item from DOM
+                    document.getElementById(`item-${currentItemId}`).remove();
+                    
+                    // Update totals
+                    location.reload();
+                    
+                    alert(data.message);
+                } else {
+                    alert(data.message);
+                }
+            } catch (error) {
+                alert('Error cancelling item. Please try again.');
+            }
+            
+            closeCancelItemModal();
+        }
+
+        // Return Form
+        const returnForm = document.getElementById('returnForm');
+        if (returnForm) {
+            returnForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const reason = document.getElementById('returnReason').value;
+                const description = document.getElementById('returnDescription').value;
+                const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                
+                if (!reason || !description) {
+                    alert('Please fill in all required fields.');
+                    return;
+                }
+                
+                try {
+                    const response = await fetch('{% url "request_return" order.order_number %}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': csrfToken
+                        },
+                        body: JSON.stringify({ 
+                            reason: reason,
+                            description: description 
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        alert(data.message);
+                        location.reload();
+                    } else {
+                        alert(data.message);
+                    }
+                } catch (error) {
+                    alert('Error submitting return request. Please try again.');
+                }
+            });
+        }
+    </script>
 </body>
 </html>

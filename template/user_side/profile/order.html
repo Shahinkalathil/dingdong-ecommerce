@@ -22,7 +22,7 @@
     </script>
 </head>
 <body class="bg-gray-50 font-sans">
-     <!-- Header Section  -->
+    <!-- Header Section -->
     <div class="bg-white shadow-sm border-b border-gray-200">
         <div class="max-w-4xl mx-auto px-4 py-6">
             <div class="text-center">
@@ -33,21 +33,23 @@
         </div>
     </div>
 
-     <!-- Main Content  -->
+    <!-- Main Content -->
     <div class="max-w-6xl mx-auto px-4 py-6">
         
-         <!-- Search and Filter Section  -->
-       <a href="{% url 'profile' %}">
-            <h1 class="text-xl font-semibold cursor-pointer hover:text-blue-600 transition-colors">
+        <!-- Page Title -->
+        <a href="{% url 'profile' %}">
+            <h1 class="text-xl font-semibold cursor-pointer hover:text-blue-600 transition-colors mb-4">
                 Orders & Returns
             </h1>
         </a>
+
+        <!-- Search and Filter Section -->
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">
-            <form class="space-y-3">
+            <form method="GET" action="{% url 'order' %}" class="space-y-3">
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
                     <div>
                         <label for="search" class="block text-sm font-medium text-gray-700 mb-1">Search Orders</label>
-                        <input type="text" id="search" name="search" 
+                        <input type="text" id="search" name="search" value="{{ search_query }}"
                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                placeholder="Order ID, Product name...">
                     </div>
@@ -56,10 +58,10 @@
                         <select id="status" name="status" 
                                 class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                             <option value="">All Orders</option>
-                            <option value="confirmed">Order Confirmed</option>
-                            <option value="shipped">Shipped</option>
-                            <option value="delivered">Delivered</option>
-                            <option value="cancelled">Cancelled</option>
+                            <option value="confirmed" {% if status_filter == 'confirmed' %}selected{% endif %}>Order Confirmed</option>
+                            <option value="shipped" {% if status_filter == 'shipped' %}selected{% endif %}>Shipped</option>
+                            <option value="delivered" {% if status_filter == 'delivered' %}selected{% endif %}>Delivered</option>
+                            <option value="cancelled" {% if status_filter == 'cancelled' %}selected{% endif %}>Cancelled</option>
                         </select>
                     </div>
                     <div>
@@ -67,9 +69,9 @@
                         <select id="date-range" name="date-range" 
                                 class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                             <option value="">All Time</option>
-                            <option value="last-week">Last Week</option>
-                            <option value="last-month">Last Month</option>
-                            <option value="last-3-months">Last 3 Months</option>
+                            <option value="last-week" {% if date_range == 'last-week' %}selected{% endif %}>Last Week</option>
+                            <option value="last-month" {% if date_range == 'last-month' %}selected{% endif %}>Last Month</option>
+                            <option value="last-3-months" {% if date_range == 'last-3-months' %}selected{% endif %}>Last 3 Months</option>
                         </select>
                     </div>
                     <div class="flex items-end">
@@ -80,178 +82,203 @@
                 </div>
             </form>
         </div>
-
-         <!-- Order Cards Section  -->
+        
+        <!-- Order Cards Section -->
+        {% if orders %}
         <div class="space-y-4">
-            
-             <!-- Order 1 - Order Confirmed (Green Border)  -->
-            <div class="bg-white rounded-lg shadow-sm border-l-4 border-green-500 overflow-hidden">
+            {% for order in orders %}
+            <div class="bg-white rounded-lg shadow-sm border 
+                {% if order.order_status == 'confirmed' or order.order_status == 'delivered' %}border-l-4 border-l-green-500
+                {% elif order.order_status == 'shipped' %}border-l-4 border-l-blue-500
+                {% elif order.order_status == 'cancelled' %}border-l-4 border-l-red-400
+                {% else %}border-l-4 border-l-yellow-500{% endif %} border-gray-200 hover:shadow-md transition-shadow">
+                
                 <div class="p-4">
-                     <!-- Order Header  -->
+                    <!-- Header: Order Info & Price -->
                     <div class="flex items-center justify-between mb-3">
                         <div>
-                            <p class="text-sm text-gray-600">Order Date: <span class="font-medium text-gray-900">18 Feb 2025</span></p>
-                            <p class="text-sm text-gray-600">Order ID: <span class="font-medium text-gray-900">#ORDER1ADC0E46</span></p>
+                            <p class="text-xs text-gray-500 mb-0.5">{{ order.created_at|date:"d M Y" }}</p>
+                            <p class="text-sm font-semibold text-gray-900">#{{ order.order_number }}</p>
                         </div>
-                        <div class="text-right">
-                            <p class="text-xl font-bold text-blue-600">₹2,83,039.00</p>
-                            <span class="inline-block px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">Order Confirmed</span>
+                        <div class="flex items-center gap-2">
+                            <p class="text-lg font-bold {% if order.order_status == 'cancelled' %}text-gray-400 line-through{% else %}text-blue-600{% endif %}">
+                                ₹{{ order.total_amount|floatformat:2 }}
+                            </p>
                         </div>
                     </div>
 
-                     <!-- Products Section  -->
-                    <div class="space-y-2 mb-3">
-                        <div class="flex items-center space-x-3 py-2 border-b border-gray-100">
-                            <img src="/placeholder.svg?height=50&width=50" 
-                                 alt="Apple Vision Pro VR Headset" 
-                                 class="w-12 h-12 object-cover rounded border border-gray-200">
-                            <div class="flex-1">
-                                <h3 class="font-medium text-gray-900 text-sm">Apple Vision Pro VR Headset- 512GB (Silver)</h3>
-                                <p class="text-xs text-gray-600">Qty: 1 | Razorpay | Delivery: 21 Feb 2025</p>
-                            </div>
-                        </div>
+                    <!-- Status Badges -->
+                    <div class="flex flex-wrap gap-2 mb-3">
+                        <span class="inline-flex items-center px-2.5 py-1 text-xs font-medium rounded-full
+                            {% if order.order_status == 'confirmed' %}bg-green-50 text-green-700 border border-green-200
+                            {% elif order.order_status == 'shipped' %}bg-blue-50 text-blue-700 border border-blue-200
+                            {% elif order.order_status == 'delivered' %}bg-green-50 text-green-700 border border-green-200
+                            {% elif order.order_status == 'cancelled' %}bg-red-50 text-red-700 border border-red-200
+                            {% else %}bg-yellow-50 text-yellow-700 border border-yellow-200{% endif %}">
+                            {{ order.get_order_status_display }}
+                        </span>
                         
-                        <div class="flex items-center space-x-3 py-2">
-                            <img src="/placeholder.svg?height=50&width=50" 
-                                 alt="Razer Edge Gaming Tablet" 
-                                 class="w-12 h-12 object-cover rounded border border-gray-200">
-                            <div class="flex-1">
-                                <h3 class="font-medium text-gray-900 text-sm">Razer Edge Gaming Tablet and Kishi V2 Pro Controller- (Black)</h3>
-                                <p class="text-xs text-gray-600">Qty: 1 | Razorpay | Delivery: 21 Feb 2025</p>
+                        <span class="inline-flex items-center px-2.5 py-1 text-xs font-medium rounded-full
+                            {% if order.payment_status == 'paid' %}bg-green-50 text-green-700 border border-green-200
+                            {% elif order.payment_status == 'pending' %}bg-yellow-50 text-yellow-700 border border-yellow-200
+                            {% elif order.payment_status == 'failed' %}bg-red-50 text-red-700 border border-red-200
+                            {% elif order.payment_status == 'refunded' %}bg-gray-50 text-gray-700 border border-gray-200
+                            {% else %}bg-gray-50 text-gray-600 border border-gray-200{% endif %}">
+                            {{ order.get_payment_status_display }}
+                        </span>
+
+                        <span class="inline-flex items-center px-2.5 py-1 text-xs font-medium rounded-full bg-gray-50 text-gray-700 border border-gray-200">
+                            {{ order.get_payment_method_display }}
+                        </span>
+                    </div>
+
+                    <!-- Products Compact Grid -->
+                    <div class="bg-gray-50 rounded-lg p-3 mb-3 {% if order.order_status == 'cancelled' %}opacity-60{% endif %}">
+                        <div class="flex items-center gap-3 overflow-x-auto pb-1">
+                            {% for item in order.items.all %}
+                            <div class="flex-shrink-0 text-center">
+                                {% if item.variant and item.variant.images.first %}
+                                <img src="{{ item.variant.images.first.image.url }}" 
+                                    alt="{{ item.product_name }}" 
+                                    class="w-16 h-16 object-cover rounded border border-gray-200 mb-1">
+                                {% else %}
+                                <div class="w-16 h-16 bg-gray-200 rounded border border-gray-200 flex items-center justify-center mb-1">
+                                    <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                    </svg>
+                                </div>
+                                {% endif %}
+                                <p class="text-xs font-medium text-gray-900 mb-0.5 max-w-[64px] truncate">{{ item.product_name }}</p>
+                                <div class="flex items-center justify-center gap-1 mb-0.5">
+                                    <div class="w-2.5 h-2.5 rounded-full border border-gray-300" 
+                                        style="background-color: {{ item.color_code }}"
+                                        title="{{ item.color_name }}"></div>
+                                    <span class="text-xs text-gray-600">×{{ item.quantity }}</span>
+                                </div>
+                                <p class="text-xs font-semibold text-gray-900">₹{{ item.price }}</p>
                             </div>
+                            {% endfor %}
                         </div>
                     </div>
 
-                     <!-- Action Buttons -->
-                    <div class="flex flex-wrap gap-2">
-                        <a href="{% url 'order_detail' %}" 
-                        class="px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded hover:bg-blue-700 transition-colors duration-200">
+                    <!-- Action Button -->
+                    <div>
+                        <a href="{% url 'order_detail' order.order_number %}" 
+                        class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white text-xs font-medium rounded hover:bg-blue-700 transition-colors">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                            </svg>
                             View Details
                         </a>
                     </div>
                 </div>
             </div>
-
-             <!-- Order 2 - Shipped (Blue Border)  -->
-            <div class="bg-white rounded-lg shadow-sm border-l-4 border-blue-500 overflow-hidden">
-                <div class="p-4">
-                     Order Header 
-                    <div class="flex items-center justify-between mb-3">
-                        <div>
-                            <p class="text-sm text-gray-600">Order Date: <span class="font-medium text-gray-900">15 Feb 2025</span></p>
-                            <p class="text-sm text-gray-600">Order ID: <span class="font-medium text-gray-900">#ORDER2BDC1F47</span></p>
-                        </div>
-                        <div class="text-right">
-                            <p class="text-xl font-bold text-blue-600">₹45,999.00</p>
-                            <span class="inline-block px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">Shipped</span>
-                        </div>
-                    </div>
-
-                     <!-- Products Section  -->
-                    <div class="mb-3">
-                        <div class="flex items-center space-x-3 py-2">
-                            <img src="/placeholder.svg?height=50&width=50" 
-                                 alt="Gaming Laptop" 
-                                 class="w-12 h-12 object-cover rounded border border-gray-200">
-                            <div class="flex-1">
-                                <h3 class="font-medium text-gray-900 text-sm">ASUS ROG Strix G15 Gaming Laptop</h3>
-                                <p class="text-xs text-gray-600">Qty: 1 | Credit Card | Delivery: 20 Feb 2025</p>
-                                <p class="text-xs text-blue-600 font-medium">Tracking: TRK123456789</p>
-                            </div>
-                        </div>
-                    </div>
-
-                     <!-- Action Buttons  -->
-                    <div class="flex flex-wrap gap-2">
-                        <button class="px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded hover:bg-blue-700 transition-colors duration-200">
-                            View Details
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-             <!-- Order 3 - Cancelled (Red Border)  -->
-            <div class="bg-white rounded-lg shadow-sm border-l-4 border-red-500 overflow-hidden">
-                <div class="p-4">
-                     <!-- Order Header  -->
-                    <div class="flex items-center justify-between mb-3">
-                        <div>
-                            <p class="text-sm text-gray-600">Order Date: <span class="font-medium text-gray-900">10 Feb 2025</span></p>
-                            <p class="text-sm text-gray-600">Order ID: <span class="font-medium text-gray-900">#ORDER3CDC2G48</span></p>
-                        </div>
-                        <div class="text-right">
-                            <p class="text-xl font-bold text-gray-500 line-through">₹12,999.00</p>
-                            <span class="inline-block px-2 py-1 text-xs font-medium bg-red-100 text-red-800 rounded-full">Cancelled</span>
-                        </div>
-                    </div>
-
-                     <!-- Products Section  -->
-                    <div class="mb-3">
-                        <div class="flex items-center space-x-3 py-2 opacity-75">
-                            <img src="/placeholder.svg?height=50&width=50" 
-                                 alt="Wireless Headphones" 
-                                 class="w-12 h-12 object-cover rounded border border-gray-200">
-                            <div class="flex-1">
-                                <h3 class="font-medium text-gray-900 text-sm">Sony WH-1000XM5 Wireless Headphones</h3>
-                                <p class="text-xs text-gray-600">Qty: 1 | UPI | Cancelled: 11 Feb 2025</p>
-                                <p class="text-xs text-red-600 font-medium">Reason: Customer requested cancellation</p>
-                            </div>
-                        </div>
-                    </div>
-
-                     <!-- Action Buttons  -->
-                    <div class="flex flex-wrap gap-2">
-                        <button class="px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded hover:bg-blue-700 transition-colors duration-200">
-                            View Details
-                        </button>
-                    </div>
-                </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <!-- No Orders Found -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
+            <div class="max-w-sm mx-auto">
+                <svg class="w-16 h-16 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+                </svg>
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">No Orders Found</h3>
+                <p class="text-sm text-gray-600 mb-6">You haven't placed any orders yet or no orders match your search criteria.</p>
+                <a href="{% url 'home' %}" class="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
+                    </svg>
+                    Start Shopping
+                </a>
             </div>
         </div>
+        {% endif %}
 
-
-         <!-- Alternative Compact Pagination Style  -->
+        <!-- Pagination -->
+        {% if orders.has_other_pages %}
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mt-4">
             <div class="flex items-center justify-center space-x-2">
-                 Previous 
-                <button class="p-2 text-gray-400 hover:text-gray-600 disabled:opacity-50">
+                <!-- Previous -->
+                {% if orders.has_previous %}
+                <a href="?page={{ orders.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if date_range %}&date-range={{ date_range }}{% endif %}" 
+                   class="p-2 text-gray-600 hover:text-gray-900">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                    </svg>
+                </a>
+                {% else %}
+                <button disabled class="p-2 text-gray-400 cursor-not-allowed">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
                     </svg>
                 </button>
+                {% endif %}
                 
-                 <!-- Page Numbers - Responsive  -->
+                <!-- Page Numbers -->
                 <div class="flex items-center space-x-1">
-                     <!-- Mobile: Show fewer pages  -->
+                    <!-- Mobile: Show fewer pages -->
                     <div class="flex space-x-1 md:hidden">
-                        <button class="w-8 h-8 text-sm font-medium text-gray-500 hover:bg-gray-100 rounded">1</button>
-                        <button class="w-8 h-8 text-sm font-medium text-white bg-blue-600 rounded">2</button>
-                        <button class="w-8 h-8 text-sm font-medium text-gray-500 hover:bg-gray-100 rounded">3</button>
+                        {% if orders.number > 2 %}
+                        <a href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if date_range %}&date-range={{ date_range }}{% endif %}" 
+                           class="w-8 h-8 text-sm font-medium text-gray-500 hover:bg-gray-100 rounded flex items-center justify-center">1</a>
+                        {% endif %}
+                        
+                        {% for num in orders.paginator.page_range %}
+                            {% if num == orders.number %}
+                            <span class="w-8 h-8 text-sm font-medium text-white bg-blue-600 rounded flex items-center justify-center">{{ num }}</span>
+                            {% elif num >= orders.number|add:"-1" and num <= orders.number|add:"1" %}
+                            <a href="?page={{ num }}{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if date_range %}&date-range={{ date_range }}{% endif %}" 
+                               class="w-8 h-8 text-sm font-medium text-gray-500 hover:bg-gray-100 rounded flex items-center justify-center">{{ num }}</a>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% if orders.number < orders.paginator.num_pages|add:"-1" %}
                         <span class="w-8 h-8 flex items-center justify-center text-sm text-gray-400">...</span>
-                        <button class="w-8 h-8 text-sm font-medium text-gray-500 hover:bg-gray-100 rounded">16</button>
+                        <a href="?page={{ orders.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if date_range %}&date-range={{ date_range }}{% endif %}" 
+                           class="w-8 h-8 text-sm font-medium text-gray-500 hover:bg-gray-100 rounded flex items-center justify-center">{{ orders.paginator.num_pages }}</a>
+                        {% endif %}
                     </div>
                     
-                     <!-- Desktop: Show more pages  -->
+                    <!-- Desktop: Show more pages -->
                     <div class="hidden md:flex space-x-1">
-                        <button class="w-8 h-8 text-sm font-medium text-gray-500 hover:bg-gray-100 rounded">1</button>
-                        <button class="w-8 h-8 text-sm font-medium text-white bg-blue-600 rounded">2</button>
-                        <button class="w-8 h-8 text-sm font-medium text-gray-500 hover:bg-gray-100 rounded">3</button>
-                        <button class="w-8 h-8 text-sm font-medium text-gray-500 hover:bg-gray-100 rounded">4</button>
-                        <button class="w-8 h-8 text-sm font-medium text-gray-500 hover:bg-gray-100 rounded">5</button>
-                        <button class="w-8 h-8 text-sm font-medium text-gray-500 hover:bg-gray-100 rounded">6</button>
-                        <span class="w-8 h-8 flex items-center justify-center text-sm text-gray-400">...</span>
-                        <button class="w-8 h-8 text-sm font-medium text-gray-500 hover:bg-gray-100 rounded">16</button>
+                        {% for num in orders.paginator.page_range %}
+                            {% if num == orders.number %}
+                            <span class="w-8 h-8 text-sm font-medium text-white bg-blue-600 rounded flex items-center justify-center">{{ num }}</span>
+                            {% elif num >= orders.number|add:"-3" and num <= orders.number|add:"3" %}
+                            <a href="?page={{ num }}{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if date_range %}&date-range={{ date_range }}{% endif %}" 
+                               class="w-8 h-8 text-sm font-medium text-gray-500 hover:bg-gray-100 rounded flex items-center justify-center">{{ num }}</a>
+                            {% elif num == 1 or num == orders.paginator.num_pages %}
+                            <a href="?page={{ num }}{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if date_range %}&date-range={{ date_range }}{% endif %}" 
+                               class="w-8 h-8 text-sm font-medium text-gray-500 hover:bg-gray-100 rounded flex items-center justify-center">{{ num }}</a>
+                            {% elif num == orders.number|add:"-4" or num == orders.number|add:"4" %}
+                            <span class="w-8 h-8 flex items-center justify-center text-sm text-gray-400">...</span>
+                            {% endif %}
+                        {% endfor %}
                     </div>
                 </div>
                 
-                 <!-- Next  -->
-                <button class="p-2 text-gray-400 hover:text-gray-600">
+                <!-- Next -->
+                {% if orders.has_next %}
+                <a href="?page={{ orders.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if date_range %}&date-range={{ date_range }}{% endif %}" 
+                   class="p-2 text-gray-600 hover:text-gray-900">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                </a>
+                {% else %}
+                <button disabled class="p-2 text-gray-400 cursor-not-allowed">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                     </svg>
                 </button>
+                {% endif %}
             </div>
         </div>
+        {% endif %}
     </div>
 </body>
 </html>
+
+
+       
