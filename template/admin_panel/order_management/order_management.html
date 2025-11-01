@@ -1,21 +1,9 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Order Management</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        .status-pending { @apply text-yellow-600 bg-yellow-50 px-3 py-1 rounded-full text-sm font-medium; }
-        .status-shipped { @apply text-blue-600 bg-blue-50 px-3 py-1 rounded-full text-sm font-medium; }
-        .status-cancelled { @apply text-red-600 bg-red-50 px-3 py-1 rounded-full text-sm font-medium; }
-        .status-delivered { @apply text-green-600 bg-green-50 px-3 py-1 rounded-full text-sm font-medium; }
-        /* Added payment status styles */
-        .payment-paid { @apply text-green-600 bg-green-50 px-3 py-1 rounded-full text-sm font-medium; }
-        .payment-pending { @apply text-yellow-600 bg-yellow-50 px-3 py-1 rounded-full text-sm font-medium; }
-        .payment-failed { @apply text-red-600 bg-red-50 px-3 py-1 rounded-full text-sm font-medium; }
-    </style>
-</head>
+{% extends 'admin_panel/base.html' %}
+{% load static %}
+{% block title %}DINGDONG - Order Management{% endblock %}
+
+
+{% block content %}
 <body class="bg-gray-50">
     <div class="min-h-screen p-4 md:p-8">
         <div class="max-w-7xl mx-auto">
@@ -25,7 +13,7 @@
                 <p class="text-gray-600">Track and manage your orders</p>
             </div>
 
-            <!-- Enhanced payment status cards with more details -->
+            <!-- Stats Cards -->
             <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
                 <div class="bg-white rounded-lg shadow-sm p-6 border-l-4 border-blue-500">
                     <p class="text-gray-600 text-sm font-medium mb-1">Total Revenue</p>
@@ -61,13 +49,25 @@
                 </div>
             </div>
 
-            <!-- Search and Filter -->
-            <div class="bg-white rounded-lg shadow-sm p-4 mb-6">
-                <div class="flex flex-col md:flex-row gap-4">
-                    <input type="text" placeholder="Search Order ID..." class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    
+            <!-- Search Bar -->
+            <div class="flex justify-between items-center bg-white rounded-lg shadow-sm p-4 mb-6">
+                <!-- Move the "orders" heading to the left side with black text -->
+                <h2 class="text-left text-3xl font-bold text-gray-900">Orders</h2>
+                
+                <!-- Search input and dropdown on the right -->
+                <div class="flex items-center">
+                    <input type="text" placeholder="Search Order ID..." class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 mr-4">
+                    <select id="statusFilter" class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                        <option value="">All Status</option>
+                        <option value="Pending">Pending</option>
+                        <option value="Shipped">Shipped</option>
+                        <option value="Delivered">Delivered</option>
+                        <option value="Cancelled">Cancelled</option>
+                    </select>
                 </div>
             </div>
+
+           
 
             <!-- Orders Table -->
             <div class="bg-white rounded-lg shadow-sm overflow-hidden">
@@ -80,24 +80,24 @@
                                 <th class="px-4 md:px-6 py-3 text-left font-semibold text-gray-900 hidden md:table-cell">Brand</th>
                                 <th class="px-4 md:px-6 py-3 text-left font-semibold text-gray-900">Product</th>
                                 <th class="px-4 md:px-6 py-3 text-left font-semibold text-gray-900 hidden lg:table-cell">Address</th>
-                                <!-- Added Payment Status column -->
                                 <th class="px-4 md:px-6 py-3 text-left font-semibold text-gray-900 hidden lg:table-cell">Payment</th>
                                 <th class="px-4 md:px-6 py-3 text-left font-semibold text-gray-900">Status</th>
                                 <th class="px-4 md:px-6 py-3 text-center font-semibold text-gray-900">Action</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-gray-200" id="orderTable">
+                        <tbody class="divide-y divide-gray-200">
                             <!-- Order 1 -->
-                            <tr class="hover:bg-gray-50 transition order-row" data-status="Pending">
+                            <tr class="hover:bg-gray-50 transition">
                                 <td class="px-4 md:px-6 py-4 font-semibold text-gray-900">#0001</td>
                                 <td class="px-4 md:px-6 py-4 text-gray-700 hidden sm:table-cell">Men</td>
                                 <td class="px-4 md:px-6 py-4 text-gray-700 hidden md:table-cell">Rado</td>
                                 <td class="px-4 md:px-6 py-4 text-gray-700">P-9000</td>
                                 <td class="px-4 md:px-6 py-4 text-gray-600 text-xs hidden lg:table-cell">Kozhikode, Kerala</td>
-                                <td class="px-4 md:px-6 py-4 hidden lg:table-cell"><span class="payment-pending">Pending</span></td>
-                                <!-- replaced status badge with editable dropdown -->
+                                <td class="px-4 md:px-6 py-4 hidden lg:table-cell">
+                                    <span class="text-yellow-600 bg-yellow-50 px-3 py-1 rounded-full text-sm font-medium">Pending</span>
+                                </td>
                                 <td class="px-4 md:px-6 py-4">
-                                    <select class="status-dropdown px-2 py-1 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                                    <select class="px-2 py-1 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
                                         <option selected>Pending</option>
                                         <option>Shipped</option>
                                         <option>Delivered</option>
@@ -115,16 +115,17 @@
                             </tr>
 
                             <!-- Order 2 -->
-                            <tr class="hover:bg-gray-50 transition order-row" data-status="Shipped">
+                            <tr class="hover:bg-gray-50 transition">
                                 <td class="px-4 md:px-6 py-4 font-semibold text-gray-900">#0002</td>
                                 <td class="px-4 md:px-6 py-4 text-gray-700 hidden sm:table-cell">Women</td>
                                 <td class="px-4 md:px-6 py-4 text-gray-700 hidden md:table-cell">Tissot</td>
                                 <td class="px-4 md:px-6 py-4 text-gray-700">P-9000</td>
                                 <td class="px-4 md:px-6 py-4 text-gray-600 text-xs hidden lg:table-cell">Kochi, Kerala</td>
-                                <td class="px-4 md:px-6 py-4 hidden lg:table-cell"><span class="payment-paid">Paid</span></td>
-                                <!-- replaced status badge with editable dropdown -->
+                                <td class="px-4 md:px-6 py-4 hidden lg:table-cell">
+                                    <span class="text-green-600 bg-green-50 px-3 py-1 rounded-full text-sm font-medium">Paid</span>
+                                </td>
                                 <td class="px-4 md:px-6 py-4">
-                                    <select class="status-dropdown px-2 py-1 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                                    <select class="px-2 py-1 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
                                         <option>Pending</option>
                                         <option selected>Shipped</option>
                                         <option>Delivered</option>
@@ -142,16 +143,17 @@
                             </tr>
 
                             <!-- Order 3 -->
-                            <tr class="hover:bg-gray-50 transition order-row" data-status="Cancelled">
+                            <tr class="hover:bg-gray-50 transition">
                                 <td class="px-4 md:px-6 py-4 font-semibold text-gray-900">#0003</td>
                                 <td class="px-4 md:px-6 py-4 text-gray-700 hidden sm:table-cell">Women</td>
                                 <td class="px-4 md:px-6 py-4 text-gray-700 hidden md:table-cell">Tissot</td>
                                 <td class="px-4 md:px-6 py-4 text-gray-700">A-6000</td>
                                 <td class="px-4 md:px-6 py-4 text-gray-600 text-xs hidden lg:table-cell">Thrissur, Kerala</td>
-                                <td class="px-4 md:px-6 py-4 hidden lg:table-cell"><span class="payment-failed">Failed</span></td>
-                                <!-- replaced status badge with editable dropdown -->
+                                <td class="px-4 md:px-6 py-4 hidden lg:table-cell">
+                                    <span class="text-red-600 bg-red-50 px-3 py-1 rounded-full text-sm font-medium">Failed</span>
+                                </td>
                                 <td class="px-4 md:px-6 py-4">
-                                    <select class="status-dropdown px-2 py-1 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                                    <select class="px-2 py-1 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
                                         <option>Pending</option>
                                         <option>Shipped</option>
                                         <option>Delivered</option>
@@ -169,16 +171,17 @@
                             </tr>
 
                             <!-- Order 4 -->
-                            <tr class="hover:bg-gray-50 transition order-row" data-status="Delivered">
+                            <tr class="hover:bg-gray-50 transition">
                                 <td class="px-4 md:px-6 py-4 font-semibold text-gray-900">#0004</td>
                                 <td class="px-4 md:px-6 py-4 text-gray-700 hidden sm:table-cell">Women</td>
                                 <td class="px-4 md:px-6 py-4 text-gray-700 hidden md:table-cell">Titan</td>
                                 <td class="px-4 md:px-6 py-4 text-gray-700">K-7700</td>
                                 <td class="px-4 md:px-6 py-4 text-gray-600 text-xs hidden lg:table-cell">Ernakulam, Kerala</td>
-                                <td class="px-4 md:px-6 py-4 hidden lg:table-cell"><span class="payment-paid">Paid</span></td>
-                                <!-- replaced status badge with editable dropdown -->
+                                <td class="px-4 md:px-6 py-4 hidden lg:table-cell">
+                                    <span class="text-green-600 bg-green-50 px-3 py-1 rounded-full text-sm font-medium">Paid</span>
+                                </td>
                                 <td class="px-4 md:px-6 py-4">
-                                    <select class="status-dropdown px-2 py-1 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                                    <select class="px-2 py-1 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
                                         <option>Pending</option>
                                         <option>Shipped</option>
                                         <option selected>Delivered</option>
@@ -196,16 +199,17 @@
                             </tr>
 
                             <!-- Order 5 -->
-                            <tr class="hover:bg-gray-50 transition order-row" data-status="Pending">
+                            <tr class="hover:bg-gray-50 transition">
                                 <td class="px-4 md:px-6 py-4 font-semibold text-gray-900">#0005</td>
                                 <td class="px-4 md:px-6 py-4 text-gray-700 hidden sm:table-cell">Men</td>
                                 <td class="px-4 md:px-6 py-4 text-gray-700 hidden md:table-cell">Rado</td>
                                 <td class="px-4 md:px-6 py-4 text-gray-700">P-9000</td>
                                 <td class="px-4 md:px-6 py-4 text-gray-600 text-xs hidden lg:table-cell">Kozhikode, Kerala</td>
-                                <td class="px-4 md:px-6 py-4 hidden lg:table-cell"><span class="payment-pending">Pending</span></td>
-                                <!-- replaced status badge with editable dropdown -->
+                                <td class="px-4 md:px-6 py-4 hidden lg:table-cell">
+                                    <span class="text-yellow-600 bg-yellow-50 px-3 py-1 rounded-full text-sm font-medium">Pending</span>
+                                </td>
                                 <td class="px-4 md:px-6 py-4">
-                                    <select class="status-dropdown px-2 py-1 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                                    <select class="px-2 py-1 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
                                         <option selected>Pending</option>
                                         <option>Shipped</option>
                                         <option>Delivered</option>
@@ -238,21 +242,5 @@
             </div>
         </div>
     </div>
-
-    <!-- Added JavaScript for status filter functionality -->
-    <script>
-        function filterByStatus() {
-            const selectedStatus = document.getElementById('statusFilter').value;
-            const orderRows = document.querySelectorAll('.order-row');
-            
-            orderRows.forEach(row => {
-                if (selectedStatus === '' || row.getAttribute('data-status') === selectedStatus) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
-                }
-            });
-        }
-    </script>
 </body>
-</html>
+{% endblock %}

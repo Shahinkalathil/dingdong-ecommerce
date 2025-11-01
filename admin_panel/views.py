@@ -123,3 +123,7 @@ def users_search(request):
         "total_results": users.count() if keyword else 0,
     }
     return render(request, "admin_panel/user_list/users_management.html", context)
+
+
+def admin_order(request):
+    return render(request, "admin_panel/order_management/order_management.html")
