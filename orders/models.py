@@ -18,8 +18,8 @@ class Order(models.Model):
     STATUS_CHOICES = [
         ('pending', 'Pending'),
         ('confirmed', 'Confirmed'),
-        ('processing', 'Processing'),
         ('shipped', 'Shipped'),
+        ('out_for_delivery', 'Out for Delivery'),
         ('delivered', 'Delivered'),
         ('cancelled', 'Cancelled'),
     ]
@@ -59,12 +59,17 @@ class Order(models.Model):
             unique_id = str(uuid.uuid4().int)[:6]
             self.order_number = f"DNG-{year}-{unique_id}"
         
-        # Set payment_status to 'pending' for COD orders
-        if self.payment_method == 'cod':
+        # IMPORTANT: Only set payment status on creation, not on every save
+        # This allows admin updates to change payment status when delivered
+        if self._state.adding and self.payment_method == 'cod':
             self.payment_status = 'pending'
             self.is_paid = False
         
-        # Call save only ONCE
+        # Automatically mark as paid when delivered
+        if self.order_status == 'delivered' and self.payment_status != 'paid':
+            self.payment_status = 'paid'
+            self.is_paid = True
+        
         super().save(*args, **kwargs)
 
 
