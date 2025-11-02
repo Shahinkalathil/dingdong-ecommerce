@@ -289,4 +289,4 @@ def update_order_status(request, order_id):
 @user_passes_test(lambda u: u.is_superuser, login_url="admin_login")
 def admin_order_details(request, order_id):
     order = get_object_or_404(Order, id=order_id)
-    return render(request, 'admin_panel/order_management/order_details.html', {'order': order})
+    return render(request, 'admin_panel/order_management/order_detail.html', {'order': order})
