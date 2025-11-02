@@ -45,6 +45,9 @@ class Order(models.Model):
     )
     is_paid = models.BooleanField(default=False)
     
+    # NEW FIELDS FOR CANCELLATION
+    cancellation_reason = models.CharField(max_length=255, blank=True, null=True)
+    cancelled_at = models.DateTimeField(blank=True, null=True)
     
     class Meta:
         ordering = ['-created_at']
@@ -53,19 +56,15 @@ class Order(models.Model):
         return f"{self.order_number} - {self.user.username}"
     
     def save(self, *args, **kwargs):
-        # Generate order number if it doesn't exist
         if not self.order_number:
             year = datetime.now().year
             unique_id = str(uuid.uuid4().int)[:6]
             self.order_number = f"DNG-{year}-{unique_id}"
         
-        # IMPORTANT: Only set payment status on creation, not on every save
-        # This allows admin updates to change payment status when delivered
         if self._state.adding and self.payment_method == 'cod':
             self.payment_status = 'pending'
             self.is_paid = False
         
-        # Automatically mark as paid when delivered
         if self.order_status == 'delivered' and self.payment_status != 'paid':
             self.payment_status = 'paid'
             self.is_paid = True
@@ -82,6 +81,10 @@ class OrderItem(models.Model):
     subtotal = models.DecimalField(max_digits=10, decimal_places=2)
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items')
     variant = models.ForeignKey(ProductVariant, on_delete=models.SET_NULL, null=True)
+    
+    # NEW FIELD FOR ITEM CANCELLATION
+    is_cancelled = models.BooleanField(default=False)
+    cancelled_at = models.DateTimeField(blank=True, null=True)
 
     def __str__(self):
         return f"{self.product_name} - Qty: {self.quantity}"
@@ -92,9 +95,6 @@ class OrderItem(models.Model):
 
 
 class OrderAddress(models.Model):
-    """
-    Separate address snapshot for each order
-    """
     full_name = models.CharField(max_length=100)
     phone_number = models.CharField(max_length=15)
     flat_house = models.CharField(max_length=255)

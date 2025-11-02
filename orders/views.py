@@ -1,4 +1,4 @@
-from django.shortcuts import render, get_object_or_404, redirect
+from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db.models import Q
@@ -9,8 +9,9 @@ from django.http import JsonResponse
 from django.db import transaction
 from django.views.decorators.http import require_POST
 from .models import Order, OrderItem
-from products.models import ProductVariant
 import json
+from django.utils import timezone
+
 
 @login_required
 def order(request):
@@ -50,7 +51,7 @@ def order(request):
             orders = orders.filter(created_at__gte=start_date)
     
     # Pagination - 5 orders per page
-    paginator = Paginator(orders, 4)
+    paginator = Paginator(orders, 5)
     page = request.GET.get('page', 1)
     
     try:
@@ -69,7 +70,6 @@ def order(request):
     
     return render(request, 'user_side/profile/order.html', context)
 
-
 @login_required
 def order_detail(request, order_number):
     """Display detailed order information"""
@@ -87,7 +87,7 @@ def order_detail(request, order_number):
     if hasattr(order, 'discount_amount'):
         discount = order.discount_amount
     
-    # Calculate order savings (discount shown in HTML)
+    # Calculate order savings
     order_savings = discount
     
     # Check if order can be cancelled (only if pending or confirmed)
@@ -101,9 +101,9 @@ def order_detail(request, order_number):
     
     # Determine order status steps
     status_steps = {
-        'confirmed': order.order_status in ['confirmed', 'processing', 'shipped', 'delivered'],
-        'shipped': order.order_status in ['shipped', 'delivered'],
-        'out_for_delivery': order.order_status == 'delivered',
+        'confirmed': order.order_status in ['confirmed', 'shipped', 'out_for_delivery', 'delivered'],
+        'shipped': order.order_status in ['shipped', 'out_for_delivery', 'delivered'],
+        'out_for_delivery': order.order_status in ['out_for_delivery', 'delivered'],
         'delivered': order.order_status == 'delivered',
     }
     
@@ -138,25 +138,36 @@ def cancel_order(request, order_number):
                 'message': 'Order cannot be cancelled at this stage.'
             }, status=400)
         
-        # Get cancellation reason
+        # Get cancellation reason from request
         data = json.loads(request.body)
-        cancel_reason = data.get('reason', '')
+        cancel_reason = data.get('reason', 'No reason provided')
         
         with transaction.atomic():
             # Restore quantities for all items
             for item in order.items.all():
                 if item.variant:
-                    item.variant.stock_quantity += item.quantity
+                    item.variant.stock += item.quantity
                     item.variant.save()
+                
+                # Mark item as cancelled
+                item.is_cancelled = True
+                item.cancelled_at = timezone.now()
+                item.save()
             
-            # Update order status
+            # Update order status and save cancellation details
             order.order_status = 'cancelled'
-            order.save()
+            order.cancellation_reason = cancel_reason
+            order.cancelled_at = timezone.now()
             
-            # Store cancellation reason if needed
-            # You might want to add a cancel_reason field to Order model
+            # Update payment status to refunded if already paid
+            if order.is_paid or order.payment_status == 'paid':
+                order.payment_status = 'refunded'
+                order.is_paid = False
+            
+            order.save()
         
         messages.success(request, f'Order {order_number} has been cancelled successfully.')
+        
         return JsonResponse({
             'success': True,
             'message': 'Order cancelled successfully',
@@ -176,7 +187,7 @@ def cancel_order_item(request, order_number, item_id):
     """Cancel individual order item and restore product quantity"""
     try:
         order = get_object_or_404(
-            Order,
+            Order.objects.prefetch_related('items__variant'),
             order_number=order_number,
             user=request.user
         )
@@ -190,37 +201,53 @@ def cancel_order_item(request, order_number, item_id):
         
         item = get_object_or_404(OrderItem, id=item_id, order=order)
         
+        # Check if item is already cancelled
+        if item.is_cancelled:
+            return JsonResponse({
+                'success': False,
+                'message': 'This item has already been cancelled.'
+            }, status=400)
+        
         with transaction.atomic():
             # Restore product quantity
             if item.variant:
-                item.variant.stock_quantity += item.quantity
+                item.variant.stock += item.quantity
                 item.variant.save()
             
-            # Update order totals
+            # Mark item as cancelled
+            item.is_cancelled = True
+            item.cancelled_at = timezone.now()
+            item.save()
+            
+            # Update order totals - subtract cancelled item
             order.subtotal -= item.subtotal
+            order.total_amount = order.subtotal + order.delivery_charge
             
-            # Recalculate total (subtotal - discount + delivery + tax)
-            # Assuming you have these fields, adjust as needed
-            discount = getattr(order, 'discount_amount', 0)
-            tax = getattr(order, 'tax_amount', 0)
-            order.total_amount = order.subtotal - discount + order.delivery_charge + tax
+            # Check if all items are cancelled
+            active_items_count = order.items.filter(is_cancelled=False).count()
             
-            # Delete the item
-            item.delete()
-            
-            # If no items left, cancel the entire order
-            if order.items.count() == 0:
+            # If no active items left, cancel the entire order
+            if active_items_count == 0:
                 order.order_status = 'cancelled'
+                order.cancellation_reason = 'All items cancelled'
+                order.cancelled_at = timezone.now()
+                
+                # Update payment status to refunded if already paid
+                if order.is_paid or order.payment_status == 'paid':
+                    order.payment_status = 'refunded'
+                    order.is_paid = False
             
             order.save()
         
         messages.success(request, 'Item cancelled successfully.')
+        
         return JsonResponse({
             'success': True,
             'message': 'Item cancelled successfully',
             'new_subtotal': float(order.subtotal),
             'new_total': float(order.total_amount),
-            'items_count': order.items.count()
+            'active_items_count': active_items_count,
+            'order_cancelled': active_items_count == 0
         })
         
     except Exception as e:
@@ -259,13 +286,8 @@ def request_return(request, order_number):
                 'message': 'Please provide return reason and description.'
             }, status=400)
         
-        # Here you would typically:
-        # 1. Create a Return/ReturnRequest model entry
-        # 2. Update order status or add a flag
-        # 3. Send notification to admin
-        
-        # For now, we'll just update the order status
-        # You might want to create a separate Return model
+        # Update order status to return requested
+        # Note: You might want to create a separate Return model
         order.order_status = 'return_requested'
         order.save()
         
@@ -282,33 +304,5 @@ def request_return(request, order_number):
         }, status=500)
 
 
-@login_required
 def download_invoice(request, order_number):
-    """Download invoice for delivered order"""
-    order = get_object_or_404(
-        Order.objects.prefetch_related(
-            'items__variant__product'
-        ).select_related('delivery_address', 'user'),
-        order_number=order_number,
-        user=request.user
-    )
-    
-    # Check if order is delivered
-    if order.order_status != 'delivered':
-        messages.error(request, 'Invoice is only available for delivered orders.')
-        return redirect('order_detail', order_number=order_number)
-    
-    # Here you would generate PDF invoice
-    # For now, returning a simple response
-    # You can use libraries like ReportLab or WeasyPrint for PDF generation
-    
-    from django.http import HttpResponse
-    
-    response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = f'attachment; filename="invoice_{order_number}.pdf"'
-    
-    # Add PDF generation logic here
-    # For demonstration, returning placeholder
-    response.write(b'Invoice PDF content would go here')
-    
-    return response
+    return render(request, "user_side/profile/order_pdf.html", {"order_number": order_number})

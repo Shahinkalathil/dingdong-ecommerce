@@ -173,7 +173,7 @@ def admin_order(request):
     
     # Pagination
     from django.core.paginator import Paginator
-    paginator = Paginator(orders, 10)  # 10 orders per page
+    paginator = Paginator(orders, 5)  # 10 orders per page
     page_number = request.GET.get('page', 1)
     page_obj = paginator.get_page(page_number)
     
