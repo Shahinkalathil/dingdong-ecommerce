@@ -8,10 +8,14 @@ from django.contrib import messages
 from django.http import JsonResponse
 from django.db import transaction
 from django.views.decorators.http import require_POST
-from .models import Order, OrderItem
 import json
 from django.utils import timezone
-
+from django.shortcuts import render, get_object_or_404
+from django.http import HttpResponse
+from django.template.loader import render_to_string
+from .models import Order
+from weasyprint import HTML
+import tempfile
 
 @login_required
 def order(request):
@@ -69,6 +73,7 @@ def order(request):
     }
     
     return render(request, 'user_side/profile/order.html', context)
+
 
 @login_required
 def order_detail(request, order_number):
@@ -159,9 +164,14 @@ def cancel_order(request, order_number):
             order.cancellation_reason = cancel_reason
             order.cancelled_at = timezone.now()
             
-            # Update payment status to refunded if already paid
+            # Update payment status based on whether payment was already made
             if order.is_paid or order.payment_status == 'paid':
+                # If payment was already made, set to refunded
                 order.payment_status = 'refunded'
+                order.is_paid = False
+            else:
+                # If payment was not made yet (pending), set to failed
+                order.payment_status = 'failed'
                 order.is_paid = False
             
             order.save()
@@ -232,9 +242,14 @@ def cancel_order_item(request, order_number, item_id):
                 order.cancellation_reason = 'All items cancelled'
                 order.cancelled_at = timezone.now()
                 
-                # Update payment status to refunded if already paid
+                # Update payment status based on whether payment was already made
                 if order.is_paid or order.payment_status == 'paid':
+                    # If payment was already made, set to refunded
                     order.payment_status = 'refunded'
+                    order.is_paid = False
+                else:
+                    # If payment was not made yet (pending), set to failed
+                    order.payment_status = 'failed'
                     order.is_paid = False
             
             order.save()
@@ -304,5 +319,40 @@ def request_return(request, order_number):
         }, status=500)
 
 
+
 def download_invoice(request, order_number):
-    return render(request, "user_side/profile/order_pdf.html", {"order_number": order_number})
+    """View to display and download order invoice"""
+    order = get_object_or_404(Order, order_number=order_number, user=request.user)
+    
+    context = {
+        'order': order,
+        'order_items': order.items.all(),
+        'delivery_address': order.delivery_address,
+    }
+    
+    return render(request, "user_side/profile/order_pdf.html", context)
+
+
+def generate_pdf(request, order_number):
+    """Generate and download PDF invoice"""
+    order = get_object_or_404(Order, order_number=order_number, user=request.user)
+    
+    context = {
+        'order': order,
+        'order_items': order.items.all(),
+        'delivery_address': order.delivery_address,
+    }
+    
+    # Render HTML template
+    html_string = render_to_string('user_side/profile/invoice_template.html', context)
+    html = HTML(string=html_string)
+    
+    # Generate PDF
+    result = html.write_pdf()
+    
+    # Create HTTP response
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="Invoice_{order_number}.pdf"'
+    response.write(result)
+    
+    return response

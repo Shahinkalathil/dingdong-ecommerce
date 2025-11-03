@@ -6,7 +6,7 @@ urlpatterns = [
     path("<str:order_number>/", views.order_detail, name='order_detail'),
     path("<str:order_number>/cancel/", views.cancel_order, name='cancel_order'),
     path('<str:order_number>/item/<int:item_id>/cancel/', views.cancel_order_item, name='cancel_order_item'),
-    
     path("<str:order_number>/return/", views.request_return, name='request_return'),
     path('order_doc/<str:order_number>/', views.download_invoice, name='download_invoice'),
+    path('order_doc/<str:order_number>/pdf/', views.generate_pdf, name='generate_pdf'),
 ]
