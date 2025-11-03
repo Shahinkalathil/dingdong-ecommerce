@@ -3,9 +3,157 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Invoice - {{ order.order_number }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-<h1>hello world</h1>
+<body class="bg-gray-100 min-h-screen p-5">
+    <div class="max-w-4xl mx-auto bg-white shadow-lg overflow-hidden">
+        <!-- Header with Black Background -->
+        <div class="bg-[#1a1a1a] text-white px-8 py-6">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h1 class="text-3xl font-bold tracking-wider">DINGDONG</h1>
+                    <p class="text-gray-400 text-sm mt-1">Premium Products Store</p>
+                </div>
+                <div class="text-right">
+                    <p class="text-2xl font-bold">INVOICE</p>
+                    <p class="text-sm text-gray-400 mt-1">{{ order.order_number }}</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Download Section -->
+        <div class="flex justify-between items-center px-8 py-4 bg-gray-50 border-b border-gray-200">
+            <div class="text-gray-700 text-sm">
+                <span class="font-semibold">Order Date:</span> {{ order.created_at|date:"d M, Y" }}
+            </div>
+            <a href="{% url 'generate_pdf' order.order_number %}" 
+               class="flex items-center gap-2 bg-[#1a1a1a] text-white px-6 py-2.5 text-sm font-semibold hover:bg-black transition-colors">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M13 8V2H7v6H2l8 8 8-8h-5zM0 18h20v2H0v-2z"/>
+                </svg>
+                Download PDF
+            </a>
+        </div>
+        
+        <!-- Invoice Content -->
+        <div class="p-8">
+            <!-- Info Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <!-- Order Details Box -->
+                <div class="border border-gray-200 p-5">
+                    <h3 class="text-gray-800 font-bold text-sm uppercase tracking-wide mb-4 pb-2 border-b border-gray-300">Order Details</h3>
+                    <div class="space-y-2.5 text-sm text-gray-700">
+                        <div class="flex justify-between">
+                            <span class="text-gray-500">Order Number:</span>
+                            <span class="font-semibold">{{ order.order_number }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-500">Order Date:</span>
+                            <span class="font-semibold">{{ order.created_at|date:"d M, Y h:i A" }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-500">Payment Method:</span>
+                            <span class="font-semibold">{{ order.get_payment_method_display }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-500">Payment Status:</span>
+                            <span class="font-semibold">{{ order.get_payment_status_display }}</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-500">Order Status:</span>
+                            <span class="inline-block px-3 py-1 text-xs font-semibold uppercase
+                                {% if order.order_status == 'confirmed' %}bg-green-100 text-green-800
+                                {% elif order.order_status == 'pending' %}bg-yellow-100 text-yellow-800
+                                {% elif order.order_status == 'shipped' %}bg-blue-100 text-blue-800
+                                {% elif order.order_status == 'delivered' %}bg-gray-800 text-white
+                                {% elif order.order_status == 'cancelled' %}bg-red-100 text-red-800
+                                {% endif %}">
+                                {{ order.get_order_status_display }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Delivery Address Box -->
+                <div class="border border-gray-200 p-5">
+                    <h3 class="text-gray-800 font-bold text-sm uppercase tracking-wide mb-4 pb-2 border-b border-gray-300">Delivery Address</h3>
+                    <div class="space-y-1 text-sm text-gray-700 leading-relaxed">
+                        <p class="font-bold text-gray-900">{{ delivery_address.full_name }}</p>
+                        <p class="text-gray-600">{{ delivery_address.phone_number }}</p>
+                        <p class="mt-2">{{ delivery_address.flat_house }}</p>
+                        <p>{{ delivery_address.area_street }}</p>
+                        {% if delivery_address.landmark %}
+                        <p class="text-gray-600">Landmark: {{ delivery_address.landmark }}</p>
+                        {% endif %}
+                        <p class="font-semibold">{{ delivery_address.town_city }}, {{ delivery_address.state }}</p>
+                        <p class="font-semibold">PIN: {{ delivery_address.pincode }}</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Order Items Table -->
+            <div class="mb-8">
+                <h3 class="text-gray-800 font-bold text-sm uppercase tracking-wide mb-4">Order Items</h3>
+                <div class="overflow-x-auto border border-gray-200">
+                    <table class="w-full">
+                        <thead class="bg-gray-800 text-white">
+                            <tr>
+                                <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider">Product</th>
+                                <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider">Color</th>
+                                <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider">Price</th>
+                                <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider">Quantity</th>
+                                <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider">Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200 bg-white">
+                            {% for item in order_items %}
+                            {% if not item.is_cancelled %}
+                            <tr class="hover:bg-gray-50 transition-colors">
+                                <td class="px-4 py-4 text-sm text-gray-900">{{ item.product_name }}</td>
+                                <td class="px-4 py-4 text-sm">
+                                    <div class="flex items-center gap-2">
+                                        <span class="inline-block w-5 h-5 rounded-full border border-gray-300" 
+                                              style="background-color: {{ item.color_code }};"></span>
+                                        <span class="text-gray-700">{{ item.color_name }}</span>
+                                    </div>
+                                </td>
+                                <td class="px-4 py-4 text-sm text-gray-900">₹{{ item.price }}</td>
+                                <td class="px-4 py-4 text-sm text-gray-900">{{ item.quantity }}</td>
+                                <td class="px-4 py-4 text-sm font-semibold text-gray-900">₹{{ item.subtotal }}</td>
+                            </tr>
+                            {% endif %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Totals Section -->
+            <div class="border-t-2 border-gray-300 pt-6">
+                <div class="max-w-sm ml-auto space-y-3">
+                    <div class="flex justify-between text-sm text-gray-700">
+                        <span>Subtotal:</span>
+                        <span class="font-semibold">₹{{ order.subtotal }}</span>
+                    </div>
+                    <div class="flex justify-between text-sm text-gray-700">
+                        <span>Delivery Charges:</span>
+                        <span class="font-semibold">₹{{ order.delivery_charge }}</span>
+                    </div>
+                    <div class="flex justify-between text-lg font-bold text-gray-900 border-t-2 border-gray-800 pt-3 mt-3">
+                        <span>Grand Total:</span>
+                        <span>₹{{ order.total_amount }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <div class="bg-gray-50 px-8 py-6 text-center border-t border-gray-200">
+            <p class="font-semibold text-gray-800">Thank you for shopping with DINGDONG!</p>
+            <p class="text-sm text-gray-600 mt-2">For any queries, please contact our support team.</p>
+            <p class="text-xs text-gray-500 mt-3">This is a computer-generated invoice and does not require a signature.</p>
+        </div>
+    </div>
 </body>
 </html>

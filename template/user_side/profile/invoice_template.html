@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Invoice - {{ order.order_number }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @page {
+            size: A4;
+            margin: 1cm;
+        }
+    </style>
+</head>
+<body class="font-sans text-gray-800">
+    <!-- Header with Black Background -->
+    <div class="bg-[#1a1a1a] text-white px-6 py-5 mb-6">
+        <div class="flex justify-between items-center">
+            <div>
+                <h1 class="text-3xl font-bold tracking-wider">DINGDONG</h1>
+                <p class="text-gray-400 text-xs mt-1">Premium Products Store</p>
+            </div>
+            <div class="text-right">
+                <p class="text-2xl font-bold">INVOICE</p>
+                <p class="text-xs text-gray-400 mt-1">{{ order.order_number }}</p>
+                <p class="text-xs text-gray-400">{{ order.created_at|date:"d M, Y" }}</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Info Section -->
+    <div class="grid grid-cols-2 gap-6 mb-6">
+        <!-- Order Information -->
+        <div class="border border-gray-300 p-4">
+            <h3 class="text-gray-800 font-bold text-sm uppercase tracking-wide mb-3 pb-2 border-b border-gray-300">Order Information</h3>
+            <div class="space-y-2 text-xs">
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Order Number:</span>
+                    <span class="font-semibold">{{ order.order_number }}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Order Date:</span>
+                    <span class="font-semibold">{{ order.created_at|date:"d M, Y h:i A" }}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Payment Method:</span>
+                    <span class="font-semibold">{{ order.get_payment_method_display }}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Payment Status:</span>
+                    <span class="font-semibold">{{ order.get_payment_status_display }}</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-gray-600">Order Status:</span>
+                    <span class="inline-block px-2 py-0.5 text-xs font-semibold uppercase
+                        {% if order.order_status == 'confirmed' %}bg-green-100 text-green-800
+                        {% elif order.order_status == 'pending' %}bg-yellow-100 text-yellow-800
+                        {% elif order.order_status == 'shipped' %}bg-blue-100 text-blue-800
+                        {% elif order.order_status == 'delivered' %}bg-gray-800 text-white
+                        {% elif order.order_status == 'cancelled' %}bg-red-100 text-red-800
+                        {% endif %}">
+                        {{ order.get_order_status_display }}
+                    </span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Delivery Address -->
+        <div class="border border-gray-300 p-4">
+            <h3 class="text-gray-800 font-bold text-sm uppercase tracking-wide mb-3 pb-2 border-b border-gray-300">Delivery Address</h3>
+            <div class="space-y-1 text-xs">
+                <p class="font-bold text-gray-900">{{ delivery_address.full_name }}</p>
+                <p class="text-gray-600">{{ delivery_address.phone_number }}</p>
+                <p class="mt-1">{{ delivery_address.flat_house }}</p>
+                <p>{{ delivery_address.area_street }}</p>
+                {% if delivery_address.landmark %}
+                <p class="text-gray-600">Landmark: {{ delivery_address.landmark }}</p>
+                {% endif %}
+                <p class="font-semibold">{{ delivery_address.town_city }}, {{ delivery_address.state }}</p>
+                <p class="font-semibold">PIN: {{ delivery_address.pincode }}</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Items Table -->
+    <div class="mb-6">
+        <h3 class="text-gray-800 font-bold text-sm uppercase tracking-wide mb-3">Order Items</h3>
+        <table class="w-full border-collapse border border-gray-300">
+            <thead class="bg-gray-800 text-white">
+                <tr>
+                    <th class="px-3 py-2.5 text-left text-xs font-semibold uppercase tracking-wider border border-gray-300">Product</th>
+                    <th class="px-3 py-2.5 text-left text-xs font-semibold uppercase tracking-wider border border-gray-300">Color</th>
+                    <th class="px-3 py-2.5 text-left text-xs font-semibold uppercase tracking-wider border border-gray-300">Price</th>
+                    <th class="px-3 py-2.5 text-left text-xs font-semibold uppercase tracking-wider border border-gray-300">Quantity</th>
+                    <th class="px-3 py-2.5 text-left text-xs font-semibold uppercase tracking-wider border border-gray-300">Subtotal</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white">
+                {% for item in order_items %}
+                {% if not item.is_cancelled %}
+                <tr class="{% if forloop.counter|divisibleby:2 %}bg-gray-50{% endif %}">
+                    <td class="px-3 py-3 text-xs border border-gray-300">{{ item.product_name }}</td>
+                    <td class="px-3 py-3 text-xs border border-gray-300">
+                        <span class="inline-block w-3.5 h-3.5 rounded-full border border-gray-400 align-middle mr-1" 
+                              style="background-color: {{ item.color_code }};"></span>
+                        {{ item.color_name }}
+                    </td>
+                    <td class="px-3 py-3 text-xs border border-gray-300">₹{{ item.price }}</td>
+                    <td class="px-3 py-3 text-xs border border-gray-300">{{ item.quantity }}</td>
+                    <td class="px-3 py-3 text-xs font-semibold border border-gray-300">₹{{ item.subtotal }}</td>
+                </tr>
+                {% endif %}
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    <!-- Totals Section -->
+    <div class="border-t-2 border-gray-400 pt-4 mb-8">
+        <div class="float-right w-72">
+            <div class="space-y-2 text-sm">
+                <div class="flex justify-between text-gray-700">
+                    <span>Subtotal:</span>
+                    <span class="font-semibold">₹{{ order.subtotal }}</span>
+                </div>
+                <div class="flex justify-between text-gray-700">
+                    <span>Delivery Charges:</span>
+                    <span class="font-semibold">₹{{ order.delivery_charge }}</span>
+                </div>
+                <div class="flex justify-between text-base font-bold text-gray-900 border-t-2 border-gray-800 pt-3 mt-2">
+                    <span>Grand Total:</span>
+                    <span>₹{{ order.total_amount }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Footer -->
+    <div class="clear-both mt-16 text-center pt-4 border-t border-gray-300">
+        <p class="font-semibold text-gray-800 text-sm">Thank you for shopping with DINGDONG!</p>
+        <p class="text-xs text-gray-600 mt-2">For any queries, please contact our support team.</p>
+        <p class="text-xs text-gray-500 mt-2">This is a computer-generated invoice and does not require a signature.</p>
+    </div>
+</body>
+</html>
