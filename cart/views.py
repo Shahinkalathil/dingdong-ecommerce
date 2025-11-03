@@ -84,13 +84,11 @@ def update_cart_quantity(request, item_id):
     if request.method == 'POST':
         cart_item = get_object_or_404(CartItem, id=item_id, cart__user=request.user)
         action = request.POST.get('action')
-        
-        # Validate action
+
         if action not in ['increment', 'decrement']:
             messages.error(request, 'Invalid action.')
             return redirect('cart')
-        
-        # Check if product is still listed
+
         if not cart_item.variant.is_listed or not cart_item.variant.product.is_listed:
             messages.error(request, 'This product is no longer available.')
             return redirect('cart')

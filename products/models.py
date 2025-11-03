@@ -1,6 +1,5 @@
 from django.db import models
 
-# Create your models here.
 class Category(models.Model):
     name = models.CharField(max_length=50)
     image = models.ImageField(upload_to='categories/', blank=True, null=True)
@@ -9,8 +8,6 @@ class Category(models.Model):
     def __str__(self):
         return self.name
 
-
-# Model for Brands
 class Brand(models.Model):
     name = models.CharField(max_length=50)
     image = models.ImageField(upload_to='brands/', blank=True, null=True)
@@ -19,9 +16,6 @@ class Brand(models.Model):
     def __str__(self):
         return self.name
 
-
-
-# Product Model
 class Product(models.Model):
     name = models.CharField(max_length=50, unique=True)
     description = models.TextField()
@@ -32,8 +26,6 @@ class Product(models.Model):
     def __str__(self):
         return self.name
 
-
-# Product Variant Model 
 class ProductVariant(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="variants")
     color_name = models.CharField(max_length=30)  
@@ -44,8 +36,7 @@ class ProductVariant(models.Model):
     
     def __str__(self):
         return f"{self.product.name} - {self.color_name}"
-    
-# Product Image Model 
+
 class ProductImage(models.Model):
     variant = models.ForeignKey(ProductVariant, on_delete=models.CASCADE, related_name="images")
     image = models.ImageField(upload_to="product_variants/")

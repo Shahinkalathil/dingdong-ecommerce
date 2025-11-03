@@ -14,33 +14,21 @@ from decimal import Decimal
 def home(request):
     if not request.user.is_authenticated:
         return redirect('sign_in')
-    
-    # Get active banners (one for each position: main, secondary, promotional)
     banners = Banner.get_active_banners()
-    
-    # Get featured categories (with products and images) - Random 5 categories
     all_categories = list(Category.objects.filter(
         is_listed=True,
         products__is_listed=True
     ).annotate(
         product_count=Count('products', filter=Q(products__is_listed=True))
     ).filter(product_count__gt=0).select_related())
-    
-    # Randomly select 5 categories (or less if not enough categories)
     featured_categories = random.sample(all_categories, min(5, len(all_categories))) if all_categories else []
-    
-    # Get active brands (with products and images) - Random 8 brands
     all_brands = list(Brand.objects.filter(
         is_listed=True,
         products__is_listed=True
     ).annotate(
         product_count=Count('products', filter=Q(products__is_listed=True))
     ).filter(product_count__gt=0).select_related())
-    
-    # Randomly select 8 brands (or less if not enough brands)
     brands = random.sample(all_brands, min(8, len(all_brands))) if all_brands else []
-    
-    # Get featured products with their minimum price
     featured_products = Product.objects.filter(
         is_listed=True,
         category__is_listed=True,
@@ -50,8 +38,6 @@ def home(request):
     ).annotate(
         min_price=Min('variants__price')
     ).distinct()[:12]
-    
-    # Get product data with images and prices
     products_data = []
     for product in featured_products:
         variant = product.variants.filter(
@@ -177,28 +163,22 @@ def product_detail(request, product_id):
     try:
         product = get_object_or_404(Product, id=product_id)
 
-        # Blocked / unlisted product check
         if not product.is_listed or not product.category.is_listed or not product.brand.is_listed:
             return redirect('products')
 
         variants = ProductVariant.objects.filter(product=product, is_listed=True).prefetch_related('images')
         if not variants.exists():
             return redirect('products')
-
-        # Pick variant from query param if provided
         variant_id = request.GET.get("variant")
         if variant_id:
             try:
                 default_variant = variants.get(id=variant_id)
             except ProductVariant.DoesNotExist:
-                # If variant doesn't exist, fall back to first variant
                 default_variant = variants.first()
         else:
             default_variant = variants.first()
 
-        # AJAX request for variant switching
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-            # Return JSON data for AJAX requests
             variant_data = {
                 'variant_id': default_variant.id,
                 'color_name': default_variant.color_name,
@@ -215,22 +195,12 @@ def product_detail(request, product_id):
                 'discount_percentage': round(((default_variant.price * Decimal('1.2') - default_variant.price) / (default_variant.price * Decimal('1.2'))) * 100)
             }
             return JsonResponse(variant_data)
-
-        # Fake rating + reviews
         rating = round(random.uniform(3.5, 5.0), 1)
         review_count = random.randint(50, 5000)
-
-        # Price calculation for selected variant
         original_price = default_variant.price * Decimal('1.2')
         discount_percentage = round(((original_price - default_variant.price) / original_price) * 100)
-
-        # Stock for current variant (not total stock)
         current_variant_stock = default_variant.stock
-        
-        # Total stock across all variants (for reference)
         total_stock = sum(variant.stock for variant in variants)
-
-        # Related products
         related_products = Product.objects.filter(
             category=product.category,
             is_listed=True
@@ -247,7 +217,6 @@ def product_detail(request, product_id):
                     'review_count': random.randint(20, 1000),
                 })
 
-        # Specs
         specifications = {
             'Brand': product.brand.name,
             'Category': product.category.name,
@@ -257,7 +226,6 @@ def product_detail(request, product_id):
             'Current Color': default_variant.color_name,
         }
 
-        # Create variants data for template (with stock info)
         variants_data = []
         for variant in variants:
             variants_data.append({
@@ -272,14 +240,14 @@ def product_detail(request, product_id):
         context = {
             'product': product,
             'variants': variants,
-            'variants_data': variants_data,  # Additional data for JavaScript
+            'variants_data': variants_data,  
             'default_variant': default_variant,
             'rating': rating,
             'review_count': review_count,
             'original_price': original_price,
             'discount_percentage': discount_percentage,
-            'current_variant_stock': current_variant_stock,  # Current variant stock
-            'total_stock': total_stock,  # All variants stock
+            'current_variant_stock': current_variant_stock,  
+            'total_stock': total_stock,  
             'related_products': related_products_data,
             'specifications': specifications,
             'key_features': [
