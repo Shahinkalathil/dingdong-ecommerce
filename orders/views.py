@@ -283,14 +283,11 @@ def request_return(request, order_number):
             user=request.user
         )
         
-        # Check if order is delivered
         if order.order_status != 'delivered':
             return JsonResponse({
                 'success': False,
                 'message': 'Only delivered orders can be returned.'
             }, status=400)
-        
-        # Get return details
         data = json.loads(request.body)
         return_reason = data.get('reason', '')
         return_description = data.get('description', '')
@@ -300,9 +297,6 @@ def request_return(request, order_number):
                 'success': False,
                 'message': 'Please provide return reason and description.'
             }, status=400)
-        
-        # Update order status to return requested
-        # Note: You might want to create a separate Return model
         order.order_status = 'return_requested'
         order.save()
         
@@ -342,15 +336,9 @@ def generate_pdf(request, order_number):
         'order_items': order.items.all(),
         'delivery_address': order.delivery_address,
     }
-    
-    # Render HTML template
     html_string = render_to_string('user_side/profile/invoice_template.html', context)
     html = HTML(string=html_string)
-    
-    # Generate PDF
     result = html.write_pdf()
-    
-    # Create HTTP response
     response = HttpResponse(content_type='application/pdf')
     response['Content-Disposition'] = f'attachment; filename="Invoice_{order_number}.pdf"'
     response.write(result)

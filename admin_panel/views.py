@@ -12,7 +12,7 @@ from django.http import JsonResponse
 from django.db.models import Q, Sum, Count
 from orders.models import Order, OrderItem
 
-# Admin Login
+
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def admin_login(request):
     if request.user.is_authenticated and request.user.is_superuser:
@@ -33,16 +33,12 @@ def admin_login(request):
 
     return render(request, "admin_panel/admin_login.html")
 
-
-# Admin Logout
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 @user_passes_test(lambda u: u.is_superuser, login_url="admin_login")
 def admin_logout(request):
     request.session.flush()
     return redirect("admin_login")
 
-
-# List Users
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 @user_passes_test(lambda u: u.is_superuser, login_url="admin_login")
 def users(request):
@@ -64,8 +60,6 @@ def users(request):
     }
     return render(request, "admin_panel/user_list/users_management.html", context)
 
-
-# Change User status Block / Unblock
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 @user_passes_test(lambda u: u.is_superuser, login_url="admin_login")
 def user_status(request, id):
@@ -90,8 +84,6 @@ def user_status(request, id):
     else:
         return redirect(f"{reverse('admin_users')}?page={page}")
 
-
-# Search Users
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 @user_passes_test(lambda u: u.is_superuser, login_url="admin_login")
 def users_search(request):
@@ -130,26 +122,18 @@ def users_search(request):
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 @user_passes_test(lambda u: u.is_superuser, login_url="admin_login")
 def admin_order(request):
-    # Get filter parameters
     search_query = request.GET.get('search', '')
     status_filter = request.GET.get('status', '')
-    
-    # Base queryset
     orders = Order.objects.select_related('user', 'address').prefetch_related('items').all()
-    
-    # Apply search filter
     if search_query:
         orders = orders.filter(
             Q(order_number__icontains=search_query) |
             Q(user__username__icontains=search_query) |
             Q(user__email__icontains=search_query)
         )
-    
-    # Apply status filter
     if status_filter:
         orders = orders.filter(order_status=status_filter)
     
-    # Calculate statistics
     total_revenue = Order.objects.filter(
         payment_status='paid'
     ).aggregate(total=Sum('total_amount'))['total'] or 0
@@ -162,7 +146,6 @@ def admin_order(request):
     
     pending_payment_count = Order.objects.filter(payment_status='pending').count()
     
-    # Payment status counts
     payment_stats = Order.objects.values('payment_status').annotate(
         count=Count('id')
     )
@@ -171,13 +154,11 @@ def admin_order(request):
     pending_count = next((item['count'] for item in payment_stats if item['payment_status'] == 'pending'), 0)
     failed_count = next((item['count'] for item in payment_stats if item['payment_status'] == 'failed'), 0)
     
-    # Pagination
     from django.core.paginator import Paginator
-    paginator = Paginator(orders, 5)  # 10 orders per page
+    paginator = Paginator(orders, 5) 
     page_number = request.GET.get('page', 1)
     page_obj = paginator.get_page(page_number)
     
-    # Status choices for filter dropdown
     filter_status_choices = [
         ('confirmed', 'Confirmed'),
         ('shipped', 'Shipped'),
@@ -206,44 +187,35 @@ def admin_order(request):
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 @user_passes_test(lambda u: u.is_superuser, login_url="admin_login")
 def update_order_status(request, order_id):
-    """Update order status via AJAX"""
     if request.method == 'POST':
         try:
             order = get_object_or_404(Order, id=order_id)
             new_status = request.POST.get('status')
-            
-            # Validation logic
             current_status = order.order_status
-            
-            # Admin cannot change cancelled orders
             if current_status == 'cancelled':
                 return JsonResponse({
                     'success': False,
                     'message': 'Cannot modify cancelled orders.'
                 }, status=400)
             
-            # Admin cannot set status to cancelled
             if new_status == 'cancelled':
                 return JsonResponse({
                     'success': False,
                     'message': 'Admins cannot cancel orders.'
                 }, status=400)
-            
-            # Cannot modify delivered orders
+
             if current_status == 'delivered':
                 return JsonResponse({
                     'success': False,
                     'message': 'Cannot modify delivered orders.'
                 }, status=400)
-            
-            # Define valid status transitions for admin
+
             valid_transitions = {
                 'confirmed': ['shipped'],
                 'shipped': ['out_for_delivery'],
                 'out_for_delivery': ['delivered'],
             }
-            
-            # Check if transition is valid
+
             if current_status not in valid_transitions:
                 return JsonResponse({
                     'success': False,
@@ -255,18 +227,15 @@ def update_order_status(request, order_id):
                     'success': False,
                     'message': f'Invalid status transition from {current_status} to {new_status}.'
                 }, status=400)
-            
-            # Update the order status
+
             order.order_status = new_status
             payment_updated = False
 
-            # If order is delivered, automatically set payment status to paid
             if new_status == 'delivered':
                 order.payment_status = 'paid'
                 order.is_paid = True
                 payment_updated = True
 
-            # Save with update_fields to avoid triggering the full save() logic
             order.save(update_fields=['order_status', 'payment_status', 'is_paid', 'updated_at'])
 
             return JsonResponse({

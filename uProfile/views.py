@@ -16,7 +16,6 @@ def overview(request):
     user = request.user
     addresses = user.addresses.all()
     total_orders = Order.objects.count()
-    # Get recent 4 orders
     recent_orders = Order.objects.filter(user=user).prefetch_related(
         'items__variant__images'
     ).select_related('delivery_address')[:4]
@@ -55,7 +54,6 @@ def change_password(request):
         if not request.user.check_password(old_password):
             errors['oldPassword'] = "Old password is incorrect"
             logger.warning(f"Incorrect old password for user: {request.user.username}")
-    # Validate New Password=
     if not new_password:
         errors['newPassword'] = "New password is required"
     elif len(new_password) < 8:
@@ -66,7 +64,6 @@ def change_password(request):
         errors['newPassword'] = "Password must contain at least one uppercase letter"
     elif old_password and new_password == old_password:
         errors['newPassword'] = "New password must be different from old password"
-    # Validate Confirm Password
     if not confirm_password:
         errors['confirmPassword'] = "Please confirm your new password"
     elif new_password and confirm_password != new_password:
@@ -155,7 +152,6 @@ def add_address(request):
         address_type = request.POST.get('address_type', '').strip()
         is_default = request.POST.get('is_default') == 'on'
         
-        # Validation for country
         if not country:
             is_valid = False
             errors["country"] = "Please select a country"
@@ -165,7 +161,6 @@ def add_address(request):
             errors["country"] = "Please select a valid country"
             messages.error(request, errors["country"])
         
-        # Validation for full name
         if not full_name:
             is_valid = False
             errors["full_name"] = "Full name is required"
@@ -183,7 +178,6 @@ def add_address(request):
             errors["full_name"] = "Full name can only contain letters, spaces, and dots"
             messages.error(request, errors["full_name"])
         
-        # Validation for mobile number
         if not mobile_number:
             is_valid = False
             errors["mobile_number"] = "Mobile number is required"
@@ -193,7 +187,6 @@ def add_address(request):
             errors["mobile_number"] = "Mobile number must contain 10-15 digits only"
             messages.error(request, errors["mobile_number"])
         
-        # Validation for pincode
         if not pincode:
             is_valid = False
             errors["pincode"] = "Pincode is required"
@@ -203,7 +196,6 @@ def add_address(request):
             errors["pincode"] = "Pincode must be exactly 6 digits"
             messages.error(request, errors["pincode"])
         
-        # Validation for area/street
         if not area_street:
             is_valid = False
             errors["area_street"] = "Area/Street is required"
@@ -217,7 +209,6 @@ def add_address(request):
             errors["area_street"] = "Area/Street must not exceed 255 characters"
             messages.error(request, errors["area_street"])
         
-        # Validation for flat/house
         if not flat_house:
             is_valid = False
             errors["flat_house"] = "Flat/House number is required"
@@ -231,13 +222,11 @@ def add_address(request):
             errors["flat_house"] = "Flat/House number must not exceed 255 characters"
             messages.error(request, errors["flat_house"])
         
-        # Validation for landmark
         if landmark and len(landmark) > 100:
             is_valid = False
             errors["landmark"] = "Landmark must not exceed 100 characters"
             messages.error(request, errors["landmark"])
         
-        # Validation for town/city
         if not town_city:
             is_valid = False
             errors["town_city"] = "Town/City is required"
@@ -254,8 +243,7 @@ def add_address(request):
             is_valid = False
             errors["town_city"] = "Town/City can only contain letters, spaces, and dots"
             messages.error(request, errors["town_city"])
-        
-        # Validation for state
+
         if not state or state == 'Select':
             is_valid = False
             errors["state"] = "Please select a state"
@@ -264,8 +252,7 @@ def add_address(request):
             is_valid = False
             errors["state"] = "Please select a valid state"
             messages.error(request, errors["state"])
-        
-        # Validation for address type
+
         if not address_type:
             is_valid = False
             errors["address_type"] = "Please select an address type"
@@ -320,9 +307,6 @@ def add_address(request):
 
 @login_required
 def edit_address(request, address_id):
-    """
-    Edit an existing address with validation and duplicate prevention
-    """
     address = get_object_or_404(Address, id=address_id, user=request.user)
     next_url = request.GET.get('next', reverse('profile'))
     
@@ -342,59 +326,49 @@ def edit_address(request, address_id):
         
         errors = {}
         
-        # Validate Country
         if not country or country == 'Select Country':
             errors['country'] = 'Please select a country'
-        
-        # Validate Full Name
+
         if not full_name:
             errors['full_name'] = 'Full name is required'
         elif len(full_name) < 2:
             errors['full_name'] = 'Full name must be at least 2 characters'
         elif not re.match(r'^[a-zA-Z\s]+$', full_name):
             errors['full_name'] = 'Full name should only contain letters and spaces'
-        
-        # Validate Mobile Number
+
         if not mobile_number:
             errors['mobile_number'] = 'Mobile number is required'
         elif not re.match(r'^[0-9]{10,15}$', mobile_number):
             errors['mobile_number'] = 'Mobile number must be 10-15 digits'
         
-        # Validate Pincode
         if not pincode:
             errors['pincode'] = 'Pincode is required'
         elif not re.match(r'^[0-9]{6}$', pincode):
             errors['pincode'] = 'Pincode must be 6 digits'
-        
-        # Validate Area/Street
+
         if not area_street:
             errors['area_street'] = 'Area/Street is required'
         elif len(area_street) < 3:
             errors['area_street'] = 'Area/Street must be at least 3 characters'
-        
-        # Validate Flat/House
+
         if not flat_house:
             errors['flat_house'] = 'Flat/House details are required'
         elif len(flat_house) < 2:
             errors['flat_house'] = 'Flat/House details must be at least 2 characters'
-        
-        # Validate Town/City
+
         if not town_city:
             errors['town_city'] = 'Town/City is required'
         elif len(town_city) < 2:
             errors['town_city'] = 'Town/City must be at least 2 characters'
         elif not re.match(r'^[a-zA-Z\s]+$', town_city):
             errors['town_city'] = 'Town/City should only contain letters and spaces'
-        
-        # Validate State
+
         if not state or state == 'Select':
             errors['state'] = 'Please select a state'
-        
-        # Validate Address Type
+
         if not address_type:
             errors['address_type'] = 'Please select an address type'
         
-        # Check for duplicate address (excluding current address being edited)
         if not errors:
             duplicate = Address.objects.filter(
                 user=request.user,
@@ -479,9 +453,6 @@ def edit_address(request, address_id):
 
 @login_required
 def set_default_address(request, address_id):
-    """
-    Set an address as the default address for the user
-    """
     address = get_object_or_404(Address, id=address_id, user=request.user)
     if address.is_default:
         messages.info(request, 'This address is already your default address.')

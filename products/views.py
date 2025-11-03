@@ -27,7 +27,7 @@ def categories(request):
     if request.method == "POST":
         category_id = request.POST.get("category_id")  
         
-        if category_id:  # Edit existing category
+        if category_id:  
             category = get_object_or_404(Category, id=category_id)
             new_name = request.POST.get("category_name", "").strip()
             
@@ -40,8 +40,7 @@ def categories(request):
                 return redirect("admin_category")
             
             category.name = new_name
-            
-            # Handle image upload for edit
+
             if request.FILES.get("category_image"):
                 category.image = request.FILES["category_image"]
             
@@ -49,7 +48,7 @@ def categories(request):
             messages.success(request, f"Category '{new_name}' updated successfully.")
             return redirect("admin_category")
             
-        else:  # Add new category
+        else:  
             name = request.POST.get("category_name", "").strip()
             
             if not name:
@@ -60,7 +59,7 @@ def categories(request):
                 messages.error(request, "This category already exists.")
                 return redirect("admin_category")
             
-            # Create category with image
+            
             category = Category(name=name, is_listed=True)
             
             if request.FILES.get("category_image"):
@@ -135,7 +134,6 @@ def category_status(request, id, action):
 
     return redirect("admin_category")
 
-# Product Management
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 @user_passes_test(lambda u: u.is_superuser, login_url="admin_login")
 def admin_products(request):
@@ -145,7 +143,6 @@ def admin_products(request):
     }
     return render(request, 'admin_panel/product/product_management.html', context)
 
-# Product Search
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 @user_passes_test(lambda u: u.is_superuser, login_url="admin_login")
 def products_search(request):
@@ -165,8 +162,6 @@ def products_search(request):
     }
     return render(request, "admin_panel/product/product_management.html", context)
 
-
-# Edit Product
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 @user_passes_test(lambda u: u.is_superuser, login_url="admin_login")
 def edit_products(request, product_id):
@@ -289,7 +284,7 @@ def edit_products(request, product_id):
             }
             return render(request, "admin_panel/product/product_edit.html", context)
         
-        # Update product
+        
         try:
             category = Category.objects.get(id=category_id)
             brand = Brand.objects.get(id=brand_id)
@@ -392,7 +387,7 @@ def edit_products(request, product_id):
     return render(request, "admin_panel/product/product_edit.html", context)
 
 
-# Add Product
+
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 @user_passes_test(lambda u: u.is_superuser, login_url="admin_login")
 def add_products(request):

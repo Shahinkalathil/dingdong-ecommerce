@@ -5,7 +5,7 @@ from django.shortcuts import redirect
 def send_otp_email(email, otp):
     subject = "Your OTP for Account Verification"
     message = f"Your OTP is {otp}. It will expire in 1 minute."
-    email_from = None   # uses DEFAULT_FROM_EMAIL
+    email_from = None   
     recipient_list = [email]
     send_mail(subject, message, email_from, recipient_list)
     return True
