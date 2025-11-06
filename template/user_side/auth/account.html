@@ -1,0 +1,83 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Blocked - DINGDONG</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50">
+    <div class="min-h-screen flex items-center justify-center px-4 py-12">
+        <div class="max-w-md w-full">
+            <!-- Error Icon -->
+            <div class="text-center mb-8">
+                <div class="inline-flex items-center justify-center w-20 h-20 bg-red-100 rounded-full mb-4">
+                    <svg class="w-10 h-10 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                    </svg>
+                </div>
+                <h1 class="text-3xl font-bold text-gray-900 mb-2">Account Blocked</h1>
+                <p class="text-gray-600">Your account has been deactivated by the administrator</p>
+            </div>
+
+            <!-- Information Card -->
+            <div class="bg-white rounded-lg shadow-lg p-8 mb-6">
+                <div class="space-y-4">
+                    <div class="flex items-start">
+                        <svg class="w-6 h-6 text-red-500 mt-1 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        <div>
+                            <h3 class="font-semibold text-gray-900 mb-1">Why is my account blocked?</h3>
+                            <p class="text-gray-600 text-sm">Your account has been temporarily blocked by our administrator. This may be due to:</p>
+                            <ul class="list-disc list-inside text-gray-600 text-sm mt-2 ml-4 space-y-1">
+                                <li>Violation of terms of service</li>
+                                <li>Suspicious activity detected</li>
+                                <li>Payment or order issues</li>
+                                <li>Administrative review</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contact Information -->
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
+                <h3 class="font-semibold text-blue-900 mb-3 flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                    </svg>
+                    Contact Administrator
+                </h3>
+                <p class="text-blue-800 text-sm mb-3">To resolve this issue and reactivate your account, please contact our support team:</p>
+                <div class="space-y-2">
+                    <a href="mailto:shahinluttu@gmail.com" class="flex items-center text-blue-600 hover:text-blue-800 font-medium">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                        </svg>
+                        shahinluttu@gmail.com
+                    </a>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="space-y-3">
+                <a href="{% url 'home' %}" class="block w-full bg-gray-900 text-white text-center py-3 px-4 rounded-lg font-medium hover:bg-gray-800 transition-colors">
+                    Return to Home
+                </a>
+                <a href="{% url 'sign_in' %}" class="block w-full bg-white text-gray-700 text-center py-3 px-4 rounded-lg font-medium border border-gray-300 hover:bg-gray-50 transition-colors">
+                    Try Different Account
+                </a>
+            </div>
+
+            <!-- Additional Help -->
+            <div class="mt-6 text-center">
+                <p class="text-sm text-gray-500">
+                    If you believe this is a mistake, please reach out to us immediately.
+                </p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

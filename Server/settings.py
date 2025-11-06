@@ -17,6 +17,8 @@ from dotenv import load_dotenv
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Load environment variables
+load_dotenv()
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
@@ -48,12 +50,7 @@ EMAIL_HOST_USER = config("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD")     
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
-
 # Application definition
-
-SITE_ID = 6
-
-
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -73,14 +70,11 @@ INSTALLED_APPS = [
     'cart',
     'checkout',
     'orders',
-
     'admin_panel',
     'dashboard',
-
 ]
 
-load_dotenv()
-
+# Site ID Configuration
 USE_NGROK = config("USE_NGROK", default="0") == "1"
 
 if USE_NGROK:
@@ -89,19 +83,6 @@ if USE_NGROK:
 else:
     SITE_ID = config("SITE_ID_LOCAL", cast=int)
     GOOGLE_REDIRECT_URI = config("GOOGLE_REDIRECT_URI")
-
-SOCIALACCOUNT_PROVIDERS = {
-    'google': {
-        'SCOPE': ['profile', 'email'],
-        'AUTH_PARAMS': {'access_type': 'online'},
-        'APP': {
-            'client_id': config("GOOGLE_CLIENT_ID", default=""),
-            'secret': config("GOOGLE_CLIENT_SECRET", default=""),
-            'key': ''
-        },
-        'REDIRECT_URI': GOOGLE_REDIRECT_URI,
-    }
-}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -133,7 +114,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'Server.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
@@ -147,8 +127,6 @@ DATABASES = {
         'PORT': config("DB_PORT", default="5432"),
     }
 }
-
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
@@ -168,7 +146,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 
@@ -180,7 +157,6 @@ USE_I18N = True
 
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
@@ -190,24 +166,52 @@ STATICFILES_DIRS = [
     BASE_DIR / 'Server' / 'static',
 ]
 
-
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-
+# Authentication Backends
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',  
     'allauth.account.auth_backends.AuthenticationBackend',  
 ]
 
+# Django-allauth Configuration (Updated for latest version)
+# NEW SETTINGS (replaces deprecated ones)
+ACCOUNT_LOGIN_METHODS = {'email'}  # Replaces ACCOUNT_AUTHENTICATION_METHOD
+ACCOUNT_SIGNUP_FIELDS = ['email*', 'password1*', 'password2*']  # Replaces EMAIL_REQUIRED and USERNAME_REQUIRED
+ACCOUNT_UNIQUE_EMAIL = True
+ACCOUNT_EMAIL_VERIFICATION = 'none'
 
-
-LOGIN_REDIRECT_URL = '/'      
-LOGOUT_REDIRECT_URL = '/'     
-ACCOUNT_LOGOUT_ON_GET = True  
-SOCIALACCOUNT_LOGIN_ON_GET = True
+# Social Account Configuration
 SOCIALACCOUNT_AUTO_SIGNUP = True
+SOCIALACCOUNT_LOGIN_ON_GET = True
+SOCIALACCOUNT_QUERY_EMAIL = True
+SOCIALACCOUNT_EMAIL_VERIFICATION = 'none'
+SOCIALACCOUNT_EMAIL_REQUIRED = True
+
+# Google OAuth Provider Configuration
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'SCOPE': ['profile', 'email'],
+        'AUTH_PARAMS': {'access_type': 'online'},
+        'APP': {
+            'client_id': config("GOOGLE_CLIENT_ID", default=""),
+            'secret': config("GOOGLE_CLIENT_SECRET", default=""),
+            'key': ''
+        },
+    }
+}
+
+# Custom Adapters
+ACCOUNT_ADAPTER = 'userlogin.adapters.CustomAccountAdapter'
+SOCIALACCOUNT_ADAPTER = 'userlogin.adapters.CustomSocialAccountAdapter'
+
+# Redirect URLs
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/'
+ACCOUNT_LOGOUT_ON_GET = True
