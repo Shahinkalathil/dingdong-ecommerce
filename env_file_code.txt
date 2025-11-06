@@ -1,0 +1,33 @@
+SECRET_KEY=django-insecure-3oos!cdz=^^3@yb8(yt1+08k*^225eh@cuylm)&l8+0f_kjr0u
+
+# Email Configuration
+EMAIL_HOST_USER=shahinluttu@gmail.com
+EMAIL_HOST_PASSWORD=jstz sivc nwls ytnw
+
+# Database Configuration
+DB_NAME=mydbdingdong
+DB_USER=dong_user
+DB_PASSWORD=shahin1212
+DB_HOST=localhost
+DB_PORT=5432
+
+# Site Configuration
+USE_NGROK=0
+SITE_ID_LOCAL=6
+SITE_ID_NGROK=5
+
+# Google OAuth Configuration
+GOOGLE_CLIENT_ID=803453159842-qenjn7nbfsflffdtgvfpm6jat3f37ca7.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=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
+GOOGLE_REDIRECT_URI=http://localhost:8000/accounts/google/login/callback/
+GOOGLE_REDIRECT_URI_NGROK=https://223bd8012b44.ngrok-free.app/accounts/google/login/callback/
+
+
+git ignore
+.env
+*.pyc
+__pycache__/
+staticfiles/
+media/
+
+
