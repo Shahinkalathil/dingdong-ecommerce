@@ -2,45 +2,38 @@ from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db.models import Q
-from .models import Order, OrderItem
+from .models import Order, OrderItem, OrderReturn
 from datetime import datetime, timedelta
 from django.contrib import messages
 from django.http import JsonResponse
 from django.db import transaction
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_POST, require_http_methods
 import json
 from django.utils import timezone
-from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse
 from django.template.loader import render_to_string
-from .models import Order
 from weasyprint import HTML
 import tempfile
 
+
 @login_required
 def order(request):
-    """Display user's orders with filtering and pagination"""
-    # Get all orders with related data
     orders = Order.objects.filter(user=request.user).prefetch_related(
         'items__variant__images',
         'items__variant__product',
         'delivery_address'
     ).select_related('user', 'address')
     
-    # Search functionality
     search_query = request.GET.get('search', '')
     if search_query:
         orders = orders.filter(
             Q(order_number__icontains=search_query) |
             Q(items__product_name__icontains=search_query)
         ).distinct()
-    
-    # Status filter
     status_filter = request.GET.get('status', '')
     if status_filter:
         orders = orders.filter(order_status=status_filter)
     
-    # Date range filter
     date_range = request.GET.get('date-range', '')
     if date_range:
         today = datetime.now()
@@ -54,7 +47,6 @@ def order(request):
             start_date = today - timedelta(days=90)
             orders = orders.filter(created_at__gte=start_date)
     
-    # Pagination - 5 orders per page
     paginator = Paginator(orders, 5)
     page = request.GET.get('page', 1)
     
@@ -87,24 +79,29 @@ def order_detail(request, order_number):
         user=request.user
     )
     
-    # Calculate discount
     discount = 0
     if hasattr(order, 'discount_amount'):
         discount = order.discount_amount
     
-    # Calculate order savings
     order_savings = discount
     
-    # Check if order can be cancelled (only if pending or confirmed)
     can_cancel = order.order_status in ['pending', 'confirmed']
     
-    # Check if order can be returned (only if delivered and within return window)
-    can_return = order.order_status == 'delivered'
-    
-    # Check if invoice can be downloaded (only if delivered)
     can_download_invoice = order.order_status == 'delivered'
     
-    # Determine order status steps
+    can_return = False
+    return_days_left = 0
+    
+    if order.order_status == 'delivered':
+
+        delivery_date = order.updated_at  
+        days_since_delivery = (timezone.now() - delivery_date).days
+        return_days_left = 7 - days_since_delivery
+        
+        if return_days_left > 0 and not hasattr(order, 'return_request'):
+            can_return = True
+    
+
     status_steps = {
         'confirmed': order.order_status in ['confirmed', 'shipped', 'out_for_delivery', 'delivered'],
         'shipped': order.order_status in ['shipped', 'out_for_delivery', 'delivered'],
@@ -120,6 +117,7 @@ def order_detail(request, order_number):
         'status_steps': status_steps,
         'discount': discount,
         'order_savings': order_savings,
+        'return_days_left': return_days_left if return_days_left > 0 else 0,
     }
     
     return render(request, 'user_side/profile/order_detail.html', context)
@@ -128,49 +126,42 @@ def order_detail(request, order_number):
 @login_required
 @require_POST
 def cancel_order(request, order_number):
-    """Cancel entire order and restore product quantities"""
     try:
         order = get_object_or_404(
             Order.objects.prefetch_related('items__variant'),
             order_number=order_number,
             user=request.user
         )
-        
-        # Check if order can be cancelled
+
         if order.order_status not in ['pending', 'confirmed']:
             return JsonResponse({
                 'success': False,
                 'message': 'Order cannot be cancelled at this stage.'
             }, status=400)
-        
-        # Get cancellation reason from request
+
         data = json.loads(request.body)
         cancel_reason = data.get('reason', 'No reason provided')
         
         with transaction.atomic():
-            # Restore quantities for all items
             for item in order.items.all():
                 if item.variant:
                     item.variant.stock += item.quantity
                     item.variant.save()
                 
-                # Mark item as cancelled
                 item.is_cancelled = True
                 item.cancelled_at = timezone.now()
                 item.save()
             
-            # Update order status and save cancellation details
             order.order_status = 'cancelled'
             order.cancellation_reason = cancel_reason
             order.cancelled_at = timezone.now()
-            
-            # Update payment status based on whether payment was already made
+
             if order.is_paid or order.payment_status == 'paid':
-                # If payment was already made, set to refunded
+               
                 order.payment_status = 'refunded'
                 order.is_paid = False
             else:
-                # If payment was not made yet (pending), set to failed
+               
                 order.payment_status = 'failed'
                 order.is_paid = False
             
@@ -194,15 +185,13 @@ def cancel_order(request, order_number):
 @login_required
 @require_POST
 def cancel_order_item(request, order_number, item_id):
-    """Cancel individual order item and restore product quantity"""
     try:
         order = get_object_or_404(
             Order.objects.prefetch_related('items__variant'),
             order_number=order_number,
             user=request.user
         )
-        
-        # Check if order can be modified
+
         if order.order_status not in ['pending', 'confirmed']:
             return JsonResponse({
                 'success': False,
@@ -210,8 +199,7 @@ def cancel_order_item(request, order_number, item_id):
             }, status=400)
         
         item = get_object_or_404(OrderItem, id=item_id, order=order)
-        
-        # Check if item is already cancelled
+
         if item.is_cancelled:
             return JsonResponse({
                 'success': False,
@@ -219,36 +207,29 @@ def cancel_order_item(request, order_number, item_id):
             }, status=400)
         
         with transaction.atomic():
-            # Restore product quantity
             if item.variant:
                 item.variant.stock += item.quantity
                 item.variant.save()
-            
-            # Mark item as cancelled
+
             item.is_cancelled = True
             item.cancelled_at = timezone.now()
             item.save()
-            
-            # Update order totals - subtract cancelled item
+    
             order.subtotal -= item.subtotal
             order.total_amount = order.subtotal + order.delivery_charge
             
-            # Check if all items are cancelled
+       
             active_items_count = order.items.filter(is_cancelled=False).count()
             
-            # If no active items left, cancel the entire order
             if active_items_count == 0:
                 order.order_status = 'cancelled'
                 order.cancellation_reason = 'All items cancelled'
                 order.cancelled_at = timezone.now()
-                
-                # Update payment status based on whether payment was already made
+
                 if order.is_paid or order.payment_status == 'paid':
-                    # If payment was already made, set to refunded
                     order.payment_status = 'refunded'
                     order.is_paid = False
                 else:
-                    # If payment was not made yet (pending), set to failed
                     order.payment_status = 'failed'
                     order.is_paid = False
             
@@ -273,49 +254,67 @@ def cancel_order_item(request, order_number, item_id):
 
 
 @login_required
-@require_POST
+@require_http_methods(["POST"])
 def request_return(request, order_number):
-    """Request return for delivered order"""
     try:
-        order = get_object_or_404(
-            Order,
-            order_number=order_number,
-            user=request.user
-        )
+        order = get_object_or_404(Order, order_number=order_number, user=request.user)
         
+
         if order.order_status != 'delivered':
             return JsonResponse({
                 'success': False,
                 'message': 'Only delivered orders can be returned.'
-            }, status=400)
-        data = json.loads(request.body)
-        return_reason = data.get('reason', '')
-        return_description = data.get('description', '')
-        
-        if not return_reason or not return_description:
+            })
+
+        if hasattr(order, 'return_request'):
             return JsonResponse({
                 'success': False,
-                'message': 'Please provide return reason and description.'
-            }, status=400)
-        order.order_status = 'return_requested'
-        order.save()
+                'message': 'Return request already exists for this order.'
+            })
+ 
+        delivery_date = order.updated_at  
+        days_since_delivery = (timezone.now() - delivery_date).days
         
-        messages.success(request, 'Return request submitted successfully.')
+        if days_since_delivery > 7:
+            return JsonResponse({
+                'success': False,
+                'message': 'Return period has expired. Returns are only valid within 7 days of delivery.'
+            })
+        
+
+        data = json.loads(request.body)
+        return_reason = data.get('reason')
+        description = data.get('description', '')
+        
+        if not return_reason:
+            return JsonResponse({
+                'success': False,
+                'message': 'Please select a reason for return.'
+            })
+        
+    
+        order_return = OrderReturn.objects.create(
+            order=order,
+            return_reason=return_reason,
+            description=description[:500],  
+            refund_amount=order.total_amount
+        )
+        
         return JsonResponse({
             'success': True,
-            'message': 'Return request submitted successfully'
+            'message': 'Return request submitted successfully!',
+            'redirect_url': f'/orders/{order_number}/'
         })
         
     except Exception as e:
         return JsonResponse({
             'success': False,
-            'message': f'Error requesting return: {str(e)}'
-        }, status=500)
+            'message': f'Error processing return request: {str(e)}'
+        })
 
 
-
+@login_required
 def download_invoice(request, order_number):
-    """View to display and download order invoice"""
     order = get_object_or_404(Order, order_number=order_number, user=request.user)
     
     context = {
@@ -327,6 +326,7 @@ def download_invoice(request, order_number):
     return render(request, "user_side/profile/order_pdf.html", context)
 
 
+@login_required
 def generate_pdf(request, order_number):
     """Generate and download PDF invoice"""
     order = get_object_or_404(Order, order_number=order_number, user=request.user)
@@ -336,9 +336,11 @@ def generate_pdf(request, order_number):
         'order_items': order.items.all(),
         'delivery_address': order.delivery_address,
     }
+    
     html_string = render_to_string('user_side/profile/invoice_template.html', context)
     html = HTML(string=html_string)
     result = html.write_pdf()
+    
     response = HttpResponse(content_type='application/pdf')
     response['Content-Disposition'] = f'attachment; filename="Invoice_{order_number}.pdf"'
     response.write(result)

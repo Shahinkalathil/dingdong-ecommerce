@@ -44,8 +44,6 @@ class Order(models.Model):
         ],default='pending'
     )
     is_paid = models.BooleanField(default=False)
-    
-    # NEW FIELDS FOR CANCELLATION
     cancellation_reason = models.CharField(max_length=255, blank=True, null=True)
     cancelled_at = models.DateTimeField(blank=True, null=True)
     
@@ -81,8 +79,6 @@ class OrderItem(models.Model):
     subtotal = models.DecimalField(max_digits=10, decimal_places=2)
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items')
     variant = models.ForeignKey(ProductVariant, on_delete=models.SET_NULL, null=True)
-    
-    # NEW FIELD FOR ITEM CANCELLATION
     is_cancelled = models.BooleanField(default=False)
     cancelled_at = models.DateTimeField(blank=True, null=True)
 
@@ -107,3 +103,35 @@ class OrderAddress(models.Model):
 
     def __str__(self):
         return f"{self.order.order_number} - {self.full_name}"
+
+
+class OrderReturn(models.Model):
+    RETURN_REASON_CHOICES = [
+        ('product_damaged', 'Product Damaged'),
+        ('wrong_product', 'Wrong Product Delivered'),
+        ('defective', 'Defective/Not Working'),
+        ('quality_issue', 'Quality Not as Expected'),
+        ('size_issue', 'Size/Fit Issue'),
+        ('changed_mind', 'Changed My Mind'),
+        ('better_price', 'Found Better Price'),
+        ('other', 'Other'),
+    ]
+    
+    
+    
+    order = models.OneToOneField(Order, on_delete=models.CASCADE, related_name='return_request')
+    return_reason = models.CharField(max_length=50, choices=RETURN_REASON_CHOICES)
+    description = models.TextField(max_length=500, blank=True, null=True)
+    refund_amount = models.DecimalField(max_digits=10, decimal_places=2)
+    requested_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        ordering = ['-requested_at']
+    
+    def __str__(self):
+        return f"Return - {self.order.order_number}"
+    
+    def save(self, *args, **kwargs):
+        if not self.refund_amount:
+            self.refund_amount = self.order.total_amount
+        super().save(*args, **kwargs)
