@@ -27,12 +27,12 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             
             <!-- Messages Container for Popups -->
-            <div id="messagePopups" class="fixed top-4 right-4 space-y-2"></div>
+            <div id="messagePopups" class="fixed top-4 right-4 space-y-2 z-50"></div>
 
             <!-- Cart Header -->
             <div class="flex items-center justify-between mb-8">
                 <h1 class="text-3xl font-bold text-gray-900">Shopping Cart</h1>
-                <span class="text-gray-600">{{ total_items }} item{{ total_items|pluralize }}</span>
+                <span class="text-gray-600" id="headerItemCount">{{ total_items }} item{{ total_items|pluralize }}</span>
             </div>
 
             {% if cart_items %}
@@ -149,7 +149,7 @@
                                     <!-- Total Calculation -->
                                     <p class="text-lg text-gray-800">
                                         <span class="font-semibold">Total:</span>
-                                        <span class="font-bold text-gray-900">₹{{ item.get_subtotal|floatformat:2 }}</span>
+                                        <span class="font-bold text-gray-900 item-subtotal">₹{{ item.get_subtotal|floatformat:2 }}</span>
                                     </p>
                                 </div>
                                 
@@ -157,34 +157,42 @@
                                 {% if item.is_available %}
                                 <div class="flex items-center space-x-3 mb-4">
                                     <div class="flex items-center border border-gray-300 rounded-full">
-                                        <!-- Decrement Form -->
-                                        <form method="POST" action="{% url 'update_cart_quantity' item.id %}" class="inline-flex">
-                                            {% csrf_token %}
-                                            <input type="hidden" name="action" value="decrement">
-                                            <button type="submit" class="decrement-btn p-2 hover:bg-gray-100 rounded-l-full transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed" 
-                                                    {% if item.quantity <= 1 %}disabled{% endif %}>
-                                                <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path>
-                                                </svg>
-                                            </button>
-                                        </form>
+                                        <!-- Decrement Button -->
+                                        <button type="button" 
+                                                class="decrement-btn p-2 hover:bg-gray-100 rounded-l-full transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed" 
+                                                data-item-id="{{ item.id }}"
+                                                data-action="decrement"
+                                                {% if item.quantity <= 1 %}disabled{% endif %}>
+                                            <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path>
+                                            </svg>
+                                        </button>
+                                        
                                         <!-- Quantity Display -->
-                                        <span class="quantity px-4 py-2 text-sm font-medium" data-quantity="{{ item.quantity }}">
+                                        <span class="quantity px-4 py-2 text-sm font-medium">
                                             {{ item.quantity }}
                                         </span>
-                                        <!-- Increment Form -->
-                                        <form method="POST" action="{% url 'update_cart_quantity' item.id %}" class="inline-flex">
-                                            {% csrf_token %}
-                                            <input type="hidden" name="action" value="increment">
-                                            <button type="submit" class="increment-btn p-2 hover:bg-gray-100 rounded-r-full transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                                                    data-max-stock="{{ item.variant.stock }}"
-                                                    {% if item.quantity >= item.variant.stock %}disabled{% endif %}>
-                                                <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                                                </svg>
-                                            </button>
-                                        </form>
+                                        
+                                        <!-- Increment Button -->
+                                        <button type="button" 
+                                                class="increment-btn p-2 hover:bg-gray-100 rounded-r-full transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                                                data-item-id="{{ item.id }}"
+                                                data-action="increment"
+                                                data-max-stock="{{ item.variant.stock }}"
+                                                data-current-quantity="{{ item.quantity }}"
+                                                {% if item.quantity >= 5 or item.quantity >= item.variant.stock %}disabled{% endif %}>
+                                            <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                                            </svg>
+                                        </button>
                                     </div>
+                                    
+                                    <!-- Quantity limit indicator -->
+                                    {% if item.quantity >= 5 %}
+                                    <span class="text-xs text-orange-600 font-medium">
+                                        Maximum 5 items per product
+                                    </span>
+                                    {% endif %}
                                 </div>
                                 {% endif %}
                                 
@@ -207,14 +215,14 @@
 
                             <!-- Delete Button -->
                             <div class="flex-shrink-0">
-                                <form method="POST" action="{% url 'remove_from_cart' item.id %}" class="delete-form" data-item-id="{{ item.id }}">
-                                    {% csrf_token %}
-                                    <button type="button" class="delete-btn p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors duration-200" onclick="showDeleteModal('{{ item.id }}', '{{ item.variant.product.name|escapejs }}')">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                        </svg>
-                                    </button>
-                                </form>
+                                <button type="button" 
+                                        class="delete-btn p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors duration-200" 
+                                        data-item-id="{{ item.id }}"
+                                        data-item-name="{{ item.variant.product.name }}">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                    </svg>
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -229,7 +237,7 @@
                         <!-- Order Details -->
                         <div class="space-y-4 mb-6">
                             <div class="flex justify-between">
-                                <span class="text-gray-600">Subtotal ({{ total_items }} items)</span>
+                                <span class="text-gray-600">Subtotal (<span id="summaryItemCount">{{ total_items }}</span> items)</span>
                                 <span class="font-semibold" id="subtotal">₹{{ subtotal|floatformat:2 }}</span>
                             </div>
                             <div class="flex justify-between">
@@ -244,18 +252,20 @@
                         </div>
                         
                         <!-- Checkout Button -->
-                        {% if can_checkout %}
-                            <a href="{% url 'checkout' %}" 
-                                class="block w-full text-center bg-black text-white py-3 px-4 rounded-lg font-semibold hover:bg-gray-800 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2">
-                                Proceed to Checkout
-                            </a>
-                        {% else %}
-                            <button disabled
-                                class="block w-full text-center bg-gray-400 text-white py-3 px-4 rounded-lg font-semibold cursor-not-allowed">
-                                Cannot Checkout
-                            </button>
-                            <p class="text-xs text-red-600 mt-2 text-center">Remove unavailable items to continue</p>
-                        {% endif %}
+                        <div id="checkoutButtonContainer">
+                            {% if can_checkout %}
+                                <a href="{% url 'checkout' %}" 
+                                    class="block w-full text-center bg-black text-white py-3 px-4 rounded-lg font-semibold hover:bg-gray-800 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2">
+                                    Proceed to Checkout
+                                </a>
+                            {% else %}
+                                <button disabled
+                                    class="block w-full text-center bg-gray-400 text-white py-3 px-4 rounded-lg font-semibold cursor-not-allowed">
+                                    Cannot Checkout
+                                </button>
+                                <p class="text-xs text-red-600 mt-2 text-center">Remove unavailable items to continue</p>
+                            {% endif %}
+                        </div>
                         
                         <!-- Continue Shopping -->
                         <a href="{% url 'home' %}" 
@@ -268,7 +278,7 @@
             
             {% else %}
             <!-- Empty Cart -->
-            <div class="text-center py-16">
+            <div class="text-center py-16" id="emptyCartMessage">
                 <svg class="mx-auto h-24 w-24 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
                 </svg>
@@ -282,7 +292,7 @@
             {% endif %}
 
             <!-- Delete Confirmation Modal -->
-            <div id="deleteModal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center hidden">
+            <div id="deleteModal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center hidden z-50">
                 <div class="bg-white rounded-lg shadow-lg p-6 max-w-md w-full">
                     <div class="flex items-center justify-between mb-4">
                         <h3 class="text-lg font-semibold text-gray-900">Confirm Removal</h3>
@@ -308,77 +318,32 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Handle quantity form submissions
-    document.querySelectorAll('.cart-item form').forEach(form => {
-        form.addEventListener('submit', function(e) {
-            const button = e.submitter;
-            button.disabled = true;
-            button.classList.add('opacity-50', 'cursor-not-allowed');
-        });
-    });
-
-    // Modal handling for delete confirmation
-    const modal = document.getElementById('deleteModal');
-    const itemNameSpan = document.getElementById('itemName');
-    const closeModalBtn = document.getElementById('closeModal');
-    const cancelDeleteBtn = document.getElementById('cancelDelete');
-    const confirmDeleteBtn = document.getElementById('confirmDelete');
-    let activeForm = null;
-
-    function showDeleteModal(itemId, itemName) {
-        itemNameSpan.textContent = itemName;
-        activeForm = document.querySelector(`form[data-item-id="${itemId}"]`);
-        modal.classList.remove('hidden');
-    }
-
-    function closeModal() {
-        modal.classList.add('hidden');
-        activeForm = null;
-        itemNameSpan.textContent = '';
-    }
-
-    // Event listeners for modal buttons
-    closeModalBtn.addEventListener('click', closeModal);
-    cancelDeleteBtn.addEventListener('click', closeModal);
-    confirmDeleteBtn.addEventListener('click', () => {
-        if (activeForm) {
-            activeForm.submit();
+    // Maximum quantity limit per product
+    const MAX_CART_QUANTITY = 5;
+    
+    // Get CSRF token
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
         }
-        closeModal();
-    });
-
-    // Close modal when clicking outside
-    modal.addEventListener('click', (e) => {
-        if (e.target === modal) {
-            closeModal();
-        }
-    });
-
-    // Open modal on delete button click
-    document.querySelectorAll('.delete-btn').forEach(button => {
-        button.addEventListener('click', function() {
-            const form = this.closest('form');
-            const itemId = form.dataset.itemId;
-            const itemName = this.closest('.cart-item').querySelector('h3').textContent;
-            showDeleteModal(itemId, itemName);
-        });
-    });
+        return cookieValue;
+    }
+    const csrftoken = getCookie('csrftoken');
 
     // Message popup handling
     const messagePopupsContainer = document.getElementById('messagePopups');
+    let activeQuantityMessage = null;
+    let quantityUpdateTimer = null;
     
-    // Django messages passed from template
-    const messages = [
-        {% for message in messages %}
-            {
-                text: "{{ message|escapejs }}",
-                tag: "{{ message.tags|escapejs }}"
-            }{% if not forloop.last %},{% endif %}
-        {% endfor %}
-    ];
-
-    function showMessagePopup(message, tag) {
-        // Determine popup styling based on message tag
+    function showMessagePopup(message, tag, isQuantityUpdate = false) {
         const bgColor = {
             'success': 'bg-green-100 text-green-800 border-green-300',
             'error': 'bg-red-100 text-red-800 border-red-300',
@@ -386,7 +351,19 @@ document.addEventListener('DOMContentLoaded', function() {
             'info': 'bg-blue-100 text-blue-800 border-blue-300'
         }[tag] || 'bg-blue-100 text-blue-800 border-blue-300';
 
-        // Create popup element
+        if (isQuantityUpdate && activeQuantityMessage) {
+            const messageText = activeQuantityMessage.querySelector('.message-text');
+            messageText.textContent = message;
+            
+            clearTimeout(quantityUpdateTimer);
+            quantityUpdateTimer = setTimeout(() => {
+                closeMessagePopup(activeQuantityMessage);
+                activeQuantityMessage = null;
+            }, 3000);
+            
+            return;
+        }
+
         const popup = document.createElement('div');
         popup.className = `w-80 bg-white rounded-lg shadow-xl border p-4 transform transition-all duration-300 ${bgColor} opacity-0 scale-0`;
         popup.innerHTML = `
@@ -398,25 +375,33 @@ document.addEventListener('DOMContentLoaded', function() {
                     </svg>
                 </button>
             </div>
-            <p class="text-sm">${message}</p>
+            <p class="text-sm message-text">${message}</p>
         `;
 
-        // Append to container
         messagePopupsContainer.appendChild(popup);
 
-        // Trigger animation
         setTimeout(() => {
             popup.classList.remove('scale-0', 'opacity-0');
             popup.classList.add('scale-100', 'opacity-100');
         }, 100);
 
-        // Auto-close after 5 seconds
-        setTimeout(() => {
-            closeMessagePopup(popup);
-        }, 5000);
+        if (isQuantityUpdate) {
+            activeQuantityMessage = popup;
+            quantityUpdateTimer = setTimeout(() => {
+                closeMessagePopup(popup);
+                activeQuantityMessage = null;
+            }, 1000);
+        } else {
+            setTimeout(() => {
+                closeMessagePopup(popup);
+            }, 5000);
+        }
 
-        // Close button event listener
         popup.querySelector('.close-message').addEventListener('click', () => {
+            if (isQuantityUpdate) {
+                activeQuantityMessage = null;
+                clearTimeout(quantityUpdateTimer);
+            }
             closeMessagePopup(popup);
         });
     }
@@ -431,21 +416,246 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 300);
     }
 
-    // Show all messages as popups
+    // Show Django messages on page load
+    const messages = [
+        {% for message in messages %}
+            {
+                text: "{{ message|escapejs }}",
+                tag: "{{ message.tags|escapejs }}"
+            }{% if not forloop.last %},{% endif %}
+        {% endfor %}
+    ];
     messages.forEach(msg => {
         showMessagePopup(msg.text, msg.tag);
     });
 
-    // Close message popup when clicking outside
-    document.addEventListener('click', (e) => {
-        if (!e.target.closest('#messagePopups') && !e.target.closest('.delete-btn') && !e.target.closest('#deleteModal')) {
-            document.querySelectorAll('#messagePopups > div').forEach(popup => {
-                if (popup.classList.contains('scale-100')) {
-                    closeMessagePopup(popup);
+    // Update cart totals
+    function updateCartTotals(data) {
+        document.getElementById('subtotal').textContent = `₹${data.subtotal.toFixed(2)}`;
+        document.getElementById('total').textContent = `₹${data.total.toFixed(2)}`;
+        document.getElementById('summaryItemCount').textContent = data.total_items;
+        document.getElementById('headerItemCount').textContent = `${data.total_items} item${data.total_items !== 1 ? 's' : ''}`;
+        
+        const checkoutContainer = document.getElementById('checkoutButtonContainer');
+        if (data.can_checkout) {
+            checkoutContainer.innerHTML = `
+                <a href="{% url 'checkout' %}" 
+                    class="block w-full text-center bg-black text-white py-3 px-4 rounded-lg font-semibold hover:bg-gray-800 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2">
+                    Proceed to Checkout
+                </a>
+            `;
+        } else {
+            checkoutContainer.innerHTML = `
+                <button disabled
+                    class="block w-full text-center bg-gray-400 text-white py-3 px-4 rounded-lg font-semibold cursor-not-allowed">
+                    Cannot Checkout
+                </button>
+                <p class="text-xs text-red-600 mt-2 text-center">Remove unavailable items to continue</p>
+            `;
+        }
+    }
+
+    // Handle quantity update
+    function updateQuantity(itemId, action) {
+        const cartItem = document.querySelector(`.cart-item[data-item-id="${itemId}"]`);
+        const incrementBtn = cartItem.querySelector('.increment-btn');
+        const decrementBtn = cartItem.querySelector('.decrement-btn');
+        const quantitySpan = cartItem.querySelector('.quantity');
+        const currentQuantity = parseInt(quantitySpan.textContent);
+        const maxStock = parseInt(incrementBtn.getAttribute('data-max-stock'));
+        
+        // Frontend validation for increment
+        if (action === 'increment') {
+            if (currentQuantity >= MAX_CART_QUANTITY) {
+                showMessagePopup(`Maximum ${MAX_CART_QUANTITY} items per product allowed.`, 'warning');
+                return;
+            }
+            if (currentQuantity >= maxStock) {
+                showMessagePopup(`Cannot add more. Only ${maxStock} items available in stock.`, 'warning');
+                return;
+            }
+        }
+        
+        // Frontend validation for decrement
+        if (action === 'decrement' && currentQuantity <= 1) {
+            showMessagePopup('Quantity cannot be less than 1.', 'warning');
+            return;
+        }
+        
+        // Disable buttons during request
+        incrementBtn.disabled = true;
+        decrementBtn.disabled = true;
+        incrementBtn.classList.add('opacity-50', 'cursor-wait');
+        decrementBtn.classList.add('opacity-50', 'cursor-wait');
+
+        fetch(`/cart/update/${itemId}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': csrftoken
+            },
+            body: `action=${action}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const newQuantity = data.data.quantity;
+                
+                // Update quantity display
+                quantitySpan.textContent = newQuantity;
+                incrementBtn.setAttribute('data-current-quantity', newQuantity);
+                
+                // Update item subtotal
+                const itemSubtotal = cartItem.querySelector('.item-subtotal');
+                itemSubtotal.textContent = `₹${data.data.item_subtotal.toFixed(2)}`;
+                
+                // Update cart totals
+                updateCartTotals(data.data);
+                
+                // Update button states based on MAX_CART_QUANTITY and stock
+                const maxAllowed = Math.min(maxStock, MAX_CART_QUANTITY);
+                incrementBtn.disabled = newQuantity >= maxAllowed;
+                decrementBtn.disabled = newQuantity <= 1;
+                
+                incrementBtn.classList.remove('opacity-50', 'cursor-wait');
+                decrementBtn.classList.remove('opacity-50', 'cursor-wait');
+                
+                // Show/hide limit indicator
+                let limitIndicator = cartItem.querySelector('.quantity-limit-indicator');
+                if (newQuantity >= MAX_CART_QUANTITY) {
+                    if (!limitIndicator) {
+                        limitIndicator = document.createElement('span');
+                        limitIndicator.className = 'quantity-limit-indicator text-xs text-orange-600 font-medium ml-2';
+                        limitIndicator.textContent = `Maximum ${MAX_CART_QUANTITY} items per product`;
+                        cartItem.querySelector('.flex.items-center.space-x-3').appendChild(limitIndicator);
+                    }
+                } else if (limitIndicator) {
+                    limitIndicator.remove();
                 }
-            });
+            } else {
+                // Re-enable buttons on error
+                incrementBtn.disabled = false;
+                decrementBtn.disabled = false;
+                incrementBtn.classList.remove('opacity-50', 'cursor-wait');
+                decrementBtn.classList.remove('opacity-50', 'cursor-wait');
+                showMessagePopup(data.message, data.message_type || 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            incrementBtn.disabled = false;
+            decrementBtn.disabled = false;
+            incrementBtn.classList.remove('opacity-50', 'cursor-wait');
+            decrementBtn.classList.remove('opacity-50', 'cursor-wait');
+            showMessagePopup('An error occurred. Please try again.', 'error');
+        });
+    }
+
+    // Increment button listeners
+    document.querySelectorAll('.increment-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const itemId = this.getAttribute('data-item-id');
+            const action = this.getAttribute('data-action');
+            updateQuantity(itemId, action);
+        });
+    });
+
+    // Decrement button listeners
+    document.querySelectorAll('.decrement-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const itemId = this.getAttribute('data-item-id');
+            const action = this.getAttribute('data-action');
+            updateQuantity(itemId, action);
+        });
+    });
+
+    // Modal handling for delete confirmation
+    const modal = document.getElementById('deleteModal');
+    const itemNameSpan = document.getElementById('itemName');
+    const closeModalBtn = document.getElementById('closeModal');
+    const cancelDeleteBtn = document.getElementById('cancelDelete');
+    const confirmDeleteBtn = document.getElementById('confirmDelete');
+    let activeItemId = null;
+    let activeItemName = null;
+
+    function showDeleteModal(itemId, itemName) {
+        activeItemId = itemId;
+        activeItemName = itemName;
+        itemNameSpan.textContent = itemName;
+        modal.classList.remove('hidden');
+    }
+
+    function closeModal() {
+        modal.classList.add('hidden');
+        activeItemId = null;
+        activeItemName = null;
+        itemNameSpan.textContent = '';
+    }
+
+    closeModalBtn.addEventListener('click', closeModal);
+    cancelDeleteBtn.addEventListener('click', closeModal);
+    
+    confirmDeleteBtn.addEventListener('click', () => {
+        if (activeItemId) {
+            removeItem(activeItemId);
+        }
+        closeModal();
+    });
+
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            closeModal();
         }
     });
+
+    // Delete button listeners
+    document.querySelectorAll('.delete-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const itemId = this.getAttribute('data-item-id');
+            const itemName = this.getAttribute('data-item-name');
+            showDeleteModal(itemId, itemName);
+        });
+    });
+
+    // Remove item function
+    function removeItem(itemId) {
+        fetch(`/cart/remove/${itemId}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': csrftoken
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Remove item from DOM
+                const cartItem = document.querySelector(`.cart-item[data-item-id="${itemId}"]`);
+                cartItem.style.opacity = '0';
+                cartItem.style.transform = 'scale(0.9)';
+                
+                setTimeout(() => {
+                    cartItem.remove();
+                    
+                    // Check if cart is empty
+                    if (data.data.is_empty) {
+                        location.reload(); // Reload to show empty cart message
+                    } else {
+                        // Update totals
+                        updateCartTotals(data.data);
+                    }
+                }, 300);
+                
+                showMessagePopup(data.message, data.message_type);
+            } else {
+                showMessagePopup(data.message, 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showMessagePopup('An error occurred. Please try again.', 'error');
+        });
+    }
 });
 </script>
 {% endblock %}
