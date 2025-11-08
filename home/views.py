@@ -2,7 +2,9 @@ from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
 from products.models import Product, ProductVariant, Category, Brand
+from cart.models import WishlistItem
 from .models import Banner
 from django.core.paginator import Paginator
 from django.db.models import Min, Count, Q
@@ -10,10 +12,17 @@ import random
 from decimal import Decimal
 
 
-
 def home(request):
     if not request.user.is_authenticated:
         return redirect('sign_in')
+    
+    # Get user's wishlist variant IDs
+    wishlist_variant_ids = []
+    if request.user.is_authenticated:
+        wishlist_variant_ids = list(
+            WishlistItem.objects.filter(user=request.user).values_list('variant_id', flat=True)
+        )
+    
     banners = Banner.get_active_banners()
     all_categories = list(Category.objects.filter(
         is_listed=True,
@@ -51,7 +60,8 @@ def home(request):
                 'product': product,
                 'variant': variant,
                 'image': image,
-                'price': variant.price
+                'price': variant.price,
+                'in_wishlist': variant.id in wishlist_variant_ids
             })
     
     context = {
@@ -59,15 +69,109 @@ def home(request):
         'categories': featured_categories,
         'brands': brands,
         'products_data': products_data,
-        'has_banners': len(banners) > 0
+        'has_banners': len(banners) > 0,
+        'wishlist_variant_ids': wishlist_variant_ids
     }
     
     return render(request, 'user_side/index.html', context)
+
+
+@login_required
+@require_POST
+def toggle_wishlist(request):
+    """Toggle product variant in wishlist via AJAX"""
+    try:
+        variant_id = request.POST.get('variant_id')
+        
+        if not variant_id:
+            return JsonResponse({
+                'success': False,
+                'message': 'Variant ID is required'
+            }, status=400)
+        
+        variant = get_object_or_404(ProductVariant, id=variant_id, is_listed=True)
+        
+        # Check if already in wishlist
+        wishlist_item = WishlistItem.objects.filter(
+            user=request.user,
+            variant=variant
+        ).first()
+        
+        if wishlist_item:
+            # Remove from wishlist
+            wishlist_item.delete()
+            return JsonResponse({
+                'success': True,
+                'action': 'removed',
+                'message': 'Removed from wishlist',
+                'wishlist_count': WishlistItem.objects.filter(user=request.user).count()
+            })
+        else:
+            # Add to wishlist
+            WishlistItem.objects.create(
+                user=request.user,
+                variant=variant
+            )
+            return JsonResponse({
+                'success': True,
+                'action': 'added',
+                'message': 'Added to wishlist',
+                'wishlist_count': WishlistItem.objects.filter(user=request.user).count()
+            })
+            
+    except ProductVariant.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'message': 'Product variant not found'
+        }, status=404)
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': str(e)
+        }, status=500)
+
+
+@login_required
+def wishlist(request):
+    """Display user's wishlist"""
+    wishlist_items = WishlistItem.objects.filter(
+        user=request.user
+    ).select_related(
+        'variant__product__brand',
+        'variant__product__category'
+    ).prefetch_related(
+        'variant__images'
+    ).order_by('-added_at')
+    
+    # Prepare wishlist data
+    wishlist_data = []
+    for item in wishlist_items:
+        variant = item.variant
+        product = variant.product
+        image = variant.images.first()
+        
+        wishlist_data.append({
+            'wishlist_item': item,
+            'product': product,
+            'variant': variant,
+            'image': image,
+            'price': variant.price,
+            'in_stock': variant.stock > 0
+        })
+    
+    context = {
+        'wishlist_data': wishlist_data,
+        'total_items': len(wishlist_data)
+    }
+    
+    return render(request, 'user_side/wishlist/wishlist.html', context)
+
 
 @login_required
 def user_logout(request):
     logout(request)
     return redirect('sign_in')
+
 
 def products(request):
     products = Product.objects.filter(
@@ -124,7 +228,6 @@ def products(request):
 
     rating = round(random.uniform(3.5, 5.0), 1)
     
-
     paginator = Paginator(products, 10)  
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
@@ -158,6 +261,7 @@ def products(request):
     }
     
     return render(request, 'user_side/product/product_listing.html', context)
+
 
 def product_detail(request, product_id):
     try:

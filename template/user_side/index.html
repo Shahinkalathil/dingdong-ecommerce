@@ -108,14 +108,16 @@
     {% for item in products_data %}
     <div class="bg-white p-4 rounded-lg shadow hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 group">
       <div class="relative">
-        {% if item.image %}
-        <img src="{{ item.image.image.url }}" alt="{{ item.product.name }}" class="w-full h-48 object-contain">
-        {% else %}
-        <img src="https://via.placeholder.com/200x200?text=No+Image" alt="{{ item.product.name }}" class="w-full h-48 object-contain">
-        {% endif %}
+        <a href="{% url 'product_detail' item.product.id %}?variant={{ item.variant.id }}">
+          {% if item.image %}
+          <img src="{{ item.image.image.url }}" alt="{{ item.product.name }}" class="w-full h-48 object-contain">
+          {% else %}
+          <img src="https://via.placeholder.com/200x200?text=No+Image" alt="{{ item.product.name }}" class="w-full h-48 object-contain">
+          {% endif %}
+        </a>
         
-        <button class="wishlist-btn absolute top-2 right-2 text-gray-400 hover:text-red-500 group-hover:text-red-500 transition-colors duration-300">
-          <i class="far fa-heart text-lg"></i>
+        <button class="wishlist-btn absolute top-2 right-2 {% if item.in_wishlist %}text-red-500{% else %}text-gray-400{% endif %} hover:text-red-500 transition-colors duration-300 z-10" data-variant-id="{{ item.variant.id }}">
+          <i class="{% if item.in_wishlist %}fas{% else %}far{% endif %} fa-heart text-xl"></i>
         </button>
         
         {% if item.variant.stock < 10 %}
@@ -124,21 +126,11 @@
       </div>
       
       <div class="mt-4">
-        <h3 class="text-xs font-bold uppercase line-clamp-2 overflow-hidden" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">
-          {{ item.product.name }}
-        </h3>
-        
-        <div class="flex items-center mt-2">
-          <p class="text-xs text-gray-600 font-medium">{{ item.product.brand.name }}</p>
-          <div class="flex text-yellow-400 ml-2">
-            <i class="fas fa-star text-xs"></i>
-            <i class="fas fa-star text-xs"></i>
-            <i class="fas fa-star text-xs"></i>
-            <i class="fas fa-star text-xs"></i>
-            <i class="far fa-star text-xs"></i>
-          </div>
-          <span class="text-xs text-gray-500 ml-1">(4.0)</span>
-        </div>
+        <a href="{% url 'product_detail' item.product.id %}?variant={{ item.variant.id }}">
+          <h3 class="text-xs font-bold uppercase line-clamp-2 overflow-hidden hover:text-blue-600 transition-colors" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">
+            {{ item.product.name }}
+          </h3>
+        </a>
         
         <div class="mt-2 flex items-center justify-between">
           <div>
@@ -147,9 +139,17 @@
           <span class="text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded">{{ item.variant.color_name }}</span>
         </div>
         
-        <button class="w-full mt-3 bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700 transition-colors opacity-0 group-hover:opacity-100">
-          Add to Cart
+        <!-- Action Button -->
+        {% if item.in_stock %}
+        <button class="w-full bg-gray-900 text-white py-2 rounded-lg font-semibold hover:bg-black transition-colors flex items-center justify-center space-x-2">
+          <i class="fas fa-shopping-cart"></i>
+          <span>Add to Cart</span>
         </button>
+        {% else %}
+        <button class="w-full bg-gray-300 text-gray-600 py-2 rounded-lg font-semibold cursor-not-allowed" disabled>
+          Out of Stock
+        </button>
+        {% endif %}
       </div>
     </div>
     {% endfor %}
@@ -213,18 +213,111 @@
 </section>
 {% endif %}
 
+<!-- Toast Notification -->
+<div id="wishlistToast" class="fixed top-20 right-4 bg-white shadow-lg rounded-lg p-4 transform translate-x-full transition-transform duration-300 z-50 max-w-sm">
+  <div class="flex items-center space-x-3">
+    <div id="toastIcon" class="flex-shrink-0">
+      <i class="fas fa-heart text-red-500 text-2xl"></i>
+    </div>
+    <div class="flex-1">
+      <p id="toastMessage" class="text-sm font-medium text-gray-900"></p>
+    </div>
+    <button onclick="hideToast()" class="flex-shrink-0 text-gray-400 hover:text-gray-600">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+</div>
 
 <script>
+// Get CSRF token
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      if (cookie.substring(0, name.length + 1) === (name + '=')) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
+
+const csrftoken = getCookie('csrftoken');
+
+// Toast notification functions
+function showToast(message, isAdded) {
+  const toast = document.getElementById('wishlistToast');
+  const toastMessage = document.getElementById('toastMessage');
+  const toastIcon = document.getElementById('toastIcon');
+  
+  toastMessage.textContent = message;
+  
+  if (isAdded) {
+    toastIcon.innerHTML = '<i class="fas fa-heart text-red-500 text-2xl"></i>';
+  } else {
+    toastIcon.innerHTML = '<i class="far fa-heart text-gray-400 text-2xl"></i>';
+  }
+  
+  toast.classList.remove('translate-x-full');
+  
+  setTimeout(() => {
+    hideToast();
+  }, 3000);
+}
+
+function hideToast() {
+  const toast = document.getElementById('wishlistToast');
+  toast.classList.add('translate-x-full');
+}
+
 document.addEventListener('DOMContentLoaded', function () {
   // Wishlist functionality
   document.querySelectorAll('.wishlist-btn').forEach(btn => {
     btn.addEventListener('click', function (e) {
       e.preventDefault();
+      e.stopPropagation();
+      
+      const variantId = this.getAttribute('data-variant-id');
       const icon = this.querySelector('i');
-      icon.classList.toggle('far');
-      icon.classList.toggle('fas');
-      this.classList.toggle('text-red-500');
-      this.classList.toggle('text-gray-400');
+      const button = this;
+      
+      // Send AJAX request
+      fetch('{% url "toggle_wishlist" %}', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'X-CSRFToken': csrftoken
+        },
+        body: `variant_id=${variantId}`
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          // Toggle heart icon
+          if (data.action === 'added') {
+            icon.classList.remove('far');
+            icon.classList.add('fas');
+            button.classList.remove('text-gray-400');
+            button.classList.add('text-red-500');
+            showToast(data.message, true);
+          } else {
+            icon.classList.remove('fas');
+            icon.classList.add('far');
+            button.classList.remove('text-red-500');
+            button.classList.add('text-gray-400');
+            showToast(data.message, false);
+          }
+        } else {
+          alert(data.message || 'An error occurred');
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        alert('Failed to update wishlist');
+      });
     });
   });
 
@@ -235,17 +328,15 @@ document.addEventListener('DOMContentLoaded', function () {
   const nextBtn = document.querySelector('.carousel-next');
   const totalSlides = slides.length;
   
-  if (totalSlides === 0) return; // Exit if no slides
+  if (totalSlides === 0) return;
   
   let currentSlide = 0;
   let autoPlayInterval = null;
 
   function showSlide(index) {
-    // Ensure index is within bounds
     if (index < 0) index = totalSlides - 1;
     if (index >= totalSlides) index = 0;
     
-    // Update slides
     slides.forEach((slide, i) => {
       if (i === index) {
         slide.style.opacity = '1';
@@ -258,7 +349,6 @@ document.addEventListener('DOMContentLoaded', function () {
       }
     });
     
-    // Update dots
     dots.forEach((dot, i) => {
       if (i === index) {
         dot.style.opacity = '1';
@@ -278,7 +368,6 @@ document.addEventListener('DOMContentLoaded', function () {
     showSlide(currentSlide - 1);
   }
 
-  // Event listeners for navigation buttons
   if (nextBtn) {
     nextBtn.addEventListener('click', function(e) {
       e.preventDefault();
@@ -295,7 +384,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  // Event listeners for dots
   dots.forEach((dot, index) => {
     dot.addEventListener('click', function(e) {
       e.preventDefault();
@@ -304,7 +392,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
 
-  // Auto-play functionality
   function startAutoPlay() {
     if (totalSlides > 1) {
       autoPlayInterval = setInterval(nextSlide, 4000);
@@ -323,14 +410,12 @@ document.addEventListener('DOMContentLoaded', function () {
     startAutoPlay();
   }
 
-  // Pause on hover
   const carouselContainer = document.querySelector('.carousel-container');
   if (carouselContainer && totalSlides > 1) {
     carouselContainer.addEventListener('mouseenter', stopAutoPlay);
     carouselContainer.addEventListener('mouseleave', startAutoPlay);
   }
 
-  // Initialize
   showSlide(0);
   startAutoPlay();
 });
