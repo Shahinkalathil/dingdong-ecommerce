@@ -33,12 +33,10 @@
           {% endif %}
         </a>
         
-        <!-- Wishlist Item Close Button -->
-        <button class="remove-wishlist-btn absolute top-3 right-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full p-2 transition-colors z-10"
-                data-variant-id="{{ item.variant.id }}">
-        <i class="fa-solid fa-xmark text-sm"></i>
+        <!-- Remove Button -->
+        <button class="remove-wishlist-btn absolute top-3 right-3 bg-white rounded-full p-2 shadow-md hover:bg-red-50 transition-colors z-10" data-variant-id="{{ item.variant.id }}">
+          <i class="fas fa-times text-red-500 text-lg"></i>
         </button>
-
         
         <!-- Stock Badge -->
         {% if not item.in_stock %}
@@ -56,6 +54,18 @@
           </h3>
         </a>
         
+        <div class="flex items-center mb-3">
+          <p class="text-xs text-gray-600 font-medium">{{ item.product.brand.name }}</p>
+          <div class="flex text-yellow-400 ml-2">
+            <i class="fas fa-star text-xs"></i>
+            <i class="fas fa-star text-xs"></i>
+            <i class="fas fa-star text-xs"></i>
+            <i class="fas fa-star text-xs"></i>
+            <i class="far fa-star text-xs"></i>
+          </div>
+          <span class="text-xs text-gray-500 ml-1">(4.0)</span>
+        </div>
+        
         <!-- Color and Price -->
         <div class="flex items-center justify-between mb-3">
           <div class="flex items-center space-x-2">
@@ -67,10 +77,10 @@
         
         <!-- Action Button -->
         {% if item.in_stock %}
-        <button class="w-full bg-gray-900 text-white py-2 rounded-lg font-semibold hover:bg-black transition-colors flex items-center justify-center space-x-2">
+        <a href="{% url 'add_to_cart' item.variant.id %}" class="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700 transition-colors flex items-center justify-center space-x-2">
           <i class="fas fa-shopping-cart"></i>
           <span>Add to Cart</span>
-        </button>
+        </a>
         {% else %}
         <button class="w-full bg-gray-300 text-gray-600 py-2 rounded-lg font-semibold cursor-not-allowed" disabled>
           Out of Stock
@@ -95,24 +105,23 @@
   {% endif %}
 </div>
 
-
-<!-- Wishlist Remove Confirmation Modal -->
-<div id="removeModal" class="fixed inset-0 flex items-center justify-center bg-black/40 hidden z-50">
-  <div class="bg-white rounded-2xl p-6 shadow-xl w-80 text-center">
-    <h2 class="text-lg font-semibold mb-3">Remove Item</h2>
-    <p class="text-gray-600 mb-6">Are you sure you want to remove this item from your wishlist?</p>
-    <div class="flex justify-center gap-4">
-      <button id="cancelRemove" class="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium">Cancel</button>
-      <button id="confirmRemove" class="px-4 py-2 rounded-lg bg-red-500 hover:bg-red-600 text-white font-medium">Remove</button>
+<!-- Toast Notification -->
+<div id="wishlistToast" class="fixed top-20 right-4 bg-white shadow-lg rounded-lg p-4 transform translate-x-full transition-transform duration-300 z-50 max-w-sm">
+  <div class="flex items-center space-x-3">
+    <div id="toastIcon" class="flex-shrink-0">
+      <i class="fas fa-check-circle text-green-500 text-2xl"></i>
     </div>
+    <div class="flex-1">
+      <p id="toastMessage" class="text-sm font-medium text-gray-900"></p>
+    </div>
+    <button onclick="hideToast()" class="flex-shrink-0 text-gray-400 hover:text-gray-600">
+      <i class="fas fa-times"></i>
+    </button>
   </div>
 </div>
 
-
 <script>
-// ========================
-// CSRF Token Helper
-// ========================
+// Get CSRF token
 function getCookie(name) {
   let cookieValue = null;
   if (document.cookie && document.cookie !== '') {
@@ -127,65 +136,86 @@ function getCookie(name) {
   }
   return cookieValue;
 }
+
 const csrftoken = getCookie('csrftoken');
 
-// ========================
-// ✅ Wishlist Remove With Modal
-// ========================
-document.addEventListener('DOMContentLoaded', function() {
-  const removeModal = document.getElementById('removeModal');
-  const cancelRemove = document.getElementById('cancelRemove');
-  const confirmRemove = document.getElementById('confirmRemove');
-  let currentItem = null;
-  let currentVariantId = null;
+// Toast notification functions
+function showToast(message, icon = 'check') {
+  const toast = document.getElementById('wishlistToast');
+  const toastMessage = document.getElementById('toastMessage');
+  const toastIcon = document.getElementById('toastIcon');
+  
+  toastMessage.textContent = message;
+  
+  if (icon === 'check') {
+    toastIcon.innerHTML = '<i class="fas fa-check-circle text-green-500 text-2xl"></i>';
+  } else if (icon === 'remove') {
+    toastIcon.innerHTML = '<i class="fas fa-trash text-red-500 text-2xl"></i>';
+  }
+  
+  toast.classList.remove('translate-x-full');
+  
+  setTimeout(() => {
+    hideToast();
+  }, 3000);
+}
 
-  // When user clicks  button
+function hideToast() {
+  const toast = document.getElementById('wishlistToast');
+  toast.classList.add('translate-x-full');
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  // Remove from wishlist functionality
   document.querySelectorAll('.remove-wishlist-btn').forEach(btn => {
     btn.addEventListener('click', function(e) {
       e.preventDefault();
       e.stopPropagation();
-
-      currentVariantId = this.getAttribute('data-variant-id');
-      currentItem = this.closest('[data-wishlist-item]');
       
-      // ✅ Show modal
-      removeModal.classList.remove('hidden');
-    });
-  });
-
-  // Cancel button → hide modal
-  cancelRemove.addEventListener('click', () => {
-    removeModal.classList.add('hidden');
-    currentItem = null;
-    currentVariantId = null;
-  });
-
-  // Confirm remove → send AJAX request
-  confirmRemove.addEventListener('click', () => {
-    if (!currentItem || !currentVariantId) return;
-
-    fetch('{% url "toggle_wishlist" %}', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'X-CSRFToken': csrftoken
-      },
-      body: `variant_id=${currentVariantId}`
-    })
-    .then(response => response.json())
-    .then(data => {
-      if (data.success) {
-        // ✅ Remove item from DOM
-        currentItem.remove();
-      } else {
-        alert(data.message || 'Something went wrong');
+      const variantId = this.getAttribute('data-variant-id');
+      const itemCard = this.closest('[data-wishlist-item]');
+      
+      // Confirm removal
+      if (!confirm('Remove this item from your wishlist?')) {
+        return;
       }
-    })
-    .catch(() => alert('Error removing item'))
-    .finally(() => {
-      removeModal.classList.add('hidden');
-      currentItem = null;
-      currentVariantId = null;
+      
+      // Send AJAX request
+      fetch('{% url "toggle_wishlist" %}', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'X-CSRFToken': csrftoken
+        },
+        body: `variant_id=${variantId}`
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          // Remove item from DOM with animation
+          itemCard.style.opacity = '0';
+          itemCard.style.transform = 'scale(0.8)';
+          
+          setTimeout(() => {
+            itemCard.remove();
+            showToast(data.message, 'remove');
+            
+            // Reload page if no items left
+            const remainingItems = document.querySelectorAll('[data-wishlist-item]');
+            if (remainingItems.length === 0) {
+              setTimeout(() => {
+                location.reload();
+              }, 1000);
+            }
+          }, 300);
+        } else {
+          alert(data.message || 'An error occurred');
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        alert('Failed to remove item from wishlist');
+      });
     });
   });
 });
