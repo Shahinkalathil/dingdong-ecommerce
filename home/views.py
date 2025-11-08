@@ -1,10 +1,8 @@
 from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import logout
-from django.contrib.auth.decorators import login_required
-from django.views.decorators.http import require_POST
 from products.models import Product, ProductVariant, Category, Brand
-from cart.models import WishlistItem
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from .models import Banner
 from django.core.paginator import Paginator
 from django.db.models import Min, Count, Q
@@ -16,14 +14,10 @@ def home(request):
     if not request.user.is_authenticated:
         return redirect('sign_in')
     
-    # Get user's wishlist variant IDs
-    wishlist_variant_ids = []
-    if request.user.is_authenticated:
-        wishlist_variant_ids = list(
-            WishlistItem.objects.filter(user=request.user).values_list('variant_id', flat=True)
-        )
-    
+    # Get banners
     banners = Banner.get_active_banners()
+    
+    # Get categories
     all_categories = list(Category.objects.filter(
         is_listed=True,
         products__is_listed=True
@@ -31,6 +25,8 @@ def home(request):
         product_count=Count('products', filter=Q(products__is_listed=True))
     ).filter(product_count__gt=0).select_related())
     featured_categories = random.sample(all_categories, min(5, len(all_categories))) if all_categories else []
+    
+    # Get brands
     all_brands = list(Brand.objects.filter(
         is_listed=True,
         products__is_listed=True
@@ -38,6 +34,8 @@ def home(request):
         product_count=Count('products', filter=Q(products__is_listed=True))
     ).filter(product_count__gt=0).select_related())
     brands = random.sample(all_brands, min(8, len(all_brands))) if all_brands else []
+    
+    # Get all featured products with their variants
     featured_products = Product.objects.filter(
         is_listed=True,
         category__is_listed=True,
@@ -46,128 +44,60 @@ def home(request):
         variants__stock__gt=0
     ).annotate(
         min_price=Min('variants__price')
-    ).distinct()[:12]
+    ).distinct().order_by('id')
+    
+    # Prepare products data
     products_data = []
     for product in featured_products:
-        variant = product.variants.filter(
+        # Get default variant (first available)
+        default_variant = product.variants.filter(
             is_listed=True,
             stock__gt=0
         ).first()
         
-        if variant:
-            image = variant.images.first()
+        if default_variant:
+            # Get all available variants for color selection
+            available_variants = product.variants.filter(
+                is_listed=True,
+                stock__gt=0
+            ).values('id', 'color_name', 'color_code')
+            
+            image = default_variant.images.first()
             products_data.append({
                 'product': product,
-                'variant': variant,
+                'variant': default_variant,
                 'image': image,
-                'price': variant.price,
-                'in_wishlist': variant.id in wishlist_variant_ids
+                'price': default_variant.price,
+                'in_stock': default_variant.stock > 0,
+                'available_variants': list(available_variants)
             })
+    
+    # Pagination - 10 products per page
+    paginator = Paginator(products_data, 2)
+    page = request.GET.get('page', 1)
+    
+    try:
+        products_page = paginator.page(page)
+    except PageNotAnInteger:
+        products_page = paginator.page(1)
+    except EmptyPage:
+        products_page = paginator.page(paginator.num_pages)
     
     context = {
         'banners': banners,
         'categories': featured_categories,
         'brands': brands,
-        'products_data': products_data,
+        'products_data': products_page,
         'has_banners': len(banners) > 0,
-        'wishlist_variant_ids': wishlist_variant_ids
     }
     
     return render(request, 'user_side/index.html', context)
 
 
-@login_required
-@require_POST
-def toggle_wishlist(request):
-    """Toggle product variant in wishlist via AJAX"""
-    try:
-        variant_id = request.POST.get('variant_id')
-        
-        if not variant_id:
-            return JsonResponse({
-                'success': False,
-                'message': 'Variant ID is required'
-            }, status=400)
-        
-        variant = get_object_or_404(ProductVariant, id=variant_id, is_listed=True)
-        
-        # Check if already in wishlist
-        wishlist_item = WishlistItem.objects.filter(
-            user=request.user,
-            variant=variant
-        ).first()
-        
-        if wishlist_item:
-            # Remove from wishlist
-            wishlist_item.delete()
-            return JsonResponse({
-                'success': True,
-                'action': 'removed',
-                'message': 'Removed from wishlist',
-                'wishlist_count': WishlistItem.objects.filter(user=request.user).count()
-            })
-        else:
-            # Add to wishlist
-            WishlistItem.objects.create(
-                user=request.user,
-                variant=variant
-            )
-            return JsonResponse({
-                'success': True,
-                'action': 'added',
-                'message': 'Added to wishlist',
-                'wishlist_count': WishlistItem.objects.filter(user=request.user).count()
-            })
-            
-    except ProductVariant.DoesNotExist:
-        return JsonResponse({
-            'success': False,
-            'message': 'Product variant not found'
-        }, status=404)
-    except Exception as e:
-        return JsonResponse({
-            'success': False,
-            'message': str(e)
-        }, status=500)
-
-
-@login_required
 def wishlist(request):
-    """Display user's wishlist"""
-    wishlist_items = WishlistItem.objects.filter(
-        user=request.user
-    ).select_related(
-        'variant__product__brand',
-        'variant__product__category'
-    ).prefetch_related(
-        'variant__images'
-    ).order_by('-added_at')
-    
-    # Prepare wishlist data
-    wishlist_data = []
-    for item in wishlist_items:
-        variant = item.variant
-        product = variant.product
-        image = variant.images.first()
-        
-        wishlist_data.append({
-            'wishlist_item': item,
-            'product': product,
-            'variant': variant,
-            'image': image,
-            'price': variant.price,
-            'in_stock': variant.stock > 0
-        })
-    
-    context = {
-        'wishlist_data': wishlist_data,
-        'total_items': len(wishlist_data)
-    }
-    
-    return render(request, 'user_side/wishlist/wishlist.html', context)
+    return render(request, 'user_side/wishlist/wishlist.html')
 
 
-@login_required
 def user_logout(request):
     logout(request)
     return redirect('sign_in')
@@ -382,3 +312,4 @@ def product_detail(request, product_id):
         return render(request, "errors/404.html", status=404)
     except Exception as e:
         return redirect('products')
+    

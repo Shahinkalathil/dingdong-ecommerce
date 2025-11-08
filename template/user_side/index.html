@@ -36,7 +36,7 @@
     {% endif %}
   </div>
   {% else %}
-  <!-- Default Banner if no banners available -->
+  <!-- Default Banner -->
   <div class="relative rounded-lg overflow-hidden h-[300px] md:h-[400px]" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
     <div class="absolute inset-0" style="background: radial-gradient(circle at 30% 50%, rgba(255,255,255,0.1) 0%, transparent 50%), radial-gradient(circle at 70% 50%, rgba(255,255,255,0.05) 0%, transparent 50%);"></div>
     <div class="absolute inset-0 flex items-center justify-center">
@@ -69,20 +69,15 @@
     {% for brand in brands %}
     <a href="{% url 'products' %}?brand={{ brand.id }}" class="group bg-white rounded-lg p-4 shadow hover:shadow-lg transition-all duration-300 transform hover:scale-105">
       <div class="flex flex-col items-center justify-center h-24">
-        
-        <!-- Brand Image -->
         <div class="w-16 h-16 mb-2 rounded-lg overflow-hidden flex items-center justify-center group-hover:scale-110 transition-transform">
           {% if brand.image %}
             <img src="{{ brand.image.url }}" alt="{{ brand.name }}" class="w-full h-full object-contain">
           {% else %}
-            <!-- Fallback icon if no image -->
             <div class="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
               <i class="fas fa-store text-2xl text-gray-600"></i>
             </div>
           {% endif %}
         </div>
-        
-        <!-- Brand Name -->
         <div class="text-center">
           <h3 class="font-bold text-sm truncate max-w-full">{{ brand.name }}</h3>
           <p class="text-xs text-gray-500 mt-1">{{ brand.product_count }} item{{ brand.product_count|pluralize }}</p>
@@ -106,54 +101,95 @@
   {% if products_data %}
   <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
     {% for item in products_data %}
-    <div class="bg-white p-4 rounded-lg shadow hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 group">
-      <div class="relative">
-        <a href="{% url 'product_detail' item.product.id %}?variant={{ item.variant.id }}">
+    <a href="{% url 'product_detail' item.product.id %}?variant={{ item.variant.id }}" class="block">
+      <div class="bg-white p-4 rounded-lg shadow hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 group">
+        <div class="relative">
           {% if item.image %}
           <img src="{{ item.image.image.url }}" alt="{{ item.product.name }}" class="w-full h-48 object-contain">
           {% else %}
           <img src="https://via.placeholder.com/200x200?text=No+Image" alt="{{ item.product.name }}" class="w-full h-48 object-contain">
           {% endif %}
-        </a>
+          
+          {% if item.variant.stock < 10 %}
+          <span class="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded">Low Stock</span>
+          {% endif %}
+        </div>
         
-        <button class="wishlist-btn absolute top-2 right-2 {% if item.in_wishlist %}text-red-500{% else %}text-gray-400{% endif %} hover:text-red-500 transition-colors duration-300 z-10" data-variant-id="{{ item.variant.id }}">
-          <i class="{% if item.in_wishlist %}fas{% else %}far{% endif %} fa-heart text-xl"></i>
-        </button>
-        
-        {% if item.variant.stock < 10 %}
-        <span class="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded">Low Stock</span>
-        {% endif %}
-      </div>
-      
-      <div class="mt-4">
-        <a href="{% url 'product_detail' item.product.id %}?variant={{ item.variant.id }}">
+        <div class="mt-4">
           <h3 class="text-xs font-bold uppercase line-clamp-2 overflow-hidden hover:text-blue-600 transition-colors" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">
             {{ item.product.name }}
           </h3>
-        </a>
-        
-        <div class="mt-2 flex items-center justify-between">
-          <div>
+          
+          <div class="mt-2 flex items-center justify-between">
             <span class="font-bold text-lg">₹ {{ item.price }}</span>
           </div>
-          <span class="text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded">{{ item.variant.color_name }}</span>
+
+          <!-- Color Variants -->
+          {% if item.available_variants %}
+          <div class="mt-3 pt-3 border-t border-gray-100">
+            <p class="text-xs text-gray-500 mb-2">Available Colors:</p>
+            <div class="flex flex-wrap gap-2">
+              {% for variant in item.available_variants %}
+              <div class="group/color relative" title="{{ variant.color_name }}">
+                <div class="w-6 h-6 rounded-full border-2 border-gray-300 cursor-pointer transition-all hover:scale-110 hover:border-gray-500" 
+                     style="background-color: {{ variant.color_code }};"></div>
+                <span class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 px-2 py-1 text-xs text-white bg-gray-800 rounded opacity-0 group-hover/color:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                  {{ variant.color_name }}
+                </span>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+          {% endif %}
         </div>
-        
-        <!-- Action Button -->
-        {% if item.in_stock %}
-        <button class="w-full bg-gray-900 text-white py-2 rounded-lg font-semibold hover:bg-black transition-colors flex items-center justify-center space-x-2">
-          <i class="fas fa-shopping-cart"></i>
-          <span>Add to Cart</span>
-        </button>
-        {% else %}
-        <button class="w-full bg-gray-300 text-gray-600 py-2 rounded-lg font-semibold cursor-not-allowed" disabled>
-          Out of Stock
-        </button>
-        {% endif %}
       </div>
-    </div>
+    </a>
     {% endfor %}
   </div>
+
+  <!-- Pagination -->
+  {% if products_data.has_other_pages %}
+  <div class="mt-8 flex justify-center">
+    <nav class="inline-flex rounded-md shadow-sm">
+      {% if products_data.has_previous %}
+      <a href="?page=1" class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-l-md hover:bg-gray-50">
+        First
+      </a>
+      <a href="?page={{ products_data.previous_page_number }}" class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border-t border-b border-gray-300 hover:bg-gray-50">
+        Previous
+      </a>
+      {% else %}
+      <span class="px-3 py-2 text-sm font-medium text-gray-400 bg-gray-100 border border-gray-300 rounded-l-md cursor-not-allowed">
+        First
+      </span>
+      <span class="px-3 py-2 text-sm font-medium text-gray-400 bg-gray-100 border-t border-b border-gray-300 cursor-not-allowed">
+        Previous
+      </span>
+      {% endif %}
+
+      <span class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border-t border-b border-gray-300">
+        Page {{ products_data.number }} of {{ products_data.paginator.num_pages }}
+      </span>
+
+      {% if products_data.has_next %}
+      <a href="?page={{ products_data.next_page_number }}" class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border-t border-b border-gray-300 hover:bg-gray-50">
+        Next
+      </a>
+      <a href="?page={{ products_data.paginator.num_pages }}" class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-r-md hover:bg-gray-50">
+        Last
+      </a>
+      {% else %}
+      <span class="px-3 py-2 text-sm font-medium text-gray-400 bg-gray-100 border-t border-b border-gray-300 cursor-not-allowed">
+        Next
+      </span>
+      <span class="px-3 py-2 text-sm font-medium text-gray-400 bg-gray-100 border border-gray-300 rounded-r-md cursor-not-allowed">
+        Last
+      </span>
+      {% endif %}
+    </nav>
+  </div>
+  {% endif %}
+
   {% else %}
   <div class="text-center py-12">
     <i class="fas fa-box-open text-6xl text-gray-300 mb-4"></i>
@@ -165,7 +201,7 @@
 <!-- Promotional Banner -->
 <section class="container mx-auto px-4 py-8">
   <div class="rounded-lg p-8 md:p-12 text-center text-white bg-cover bg-center bg-no-repeat"
-       style="background-image: linear-gradient(135deg, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)), url('{% static 'images/offer_image.png' %}');">
+       style="background-image: linear-gradient(135deg, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)), url({% static 'images/offer_image.png' %});">
     <h2 class="text-3xl md:text-4xl font-bold mb-4">Special Offer</h2>
     <p class="text-lg md:text-xl mb-6">Get up to 30% off on selected watches</p>
     <a href="{% url 'products' %}" class="inline-block bg-white text-purple-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors">
@@ -188,23 +224,16 @@
     {% for category in categories %}
     <a href="{% url 'products' %}?category={{ category.id }}" class="group">
       <div class="bg-white rounded-lg p-6 shadow hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 text-center">
-        
-        <!-- Category Image -->
         <div class="w-16 h-16 mx-auto mb-4 rounded-full overflow-hidden flex items-center justify-center group-hover:scale-110 transition-transform">
           {% if category.image %}
             <img src="{{ category.image.url }}" alt="{{ category.name }}" class="w-full h-full object-cover">
           {% else %}
-            <!-- Fallback icon if no image -->
             <div class="w-full h-full bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center">
               <i class="fas fa-tag text-2xl text-blue-600"></i>
             </div>
           {% endif %}
         </div>
-        
-        <!-- Category Name -->
         <h3 class="font-semibold text-sm mb-1">{{ category.name }}</h3>
-        
-        <!-- Product Count -->
         <p class="text-xs text-gray-500">{{ category.product_count }} Product{{ category.product_count|pluralize }}</p>
       </div>
     </a>
@@ -213,114 +242,8 @@
 </section>
 {% endif %}
 
-<!-- Toast Notification -->
-<div id="wishlistToast" class="fixed top-20 right-4 bg-white shadow-lg rounded-lg p-4 transform translate-x-full transition-transform duration-300 z-50 max-w-sm">
-  <div class="flex items-center space-x-3">
-    <div id="toastIcon" class="flex-shrink-0">
-      <i class="fas fa-heart text-red-500 text-2xl"></i>
-    </div>
-    <div class="flex-1">
-      <p id="toastMessage" class="text-sm font-medium text-gray-900"></p>
-    </div>
-    <button onclick="hideToast()" class="flex-shrink-0 text-gray-400 hover:text-gray-600">
-      <i class="fas fa-times"></i>
-    </button>
-  </div>
-</div>
-
 <script>
-// Get CSRF token
-function getCookie(name) {
-  let cookieValue = null;
-  if (document.cookie && document.cookie !== '') {
-    const cookies = document.cookie.split(';');
-    for (let i = 0; i < cookies.length; i++) {
-      const cookie = cookies[i].trim();
-      if (cookie.substring(0, name.length + 1) === (name + '=')) {
-        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-        break;
-      }
-    }
-  }
-  return cookieValue;
-}
-
-const csrftoken = getCookie('csrftoken');
-
-// Toast notification functions
-function showToast(message, isAdded) {
-  const toast = document.getElementById('wishlistToast');
-  const toastMessage = document.getElementById('toastMessage');
-  const toastIcon = document.getElementById('toastIcon');
-  
-  toastMessage.textContent = message;
-  
-  if (isAdded) {
-    toastIcon.innerHTML = '<i class="fas fa-heart text-red-500 text-2xl"></i>';
-  } else {
-    toastIcon.innerHTML = '<i class="far fa-heart text-gray-400 text-2xl"></i>';
-  }
-  
-  toast.classList.remove('translate-x-full');
-  
-  setTimeout(() => {
-    hideToast();
-  }, 3000);
-}
-
-function hideToast() {
-  const toast = document.getElementById('wishlistToast');
-  toast.classList.add('translate-x-full');
-}
-
 document.addEventListener('DOMContentLoaded', function () {
-  // Wishlist functionality
-  document.querySelectorAll('.wishlist-btn').forEach(btn => {
-    btn.addEventListener('click', function (e) {
-      e.preventDefault();
-      e.stopPropagation();
-      
-      const variantId = this.getAttribute('data-variant-id');
-      const icon = this.querySelector('i');
-      const button = this;
-      
-      // Send AJAX request
-      fetch('{% url "toggle_wishlist" %}', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-          'X-CSRFToken': csrftoken
-        },
-        body: `variant_id=${variantId}`
-      })
-      .then(response => response.json())
-      .then(data => {
-        if (data.success) {
-          // Toggle heart icon
-          if (data.action === 'added') {
-            icon.classList.remove('far');
-            icon.classList.add('fas');
-            button.classList.remove('text-gray-400');
-            button.classList.add('text-red-500');
-            showToast(data.message, true);
-          } else {
-            icon.classList.remove('fas');
-            icon.classList.add('far');
-            button.classList.remove('text-red-500');
-            button.classList.add('text-gray-400');
-            showToast(data.message, false);
-          }
-        } else {
-          alert(data.message || 'An error occurred');
-        }
-      })
-      .catch(error => {
-        console.error('Error:', error);
-        alert('Failed to update wishlist');
-      });
-    });
-  });
-
   // Carousel functionality
   const slides = document.querySelectorAll('.carousel-slide');
   const dots = document.querySelectorAll('.carousel-dot');
