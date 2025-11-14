@@ -1,0 +1,56 @@
+{% extends 'user_side/base.html' %}
+{% load static %}
+
+{% block title %}Brands - DINGDONG{% endblock %}
+
+{% block content %}
+<main class="bg-gray-50">
+    <div class="min-h-screen flex items-center justify-center py-12 px-4">
+        <div class="w-full max-w-2xl">
+            <!-- Image -->
+            <div class="mb-8">
+                <img src="{% static 'images/repair_watch.jpg' %}" alt="Watch repair mechanism" class="w-full h-auto rounded-lg shadow-md">
+            </div>
+            
+            <!-- Subtitle -->
+            <h2 class="text-xl md:text-2xl font-semibold text-center text-black mb-6">Watch Repair Made Simple</h2>
+            
+            <!-- Description Text -->
+            <p class="text-center text-gray-700 text-sm md:text-base leading-relaxed mb-8">
+                Our Easy-To-Use Ordering Process Makes It Simple To Place Your Order, So You Can Mail Your Watch To Our Certified Watchmakers. We Evaluate It For Free, And You Choose The Repairs You Want! We Then Simply Perform The Repair And Send It Right Back To You. The Watch Factory Care Services And Repairs Over 40+ Of The World's Top Luxury Watch Brands. We Operate A State-Of-The-Art Service Center And Collection Center In Jaipur.
+            </p>
+            
+            <!-- Our Services Section -->
+            <h3 class="text-lg md:text-xl font-semibold text-center text-black mb-6">Our Services</h3>
+            
+            <!-- Services List -->
+            <ul class="space-y-3 mb-8 max-w-lg mx-auto">
+                <li class="flex items-start text-gray-700 text-sm md:text-base">
+                    <span class="mr-4 font-bold">•</span>
+                    <span>Battery Check & Replacement</span>
+                </li>
+                <li class="flex items-start text-gray-700 text-sm md:text-base">
+                    <span class="mr-4 font-bold">•</span>
+                    <span>Strap And Bracelet Replacement</span>
+                </li>
+                <li class="flex items-start text-gray-700 text-sm md:text-base">
+                    <span class="mr-4 font-bold">•</span>
+                    <span>Bracket Link Removal And Adjustment</span>
+                </li>
+                <li class="flex items-start text-gray-700 text-sm md:text-base">
+                    <span class="mr-4 font-bold">•</span>
+                    <span>Service Of Movement</span>
+                </li>
+                <li class="flex items-start text-gray-700 text-sm md:text-base">
+                    <span class="mr-4 font-bold">•</span>
+                    <span>Complete Maintenance</span>
+                </li>
+                <li class="flex items-start text-gray-700 text-sm md:text-base">
+                    <span class="mr-4 font-bold">•</span>
+                    <span>Buffing</span>
+                </li>
+            </ul>
+        </div>
+    </div>
+</main>
+{% endblock %}

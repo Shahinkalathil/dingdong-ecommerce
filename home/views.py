@@ -100,6 +100,8 @@ def brands(request):
         'brands': brands,
     }
     return render(request, 'user_side/brands/brands.html', context)
+def Repair_and_Service(request):
+    return render(request, 'user_side/about/Repair_and_Service.html')
 
 def wishlist(request):
     return render(request, 'user_side/wishlist/wishlist.html')
