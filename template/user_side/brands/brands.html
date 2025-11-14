@@ -1,0 +1,83 @@
+{% extends 'user_side/base.html' %}
+{% load static %}
+
+{% block title %}Brands - DINGDONG{% endblock %}
+
+{% block content %}
+<main class="bg-gray-50">
+    <div class="min-h-screen py-12 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-7xl mx-auto">
+            <div class="text mb-12">
+                <p class="text-gray-600 text-sm font-semibold tracking-widest">DISCOVER FEATURED BRANDS</p>
+            </div>
+
+            <!-- Brands Grid -->
+            {% if brands %}
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                {% for brand in brands %}
+                <a href="{% url 'products' %}?brand={{ brand.id }}" class="block group">
+                    <div class="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-200 hover:border-gray-400">
+                        <div class="aspect-square relative overflow-hidden bg-white">
+                            {% if brand.image %}
+                            <img src="{{ brand.image.url }}" 
+                                 alt="{{ brand.name }}" 
+                                 class="w-full h-full object-contain p-6 group-hover:scale-105 transition-transform duration-300">
+                            {% else %}
+                            <!-- Text fallback -->
+                            <div class="absolute inset-0 flex items-center justify-center p-4">
+                                <h3 class="text-lg font-semibold text-gray-800 text-center tracking-wide group-hover:text-gray-900 transition-colors">
+                                    {{ brand.name|upper }}
+                                </h3>
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Brand Name -->
+                        <div class="px-3 py-3 bg-white border-t border-gray-100 text-center">
+                            <p class="text-sm font-medium text-gray-700 group-hover:text-gray-900 transition-colors truncate">
+                                {{ brand.name }}
+                            </p>
+                        </div>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+            {% else %}
+            <!-- Empty State -->
+            <div class="text-center py-16">
+                <svg class="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                </svg>
+                <h3 class="text-xl font-medium text-gray-900 mb-2">No Brands Available</h3>
+                <p class="text-gray-600">Check back soon for our brand collection</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</main>
+
+<style>
+/* Smooth fade-in animation */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.grid > a {
+    animation: fadeIn 0.5s ease-out backwards;
+}
+
+.grid > a:nth-child(1) { animation-delay: 0.05s; }
+.grid > a:nth-child(2) { animation-delay: 0.1s; }
+.grid > a:nth-child(3) { animation-delay: 0.15s; }
+.grid > a:nth-child(4) { animation-delay: 0.2s; }
+.grid > a:nth-child(5) { animation-delay: 0.25s; }
+.grid > a:nth-child(6) { animation-delay: 0.3s; }
+</style>
+{% endblock %}

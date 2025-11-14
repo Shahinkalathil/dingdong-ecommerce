@@ -93,6 +93,13 @@ def home(request):
     
     return render(request, 'user_side/index.html', context)
 
+def brands(request):
+    brands = Brand.objects.filter(is_listed=True).order_by('name')
+    
+    context = {
+        'brands': brands,
+    }
+    return render(request, 'user_side/brands/brands.html', context)
 
 def wishlist(request):
     return render(request, 'user_side/wishlist/wishlist.html')
