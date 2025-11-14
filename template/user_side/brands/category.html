@@ -1,0 +1,98 @@
+{% extends 'user_side/base.html' %}
+{% load static %}
+
+{% block title %}Categories - DINGDONG{% endblock %}
+
+{% block content %}
+<main class="bg-gray-50">
+    <div class="min-h-screen py-12 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-7xl mx-auto">
+            <div class="text mb-12">
+                <p class="text-gray-600 text-sm font-semibold tracking-widest">Explore our premium collection</p>
+            </div>
+
+            <!-- Categories Grid -->
+            {% if categories %}
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                {% for category in categories %}
+                <a href="{% url 'products' %}?category={{ category.id }}" 
+                   class="group relative overflow-hidden rounded-lg shadow-md hover:shadow-xl transition-all duration-300 block">
+                    <!-- Category Image -->
+                    <div class="relative h-48 overflow-hidden bg-gray-200">
+                        {% if category.image %}
+                        <img src="{{ category.image.url }}" 
+                             alt="{{ category.name }}" 
+                             class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
+                        {% else %}
+                        <!-- Fallback gradient background -->
+                        <div class="w-full h-full bg-gradient-to-br from-gray-300 to-gray-400"></div>
+                        {% endif %}
+                        
+                        <!-- Hover overlay -->
+                        <div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-500"></div>
+                    </div>
+                    
+                    <!-- Category Info Overlay -->
+                    <div class="absolute inset-0 flex items-end p-4 bg-gradient-to-t from-black/70 via-black/30 to-transparent">
+                        <div>
+                            <h3 class="text-lg font-semibold text-white tracking-tight">
+                                {{ category.name }}
+                            </h3>
+                        </div>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+            {% else %}
+            <!-- Empty State -->
+            <div class="text-center py-20">
+                <svg class="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
+                </svg>
+                <h3 class="text-xl font-medium text-gray-900 mb-2">No Categories Available</h3>
+                <p class="text-gray-600">Check back soon for our category collection</p>
+            </div>
+            {% endif %}
+
+            <!-- CTA Section -->
+            <div class="mt-20 text-center bg-white rounded-2xl shadow-sm p-12 border border-gray-200">
+                <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+                    Can't Find What You're Looking For?
+                </h2>
+                <p class="text-gray-600 text-lg mb-8 max-w-2xl mx-auto">
+                    Browse our complete collection of premium watches and accessories
+                </p>
+                <a href="{% url 'products' %}" 
+                   class="inline-block bg-gray-900 hover:bg-gray-800 text-white px-10 py-4 rounded-full font-semibold transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105">
+                    View All Products
+                </a>
+            </div>
+        </div>
+    </div>
+</main>
+
+<style>
+/* Smooth fade-in animation */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.grid > a {
+    animation: fadeInUp 0.6s ease-out backwards;
+}
+
+.grid > a:nth-child(1) { animation-delay: 0.1s; }
+.grid > a:nth-child(2) { animation-delay: 0.2s; }
+.grid > a:nth-child(3) { animation-delay: 0.3s; }
+.grid > a:nth-child(4) { animation-delay: 0.4s; }
+.grid > a:nth-child(5) { animation-delay: 0.5s; }
+.grid > a:nth-child(6) { animation-delay: 0.6s; }
+</style>
+{% endblock %}

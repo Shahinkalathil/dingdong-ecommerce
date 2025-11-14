@@ -6,7 +6,7 @@
 </div>
 
 <!-- Header with Navigation -->
-<header class="bg-white  top-7 z-40 shadow-sm">
+<header class="bg-white top-7 z-40 shadow-sm">
   <div class="container mx-auto px-4 py-4 flex justify-center items-center relative">
     <div class="text-3xl font-bold text-center">
       <a href="{% url 'home' %}" class="text-black no-underline hover:text-gray-800">DINGDONG</a>
@@ -54,23 +54,32 @@
     </div>
   </div>
   
-  <!-- Main Navigation with proper spacing -->
+  <!-- Main Navigation with active state detection -->
   <nav class="container mx-auto px-4 py-2 border-t border-gray-200">
     <ul class="flex justify-center space-x-8 md:space-x-12 lg:space-x-16">
       <li>
-        <a href="{% url 'products' %}" class="px-2 py-2 font-medium hover:text-blue-600 cursor-pointer transition-colors">Products</a>
+        <a href="{% url 'products' %}" 
+           class="px-2 py-2 font-medium cursor-pointer transition-colors {% if request.resolver_match.url_name == 'products' %}text-gray-900 font-semibold border-b-2 border-gray-900{% else %}text-gray-600 hover:text-black{% endif %}">
+          Products
+        </a>
       </li>
       <li>
-        <a href="#" class="px-2 py-2 font-medium hover:text-blue-600 cursor-pointer transition-colors">Offers</a>
+        <a href="{% url 'categories' %}" 
+           class="px-2 py-2 font-medium cursor-pointer transition-colors {% if request.resolver_match.url_name == 'categories' %}text-gray-900 font-semibold border-b-2 border-gray-900{% else %}text-gray-600 hover:text-black{% endif %}">
+          Category
+        </a>
       </li>
       <li>
-        <a href="{% url 'brands_list' %}" class="px-2 py-2 font-medium hover:text-blue-600 cursor-pointer transition-colors">Brands</a>
+        <a href="{% url 'brands_list' %}" 
+           class="px-2 py-2 font-medium cursor-pointer transition-colors {% if request.resolver_match.url_name == 'brands_list' %}text-gray-900 font-semibold border-b-2 border-gray-900{% else %}text-gray-600 hover:text-black{% endif %}">
+          Brands
+        </a>
       </li>
       <li>
-        <a href="{% url 'Repair_and_Service' %}" class="px-2 py-2 font-medium hover:text-blue-600 cursor-pointer transition-colors">Repair & Service</a>
-      </li>
-      <li>
-        <a href="#" class="px-2 py-2 font-medium hover:text-blue-600 cursor-pointer transition-colors">Stores</a>
+        <a href="{% url 'Repair_and_Service' %}" 
+           class="px-2 py-2 font-medium cursor-pointer transition-colors {% if request.resolver_match.url_name == 'Repair_and_Service' %}text-gray-900 font-semibold border-b-2 border-gray-900{% else %}text-gray-600 hover:text-black{% endif %}">
+          Repair & Service
+        </a>
       </li>
     </ul>
   </nav>
@@ -95,4 +104,4 @@ document.addEventListener('click', function(event) {
     userMenu.classList.add('hidden');
   }
 });
-</script>   
+</script>
