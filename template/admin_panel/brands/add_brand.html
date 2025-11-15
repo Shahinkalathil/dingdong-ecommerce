@@ -1,0 +1,100 @@
+{% extends 'admin_panel/base.html' %}
+{% load static %}
+{% block title %}DINGDONG - Add Brand{% endblock %}
+
+{% block content %}
+<main class="flex-1 p-6 lg:p-8">
+    <div class="max-w-2xl mx-auto">
+        <!-- Page Header -->
+        <div class="mb-8">
+            <a href="{% url 'admin_brands' %}" class="inline-flex items-center text-blue-600 hover:text-blue-800 mb-4">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                </svg>
+                Back to Brands
+            </a>
+            <h2 class="text-3xl font-bold text-gray-900">Add New Brand</h2>
+        </div>
+
+        <!-- Form Card -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <form method="POST" enctype="multipart/form-data" class="space-y-6">
+                {% csrf_token %}
+                
+                <!-- Brand Name -->
+                <div>
+                    <label for="name" class="block text-sm font-semibold text-gray-700 mb-2">
+                        Brand Name <span class="text-red-500">*</span>
+                    </label>
+                    <input type="text" 
+                           id="name" 
+                           name="name" 
+                           required
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                           placeholder="Enter brand name">
+                </div>
+
+                <!-- Brand Image -->
+                <div>
+                    <label for="image" class="block text-sm font-semibold text-gray-700 mb-2">
+                        Brand Image
+                    </label>
+                    <div class="flex items-center space-x-4">
+                        <div id="imagePreview" class="hidden w-24 h-24 border-2 border-gray-300 rounded-lg overflow-hidden">
+                            <img id="previewImg" src="" alt="Preview" class="w-full h-full object-contain">
+                        </div>
+                        <div class="flex-1">
+                            <input type="file" 
+                                   id="image" 
+                                   name="image" 
+                                   accept="image/*"
+                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <p class="text-xs text-gray-500 mt-1">Recommended: Square image (PNG, JPG, JPEG)</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Status -->
+                <div>
+                    <label class="flex items-center space-x-3 cursor-pointer">
+                        <input type="checkbox" 
+                               id="is_listed" 
+                               name="is_listed" 
+                               checked
+                               class="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-2 focus:ring-blue-500">
+                        <span class="text-sm font-semibold text-gray-700">List this brand</span>
+                    </label>
+                    <p class="text-xs text-gray-500 mt-1 ml-8">Listed brands will be visible to customers</p>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex space-x-4 pt-4">
+                    <button type="submit" 
+                            class="flex-1 px-6 py-2.5 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors">
+                        Add Brand
+                    </button>
+                    <a href="{% url 'admin_brands' %}" 
+                       class="flex-1 px-6 py-2.5 bg-gray-200 text-gray-800 font-medium rounded-lg hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors text-center">
+                        Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</main>
+
+<script>
+    // Image preview
+    document.getElementById('image').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('previewImg').src = e.target.result;
+                document.getElementById('imagePreview').classList.remove('hidden');
+            }
+            reader.readAsDataURL(file);
+        }
+    });
+</script>
+{% endblock %}
