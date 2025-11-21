@@ -143,20 +143,37 @@
         // Timer + Resend
         let timerEl = document.getElementById("timer");
         let resendBtn = document.getElementById("resendBtn");
-        let countdown = 60;
+
+        let totalDuration = 60; // seconds
+        let expiryTime = localStorage.getItem("otp_expiry");
+
+        // If no expiry exists, create a new one
+        if (!expiryTime) {
+            expiryTime = Date.now() + totalDuration * 1000;
+            localStorage.setItem("otp_expiry", expiryTime);
+        }
 
         function startTimer() {
             let interval = setInterval(() => {
-                timerEl.textContent = `00:${countdown.toString().padStart(2, "0")} sec`;
-                countdown--;
-                if (countdown < 0) {
+                let now = Date.now();
+                let remaining = Math.floor((expiryTime - now) / 1000);
+
+                if (remaining > 0) {
+                    timerEl.textContent = `00:${remaining.toString().padStart(2, "0")} sec`;
+                } else {
                     clearInterval(interval);
+                    timerEl.textContent = "00:00 sec";
+
+                    // enable button
                     resendBtn.classList.remove("text-gray-400", "pointer-events-none");
                     resendBtn.classList.add("text-black", "hover:underline");
-                    timerEl.textContent = "00:00 sec";
+
+                    // clear saved expiry
+                    localStorage.removeItem("otp_expiry");
                 }
             }, 1000);
         }
+
         startTimer();
     });
     </script>

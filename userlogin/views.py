@@ -30,6 +30,18 @@ def sign_up(request):
             is_valid = False
             errors["fullname"] = "Please enter your full name"
             messages.error(request, errors["fullname"])
+        
+        if fullname and (len(fullname) < 3 or len(fullname) > 50):
+            is_valid = False
+            errors["fullname"] = "Full name must be between 3 and 50 characters"
+            messages.error(request, errors["fullname"])
+
+        
+        if fullname and not re.fullmatch(r"^[A-Za-z]+(?: [A-Za-z]+)*$", fullname):
+            is_valid = False
+            errors["fullname"] = "Full name should only contain letters and spaces"
+            messages.error(request, errors["fullname"])
+        
         if not email:
             is_valid = False
             errors["email"] = "Please enter your email"
@@ -249,5 +261,4 @@ def reset_password(request):
         user.save()
         messages.success(request, "Password reset successfully!")
         return redirect("sign_in")
-
     return render(request, "user_side/auth/reset_password.html", {"token": token})
