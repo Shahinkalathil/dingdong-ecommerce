@@ -40,7 +40,6 @@ def cart(request):
     }
     return render(request, 'user_side/cart/cart.html', context)
 
-
 def add_to_cart(request, product_variant_id):
     variant = get_object_or_404(ProductVariant, id=product_variant_id)
     
@@ -80,7 +79,6 @@ def add_to_cart(request, product_variant_id):
         pass
     
     return redirect('cart')
-
 
 @require_POST
 def update_cart_quantity(request, item_id):
@@ -170,7 +168,6 @@ def update_cart_quantity(request, item_id):
             'success': False,
             'message': 'An error occurred. Please try again.'
         }, status=500)
-
 
 @require_POST
 def remove_from_cart(request, item_id):
