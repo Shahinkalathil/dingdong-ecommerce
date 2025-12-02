@@ -7,7 +7,6 @@ from django.core.files.base import ContentFile
 from django.contrib import messages
 from django.db.models import Q
 from PIL import Image
-from io import BytesIO
 from .models import Category, Product, Brand, ProductVariant, ProductImage
 import base64
 import io
@@ -385,8 +384,6 @@ def edit_products(request, product_id):
         "categories": categories,
     }
     return render(request, "admin_panel/product/product_edit.html", context)
-
-
 
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 @user_passes_test(lambda u: u.is_superuser, login_url="admin_login")
