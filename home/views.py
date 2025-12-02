@@ -1,6 +1,8 @@
 from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import logout
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.cache import cache_control
 from products.models import Product, ProductVariant, Category, Brand
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from .models import Banner
@@ -9,15 +11,12 @@ from django.db.models import Min, Count, Q
 import random
 from decimal import Decimal
 
-
+@cache_control(no_cache=True, no_store=True, must_revalidate=True)
 def home(request):
     if not request.user.is_authenticated:
         return redirect('sign_in')
     
-    # Get banners
     banners = Banner.get_active_banners()
-    
-    # Get categories
     all_categories = list(Category.objects.filter(
         is_listed=True,
         products__is_listed=True
@@ -25,8 +24,6 @@ def home(request):
         product_count=Count('products', filter=Q(products__is_listed=True))
     ).filter(product_count__gt=0).select_related())
     featured_categories = random.sample(all_categories, min(5, len(all_categories))) if all_categories else []
-    
-    # Get brands
     all_brands = list(Brand.objects.filter(
         is_listed=True,
         products__is_listed=True
@@ -34,8 +31,6 @@ def home(request):
         product_count=Count('products', filter=Q(products__is_listed=True))
     ).filter(product_count__gt=0).select_related())
     brands = random.sample(all_brands, min(8, len(all_brands))) if all_brands else []
-    
-    # Get all featured products with their variants
     featured_products = Product.objects.filter(
         is_listed=True,
         category__is_listed=True,
@@ -45,18 +40,14 @@ def home(request):
     ).annotate(
         min_price=Min('variants__price')
     ).distinct().order_by('id')
-    
-    # Prepare products data
     products_data = []
     for product in featured_products:
-        # Get default variant (first available)
         default_variant = product.variants.filter(
             is_listed=True,
             stock__gt=0
         ).first()
         
         if default_variant:
-            # Get all available variants for color selection
             available_variants = product.variants.filter(
                 is_listed=True,
                 stock__gt=0
@@ -71,8 +62,6 @@ def home(request):
                 'in_stock': default_variant.stock > 0,
                 'available_variants': list(available_variants)
             })
-    
-    # Pagination - 10 products per page
     paginator = Paginator(products_data, 2)
     page = request.GET.get('page', 1)
     
@@ -113,7 +102,6 @@ def categories(request):
 
 def wishlist(request):
     return render(request, 'user_side/wishlist/wishlist.html')
-
 
 def user_logout(request):
     logout(request)

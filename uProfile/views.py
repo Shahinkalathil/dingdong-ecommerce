@@ -151,17 +151,18 @@ def add_address(request):
         state = request.POST.get('state', '').strip()
         address_type = request.POST.get('address_type', '').strip()
         is_default = request.POST.get('is_default') == 'on'
-        
+
         if not country:
             is_valid = False
             errors["country"] = "Please select a country"
             messages.error(request, errors["country"])
+
         elif country not in dict(Address.COUNTRY_CHOICES):
             is_valid = False
             errors["country"] = "Please select a valid country"
             messages.error(request, errors["country"])
         
-        if not full_name:
+        elif not full_name:
             is_valid = False
             errors["full_name"] = "Full name is required"
             messages.error(request, errors["full_name"])

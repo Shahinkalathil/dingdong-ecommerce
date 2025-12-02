@@ -3,11 +3,16 @@ from django.urls import reverse
 from django.shortcuts import redirect
 
 def send_otp_email(email, otp):
-    subject = "Your OTP for Account Verification"
-    message = f"Your OTP is {otp}. It will expire in 1 minute."
-    email_from = None   
-    recipient_list = [email]
-    send_mail(subject, message, email_from, recipient_list)
+    subject = "🔐 Verify Your Account – OTP Inside"
+    message = (
+            f"Hello,\n\n"
+            f"Your One-Time Password (OTP) is: **{otp}**\n"
+            f"This code is valid for only *5 minute*.\n\n"
+            f"If you didn’t request this, please ignore this email.\n\n"
+            f"Thank you,\n"
+            f"Team SecureAuth"
+        )
+    send_mail(subject=subject, message=message,from_email=None,recipient_list=[email],fail_silently=False,)
     return True
 
 def send_forget_password_mail(email, token, request):

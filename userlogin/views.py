@@ -1,6 +1,6 @@
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import render, redirect, HttpResponse
 from django.contrib import messages
-from django.contrib.auth import authenticate, login, get_user_model, get_backends
+from django.contrib.auth import authenticate, login, get_user_model
 from django.utils import timezone
 from django.utils.timezone import now
 from datetime import timedelta
@@ -8,61 +8,72 @@ import random
 import re
 import uuid
 from .models import CustomUser
-from .utils import send_otp_email, send_forget_password_mail
+from .utils import send_otp_email, send_forget_password_mail, redirect_authenticated
 from django.views.decorators.cache import never_cache
-from .utils import redirect_authenticated
 
 
 @redirect_authenticated
 @never_cache
 def sign_up(request):
     if request.method == "POST":
-        fullname = request.POST.get("fullname", "").strip()
-        phone = request.POST.get("phone", "").strip()
-        email = request.POST.get("email", "").strip().lower()
-        password = request.POST.get("password", "")
-        confirm_password = request.POST.get("confirmPassword", "")
+        fullname = request.POST.get("fullname").strip()
+        phone = request.POST.get("phone").strip()
+        email = request.POST.get("email").strip().lower()
+        password = request.POST.get("password")
+        confirm_password = request.POST.get("confirmPassword")
 
         errors = {}
         is_valid = True
-
+        
+        # full name errors
         if not fullname:
             is_valid = False
             errors["fullname"] = "Please enter your full name"
             messages.error(request, errors["fullname"])
-        
-        if fullname and (len(fullname) < 3 or len(fullname) > 50):
-            is_valid = False
-            errors["fullname"] = "Full name must be between 3 and 50 characters"
-            messages.error(request, errors["fullname"])
 
-        
-        if fullname and not re.fullmatch(r"^[A-Za-z]+(?: [A-Za-z]+)*$", fullname):
-            is_valid = False
-            errors["fullname"] = "Full name should only contain letters and spaces"
-            messages.error(request, errors["fullname"])
-        
+        # email
         if not email:
             is_valid = False
             errors["email"] = "Please enter your email"
             messages.error(request, errors["email"])
+
+        # phone
         if not phone:
             is_valid = False
             errors["phone"] = "Please enter your phone number"
             messages.error(request, errors["phone"])
+
+        # password
         if not password:
             is_valid = False
             errors["password"] = "Please enter a password"
             messages.error(request, errors["password"])
+        
+        for m in messages.get_messages(request):
+            print(f"[{m.level_tag.upper()}] {m.message}")
+
+        # valid
         if not is_valid:
             return render(request, "user_side/auth/sign_up.html", {
                 "fullname": fullname,
                 "phone": phone,
                 "email": email,
                 "errors": errors,
+                
             })
 
+
         email_pattern = r'^[\w\.-]+@[\w\.-]+\.\w+$'
+
+        if fullname and (len(fullname) < 3 or len(fullname) > 50):
+            is_valid = False
+            errors["fullname"] = "Full name must be between 3 and 50 characters"
+            messages.error(request, errors["fullname"])
+        
+        if fullname and not re.fullmatch(r"^[A-Za-z]+(?: [A-Za-z]+)*$", fullname):
+            is_valid = False
+            errors["fullname"] = "Full name should only contain letters and spaces"
+            messages.error(request, errors["fullname"])
         if not re.fullmatch(email_pattern, email):
             is_valid = False
             errors["email"] = "Please enter a valid email address"
@@ -169,7 +180,7 @@ def otp(request):
             return redirect("otp")
         else:
             user.is_active = True
-            user.otp = None  # Clear OTP after use
+            user.otp = None  
             user.save()
 
             login(request, user, backend="django.contrib.auth.backends.ModelBackend")
@@ -177,8 +188,6 @@ def otp(request):
             return redirect("home")
 
     return render(request, "user_side/auth/otp.html", {"otp_expiry": otp_expiry, "user": user})
-
-
 
 @redirect_authenticated
 @never_cache
@@ -262,3 +271,63 @@ def reset_password(request):
         messages.success(request, "Password reset successfully!")
         return redirect("sign_in")
     return render(request, "user_side/auth/reset_password.html", {"token": token})
+
+def check(request):
+    """
+    Comprehensive request inspector view
+    Collects all request data and displays it in a terminal-style interface
+    """
+    
+    context = {
+        # Basic Request Info
+        'method': request.method,
+        'path': request.path,
+        'full_path': request.get_full_path(),
+        'scheme': request.scheme,
+        'is_secure': request.is_secure(),
+        
+        # All HTTP Headers
+        'headers': dict(request.headers),
+        
+        # Cookies
+        'cookies': dict(request.COOKIES),
+        
+        # Query Parameters (GET)
+        'get_params': dict(request.GET),
+        
+        # POST Data
+        'post_params': dict(request.POST) if request.method == 'POST' else {},
+        
+        # Session Information
+        'session_key': request.session.session_key if hasattr(request, 'session') else 'N/A',
+        
+        # User Information
+        'user': str(request.user) if hasattr(request, 'user') else 'AnonymousUser',
+        'is_authenticated': request.user.is_authenticated if hasattr(request, 'user') else False,
+        
+        # Server Meta
+        'user_agent': request.META.get('HTTP_USER_AGENT', 'N/A'),
+        'remote_addr': request.META.get('REMOTE_ADDR', 'N/A'),
+        'remote_host': request.META.get('REMOTE_HOST', 'N/A'),
+        'server_name': request.META.get('SERVER_NAME', 'N/A'),
+        'server_port': request.META.get('SERVER_PORT', 'N/A'),
+        
+        # Timestamp
+        'timestamp': timezone.now().isoformat(),
+    }
+    
+    # Debug print statements (for your terminal)
+    print('=' * 60)
+    print('REQUEST DEBUG INFO')
+    print('=' * 60)
+    print(f'Path: {request.path}')
+    print(f"User-Agent: {context['user_agent']}")
+    print(f"Accept-Language: {request.headers.get('Accept-Language', 'N/A')}")
+    print(f"Cookie: {request.headers.get('Cookie', 'N/A')}")
+    print(f"Authorization: {request.headers.get('Authorization', 'N/A')}")
+    print(f"session_id: {request.COOKIES.get('sessionid', 'N/A')}")
+    print(f"csrf: {request.COOKIES.get('csrftoken', 'N/A')}")
+    print(f"host: {request.headers.get('Host', 'N/A')}")
+    print('=' * 60)
+    
+    return render(request, 'user_side/check.html', context)

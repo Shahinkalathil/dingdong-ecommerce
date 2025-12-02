@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Request Inspector - Terminal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&display=swap');
+        
+        body {
+            font-family: 'Courier Prime', monospace;
+            background: #000;
+        }
+        
+        .scanline {
+            background: linear-gradient(
+                to bottom,
+                rgba(0, 255, 0, 0) 50%,
+                rgba(0, 255, 0, 0.02) 50%
+            );
+            background-size: 100% 4px;
+            pointer-events: none;
+            animation: scanline 8s linear infinite;
+        }
+        
+        @keyframes scanline {
+            0% { background-position: 0 0; }
+            100% { background-position: 0 100%; }
+        }
+        
+        .glow {
+            text-shadow: 0 0 10px #00ff00, 0 0 20px #00ff00, 0 0 30px #00ff00;
+        }
+        
+        .terminal-border {
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.3), inset 0 0 20px rgba(0, 255, 0, 0.05);
+        }
+        
+        .blink {
+            animation: blink 1s step-end infinite;
+        }
+        
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+        
+        .typing {
+            overflow: hidden;
+            white-space: nowrap;
+            animation: typing 2s steps(40, end);
+        }
+        
+        @keyframes typing {
+            from { width: 0; }
+            to { width: 100%; }
+        }
+    </style>
+</head>
+<body class="bg-black text-green-400 min-h-screen p-4 md:p-8">
+    
+    <!-- Scanline Effect Overlay -->
+    <div class="scanline fixed inset-0 z-50"></div>
+    
+    <div class="max-w-7xl mx-auto relative z-10">
+        
+        <!-- ASCII Art Header -->
+        <div class="text-center mb-8 terminal-border border-2 border-green-500 p-6 bg-green-950 bg-opacity-10">
+            <pre class="text-green-300 text-xs md:text-sm glow">
+╔═══════════════════════════════════════════════════════════════╗
+║                                                               ║
+║     ██╗  ██╗████████╗████████╗██████╗     ██████╗ ███████╗   ║
+║     ██║  ██║╚══██╔══╝╚══██╔══╝██╔══██╗    ██╔══██╗██╔════╝   ║
+║     ███████║   ██║      ██║   ██████╔╝    ██████╔╝█████╗     ║
+║     ██╔══██║   ██║      ██║   ██╔═══╝     ██╔══██╗██╔══╝     ║
+║     ██║  ██║   ██║      ██║   ██║         ██║  ██║███████╗   ║
+║     ╚═╝  ╚═╝   ╚═╝      ╚═╝   ╚═╝         ╚═╝  ╚═╝╚══════╝   ║
+║                                                               ║
+║              REQUEST INSPECTOR v2.5.1 [AUTHENTICATED]        ║
+║                                                               ║
+╚═══════════════════════════════════════════════════════════════╝
+            </pre>
+            <div class="text-green-500 text-xs mt-2">
+                <span class="blink">█</span> SYSTEM INITIALIZED :: {{ timestamp|default:"2024-12-01T10:30:45" }}
+            </div>
+        </div>
+
+        <!-- Main Terminal Window -->
+        <div class="terminal-border border-2 border-green-500 rounded-lg bg-black p-6 md:p-8">
+            
+            <!-- Request Line Section -->
+            <div class="mb-8">
+                <div class="text-green-300 font-bold text-lg mb-3 border-b border-green-700 pb-2 glow">
+                    <span class="text-green-500">&gt;&gt;</span> REQUEST LINE
+                </div>
+                <div class="pl-4 space-y-1">
+                    <div class="flex flex-wrap">
+                        <span class="text-green-500 font-bold min-w-[150px]">METHOD:</span>
+                        <span class="text-green-300">{{ method|default:"GET" }}</span>
+                    </div>
+                    <div class="flex flex-wrap">
+                        <span class="text-green-500 font-bold min-w-[150px]">PATH:</span>
+                        <span class="text-green-300">{{ path|default:"/check/" }}</span>
+                    </div>
+                    <div class="flex flex-wrap">
+                        <span class="text-green-500 font-bold min-w-[150px]">FULL_PATH:</span>
+                        <span class="text-green-300 break-all">{{ full_path|default:"/check/?debug=true" }}</span>
+                    </div>
+                    <div class="flex flex-wrap">
+                        <span class="text-green-500 font-bold min-w-[150px]">SCHEME:</span>
+                        <span class="text-green-300">{{ scheme|default:"https" }}</span>
+                    </div>
+                    <div class="flex flex-wrap">
+                        <span class="text-green-500 font-bold min-w-[150px]">SECURE:</span>
+                        <span class="text-green-300">{% if is_secure %}[✓] TRUE{% else %}[✗] FALSE{% endif %}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- HTTP Headers Section -->
+            <div class="mb-8">
+                <div class="text-green-300 font-bold text-lg mb-3 border-b border-green-700 pb-2 glow">
+                    <span class="text-green-500">&gt;&gt;</span> HTTP HEADERS
+                </div>
+                <div class="pl-4 space-y-1 text-sm">
+                    {% for key, value in headers.items %}
+                    <div class="flex flex-wrap">
+                        <span class="text-green-500 font-bold min-w-[200px]">{{ key }}:</span>
+                        <span class="text-green-300 break-all">{{ value }}</span>
+                    </div>
+                    {% empty %}
+                    <div class="text-green-600 italic">No headers available</div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Cookies Section -->
+            <div class="mb-8">
+                <div class="text-green-300 font-bold text-lg mb-3 border-b border-green-700 pb-2 glow">
+                    <span class="text-green-500">&gt;&gt;</span> COOKIES
+                </div>
+                <div class="pl-4 space-y-1 text-sm">
+                    {% for key, value in cookies.items %}
+                    <div class="mb-2">
+                        <span class="text-green-400">• </span>
+                        <span class="text-green-500 font-bold">{{ key }}:</span>
+                        <span class="text-green-300 break-all">{{ value }}</span>
+                    </div>
+                    {% empty %}
+                    <div class="text-green-600 italic">No cookies found</div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Query Parameters Section -->
+            <div class="mb-8">
+                <div class="text-green-300 font-bold text-lg mb-3 border-b border-green-700 pb-2 glow">
+                    <span class="text-green-500">&gt;&gt;</span> QUERY PARAMETERS (GET)
+                </div>
+                <div class="pl-4 space-y-1 text-sm">
+                    {% for key, value in get_params.items %}
+                    <div class="flex flex-wrap">
+                        <span class="text-green-500 font-bold min-w-[200px]">{{ key }}:</span>
+                        <span class="text-green-300">{{ value }}</span>
+                    </div>
+                    {% empty %}
+                    <div class="text-green-600 italic">No query parameters</div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- POST Parameters Section -->
+            {% if post_params %}
+            <div class="mb-8">
+                <div class="text-green-300 font-bold text-lg mb-3 border-b border-green-700 pb-2 glow">
+                    <span class="text-green-500">&gt;&gt;</span> POST DATA
+                </div>
+                <div class="pl-4 space-y-1 text-sm">
+                    {% for key, value in post_params.items %}
+                    <div class="flex flex-wrap">
+                        <span class="text-green-500 font-bold min-w-[200px]">{{ key }}:</span>
+                        <span class="text-green-300">{{ value }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Session & User Info Section -->
+            <div class="mb-8">
+                <div class="text-green-300 font-bold text-lg mb-3 border-b border-green-700 pb-2 glow">
+                    <span class="text-green-500">&gt;&gt;</span> SESSION & USER
+                </div>
+                <div class="pl-4 space-y-1">
+                    <div class="flex flex-wrap">
+                        <span class="text-green-500 font-bold min-w-[200px]">SESSION_KEY:</span>
+                        <span class="text-green-300 break-all">{{ session_key|default:"N/A" }}</span>
+                    </div>
+                    <div class="flex flex-wrap">
+                        <span class="text-green-500 font-bold min-w-[200px]">USER:</span>
+                        <span class="text-green-300">{{ user|default:"AnonymousUser" }}</span>
+                    </div>
+                    <div class="flex flex-wrap">
+                        <span class="text-green-500 font-bold min-w-[200px]">AUTHENTICATED:</span>
+                        <span class="text-green-300">{% if is_authenticated %}[✓] TRUE{% else %}[✗] FALSE{% endif %}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Server Meta Information -->
+            <div class="mb-8">
+                <div class="text-green-300 font-bold text-lg mb-3 border-b border-green-700 pb-2 glow">
+                    <span class="text-green-500">&gt;&gt;</span> SERVER META
+                </div>
+                <div class="pl-4 space-y-1">
+                    <div class="flex flex-wrap">
+                        <span class="text-green-500 font-bold min-w-[200px]">REMOTE_ADDR:</span>
+                        <span class="text-green-300">{{ remote_addr|default:"127.0.0.1" }}</span>
+                    </div>
+                    <div class="flex flex-wrap">
+                        <span class="text-green-500 font-bold min-w-[200px]">REMOTE_HOST:</span>
+                        <span class="text-green-300">{{ remote_host|default:"localhost" }}</span>
+                    </div>
+                    <div class="flex flex-wrap">
+                        <span class="text-green-500 font-bold min-w-[200px]">SERVER_NAME:</span>
+                        <span class="text-green-300">{{ server_name|default:"localhost" }}</span>
+                    </div>
+                    <div class="flex flex-wrap">
+                        <span class="text-green-500 font-bold min-w-[200px]">SERVER_PORT:</span>
+                        <span class="text-green-300">{{ server_port|default:"8000" }}</span>
+                    </div>
+                    <div class="flex flex-wrap">
+                        <span class="text-green-500 font-bold min-w-[200px]">USER_AGENT:</span>
+                        <span class="text-green-300 break-all">{{ user_agent|default:"Mozilla/5.0" }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer Status -->
+            <div class="mt-10 pt-6 border-t border-green-800 text-center">
+                <div class="text-green-600 text-xs mb-2">
+                    ▂ ▄ ▆ █ REQUEST ANALYSIS COMPLETE █ ▆ ▄ ▂
+                </div>
+                <div class="text-green-500 text-xs">
+                    System Status: <span class="text-green-300 glow">OPERATIONAL</span>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Command Prompt -->
+        <div class="mt-6 flex items-center text-green-400">
+            <span class="text-green-500 mr-2">root@inspector:~$</span>
+            <span class="blink">█</span>
+        </div>
+
+    </div>
+
+</body>
+</html>
