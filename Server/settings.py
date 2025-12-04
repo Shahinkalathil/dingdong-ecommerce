@@ -63,15 +63,18 @@ INSTALLED_APPS = [
     "allauth.account",
     "allauth.socialaccount",
     "allauth.socialaccount.providers.google",
+    'dashboard',
+    'products',
+    'categories',
     'userlogin',
     'home',
-    'products',
     'uProfile',
     'cart',
     'checkout',
     'orders',
     'admin_panel',
-    'dashboard',
+    
+    
 ]
 
 # Site ID Configuration
