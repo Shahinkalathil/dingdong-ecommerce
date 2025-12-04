@@ -9,7 +9,7 @@ from products.models import Brand
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 @login_required(login_url="admin_login")
 @user_passes_test(lambda u: u.is_superuser, login_url="admin_login")
-def admin_dash(request):
+def DashboardHomeView(request):
     User = get_user_model()
     superusers = User.objects.filter(is_superuser=True).values("username", "email")
     current_super = request.user  
@@ -18,6 +18,21 @@ def admin_dash(request):
         "current_super": current_super,   
     }
     return render(request, "admin_panel/index.html", context)
+
+
+"""
+sales_report_view
+
+download_sales_pdf
+
+download_sales_excel
+
+analytics_view
+"""
+
+
+
+
 
 
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)

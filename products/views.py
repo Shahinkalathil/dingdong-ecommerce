@@ -7,6 +7,7 @@ from django.core.files.base import ContentFile
 from django.contrib import messages
 from django.db.models import Q
 from PIL import Image
+from io import BytesIO
 from .models import Category, Product, Brand, ProductVariant, ProductImage
 import base64
 import io
@@ -133,18 +134,36 @@ def category_status(request, id, action):
 
     return redirect("admin_category")
 
+
+
+
+
+# product management
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 @user_passes_test(lambda u: u.is_superuser, login_url="admin_login")
-def admin_products(request):
+def AdminProductListView(request):
     products = Product.objects.prefetch_related("variants__images").all()
     context = {
         "products": products,
     }
-    return render(request, 'admin_panel/product/product_management.html', context)
+    return render(request, 'admin_panel/product/product_management.html', context) # product page
 
+# Product Detail
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 @user_passes_test(lambda u: u.is_superuser, login_url="admin_login")
-def products_search(request):
+def AdminProductDetailView(request, id):
+    product = get_object_or_404(Product, id=id)
+    variants = product.variants.prefetch_related("images").filter(is_listed=True)
+    context ={
+        "product": product,
+        "variants": variants
+    }
+    return render(request, "admin_panel/product/product_variant.html", context) #product listing page
+
+# Product Search
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
+@user_passes_test(lambda u: u.is_superuser, login_url="admin_login")
+def AdminProductsearchView(request):
     keyword = request.GET.get('keyword', "").strip()
     print("Keyword:", keyword)
     product = Product.objects.all()
@@ -159,11 +178,140 @@ def products_search(request):
         "products": products,
         "keyword": keyword,
     }
-    return render(request, "admin_panel/product/product_management.html", context)
+    return render(request, "admin_panel/product/product_management.html", context) #search
 
+# Product Create
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 @user_passes_test(lambda u: u.is_superuser, login_url="admin_login")
-def edit_products(request, product_id):
+def AdminProductCreateView(request):
+    categories = Category.objects.filter(is_listed=True)
+    brands = Brand.objects.filter(is_listed=True)
+    
+    if request.method == "POST":
+        product_name = request.POST.get("product_name", "").strip()
+        product_description = request.POST.get("product_description", "").strip()
+        category_id = request.POST.get("category")
+        brand_id = request.POST.get("brand")
+        errors = {}
+        form_data = request.POST.copy()
+
+        if not product_name:
+            errors["product_name"] = "Product name is required."
+        elif Product.objects.filter(name__iexact=product_name).exists():
+            errors["product_name"] = f"A product with the name '{product_name}' already exists."
+        if not product_description:
+            errors["product_description"] = "Product description is required."
+        if not category_id:
+            errors["category"] = "Please select a category."
+        if not brand_id:
+            errors["brand"] = "Please select a brand."
+
+        variant_prices = request.POST.getlist('variant_price[]')
+        variant_stocks = request.POST.getlist('variant_stock[]')
+        variant_color_names = request.POST.getlist('variant_color_name[]')
+        variant_color_hexs = request.POST.getlist('variant_color_hex[]')
+        
+        cropped_images = {}
+        for i in range(len(variant_prices)):
+            cropped_images[i] = {}
+            for img_num in range(1, 5):
+                field_name = f'variant_image_{img_num}_cropped[]'
+                cropped_data_list = request.POST.getlist(field_name)
+                if i < len(cropped_data_list) and cropped_data_list[i]:
+                    cropped_images[i][img_num] = cropped_data_list[i]
+
+        variant_errors = []
+        for i in range(len(variant_prices)):
+            ve = {}
+
+            try:
+                price = float(variant_prices[i])
+                if price < 0:
+                    ve["price"] = "Price must be a positive number."
+            except (ValueError, IndexError):
+                ve["price"] = "Price must be a number."
+
+            try:
+                stock = int(variant_stocks[i])
+                if stock < 0:
+                    ve["stock"] = "Stock must be a positive integer."
+            except (ValueError, IndexError):
+                ve["stock"] = "Stock must be an integer."
+
+            try:
+                if not variant_color_names[i].strip():
+                    ve["color_name"] = "Color name is required."
+            except IndexError:
+                ve["color_name"] = "Color name is required."
+
+            cropped_image_count = 0
+            if i in cropped_images:
+                for img_num in range(1, 5):
+                    if img_num in cropped_images[i] and cropped_images[i][img_num]:
+                        cropped_image_count += 1
+            
+            if cropped_image_count != 4:
+                ve["images"] = "Exactly 4 cropped images must be provided for this variant."
+            
+            variant_errors.append(ve)
+
+        if errors or any(variant_errors):
+            return render(request, "admin_panel/product/product_add.html", {
+                "errors": errors,
+                "variant_errors": variant_errors,
+                "form_data": form_data,
+                "categories": categories,
+                "brands": brands
+            })
+        
+        category = Category.objects.get(id=category_id)
+        brand = Brand.objects.get(id=brand_id)
+        product = Product.objects.create(
+            name=product_name,
+            description=product_description,
+            category=category,
+            brand=brand,
+            is_listed=True
+        )
+        
+        for i in range(len(variant_prices)):
+            variant = ProductVariant.objects.create(
+                product=product,
+                price=float(variant_prices[i]),
+                stock=int(variant_stocks[i]),
+                color_name=variant_color_names[i],
+                color_code=variant_color_hexs[i],
+            )
+
+            if i in cropped_images:
+                for img_num in range(1, 5):
+                    if img_num in cropped_images[i] and cropped_images[i][img_num]:
+                        try:
+                            image_file = process_base64_image(
+                                cropped_images[i][img_num],
+                                f"{product_name}_variant_{i+1}_img_{img_num}"
+                            )
+                            
+                            if image_file:
+                                ProductImage.objects.create(
+                                    variant=variant,
+                                    image=image_file
+                                )
+                        except Exception as e:
+                            print(f"Error processing cropped image: {e}")
+
+        return redirect("admin_products")
+    
+    context = {
+        "categories": categories,
+        "brands": brands,
+    }
+    return render(request, 'admin_panel/product/product_add.html', context)
+
+# Product Update
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
+@user_passes_test(lambda u: u.is_superuser, login_url="admin_login")
+def AdminProductUpdateView(request, product_id):
     product = get_object_or_404(Product, id=product_id)
     brands = Brand.objects.filter(Q(id=product.brand.id) | Q(is_listed=True))  
     categories = Category.objects.filter(Q(id=product.category.id) | Q(is_listed=True))
@@ -385,134 +533,6 @@ def edit_products(request, product_id):
     }
     return render(request, "admin_panel/product/product_edit.html", context)
 
-@cache_control(no_cache=True, must_revalidate=True, no_store=True)
-@user_passes_test(lambda u: u.is_superuser, login_url="admin_login")
-def add_products(request):
-    categories = Category.objects.filter(is_listed=True)
-    brands = Brand.objects.filter(is_listed=True)
-    
-    if request.method == "POST":
-        product_name = request.POST.get("product_name", "").strip()
-        product_description = request.POST.get("product_description", "").strip()
-        category_id = request.POST.get("category")
-        brand_id = request.POST.get("brand")
-        errors = {}
-        form_data = request.POST.copy()
-
-        if not product_name:
-            errors["product_name"] = "Product name is required."
-        elif Product.objects.filter(name__iexact=product_name).exists():
-            errors["product_name"] = f"A product with the name '{product_name}' already exists."
-        if not product_description:
-            errors["product_description"] = "Product description is required."
-        if not category_id:
-            errors["category"] = "Please select a category."
-        if not brand_id:
-            errors["brand"] = "Please select a brand."
-
-        variant_prices = request.POST.getlist('variant_price[]')
-        variant_stocks = request.POST.getlist('variant_stock[]')
-        variant_color_names = request.POST.getlist('variant_color_name[]')
-        variant_color_hexs = request.POST.getlist('variant_color_hex[]')
-        
-        cropped_images = {}
-        for i in range(len(variant_prices)):
-            cropped_images[i] = {}
-            for img_num in range(1, 5):
-                field_name = f'variant_image_{img_num}_cropped[]'
-                cropped_data_list = request.POST.getlist(field_name)
-                if i < len(cropped_data_list) and cropped_data_list[i]:
-                    cropped_images[i][img_num] = cropped_data_list[i]
-
-        variant_errors = []
-        for i in range(len(variant_prices)):
-            ve = {}
-
-            try:
-                price = float(variant_prices[i])
-                if price < 0:
-                    ve["price"] = "Price must be a positive number."
-            except (ValueError, IndexError):
-                ve["price"] = "Price must be a number."
-
-            try:
-                stock = int(variant_stocks[i])
-                if stock < 0:
-                    ve["stock"] = "Stock must be a positive integer."
-            except (ValueError, IndexError):
-                ve["stock"] = "Stock must be an integer."
-
-            try:
-                if not variant_color_names[i].strip():
-                    ve["color_name"] = "Color name is required."
-            except IndexError:
-                ve["color_name"] = "Color name is required."
-
-            cropped_image_count = 0
-            if i in cropped_images:
-                for img_num in range(1, 5):
-                    if img_num in cropped_images[i] and cropped_images[i][img_num]:
-                        cropped_image_count += 1
-            
-            if cropped_image_count != 4:
-                ve["images"] = "Exactly 4 cropped images must be provided for this variant."
-            
-            variant_errors.append(ve)
-
-        if errors or any(variant_errors):
-            return render(request, "admin_panel/product/product_add.html", {
-                "errors": errors,
-                "variant_errors": variant_errors,
-                "form_data": form_data,
-                "categories": categories,
-                "brands": brands
-            })
-        
-        category = Category.objects.get(id=category_id)
-        brand = Brand.objects.get(id=brand_id)
-        product = Product.objects.create(
-            name=product_name,
-            description=product_description,
-            category=category,
-            brand=brand,
-            is_listed=True
-        )
-        
-        for i in range(len(variant_prices)):
-            variant = ProductVariant.objects.create(
-                product=product,
-                price=float(variant_prices[i]),
-                stock=int(variant_stocks[i]),
-                color_name=variant_color_names[i],
-                color_code=variant_color_hexs[i],
-            )
-
-            if i in cropped_images:
-                for img_num in range(1, 5):
-                    if img_num in cropped_images[i] and cropped_images[i][img_num]:
-                        try:
-                            image_file = process_base64_image(
-                                cropped_images[i][img_num],
-                                f"{product_name}_variant_{i+1}_img_{img_num}"
-                            )
-                            
-                            if image_file:
-                                ProductImage.objects.create(
-                                    variant=variant,
-                                    image=image_file
-                                )
-                        except Exception as e:
-                            print(f"Error processing cropped image: {e}")
-
-        return redirect("admin_products")
-    
-    context = {
-        "categories": categories,
-        "brands": brands,
-    }
-    return render(request, 'admin_panel/product/product_add.html', context)
-
-
 def process_base64_image(base64_data, filename):
     """
     Process base64 image data and return a Django file object
@@ -558,12 +578,5 @@ def validate_cropped_image(base64_data, expected_width=400, expected_height=500)
     except:
         return False
 
-def product_variant(request, id):
-    product = get_object_or_404(Product, id=id)
-    variants = product.variants.prefetch_related("images").filter(is_listed=True)
 
-    return render(request, "admin_panel/product/product_variant.html", {
-        "product": product,
-        "variants": variants
-    })
 
