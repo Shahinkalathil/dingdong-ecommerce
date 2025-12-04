@@ -20,13 +20,17 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 urlpatterns = [
-    path('', include('home.urls')),
     path('admin/', admin.site.urls),
-    path('auth/', include('userlogin.urls')),
-    path('accounts/', include("allauth.urls")), 
-    path('admin-products/', include('products.urls')),
-    path('admin-panel/', include('admin_panel.urls')),
+    path('', include('home.urls')),
+    path('accounts/', include("allauth.urls")),  #google Auth
     path('dashboard/', include('dashboard.urls')),
+    path('admin-products/', include('products.urls')),
+    path('admin-categories/', include('categories.urls')),
+    path('admin-panel/', include('admin_panel.urls')),
+    path('auth/', include('userlogin.urls')),
+
+
+    
     path('profile/', include('uProfile.urls')),
     path('cart/', include('cart.urls')),
     path('checkout/', include('checkout.urls')),
