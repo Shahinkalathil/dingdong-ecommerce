@@ -66,6 +66,9 @@ INSTALLED_APPS = [
     'dashboard',
     'products',
     'categories',
+    'brands',
+
+    
     'userlogin',
     'home',
     'uProfile',
