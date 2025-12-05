@@ -25,6 +25,8 @@ urlpatterns = [
     path('accounts/', include("allauth.urls")),  #google Auth
     path('dashboard/', include('dashboard.urls')),
     path('admin-products/', include('products.urls')),
+    path('admin-brands/', include('brands.urls')),
+
     path('admin-categories/', include('categories.urls')),
     path('admin-panel/', include('admin_panel.urls')),
     path('auth/', include('userlogin.urls')),
