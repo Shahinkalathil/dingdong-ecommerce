@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login
 from django.urls import reverse
 from userlogin.models import CustomUser
@@ -8,9 +8,7 @@ from django.views.decorators.cache import cache_control
 from django.db.models import Q
 from django.core.paginator import Paginator
 from django.contrib.auth import get_user_model
-from django.http import JsonResponse
-from django.db.models import Q, Sum, Count
-from orders.models import Order, OrderItem
+from django.db.models import Q
 
 
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
@@ -118,144 +116,3 @@ def users_search(request):
     }
     return render(request, "admin_panel/user_list/users_management.html", context)
 
-
-@cache_control(no_cache=True, must_revalidate=True, no_store=True)
-@user_passes_test(lambda u: u.is_superuser, login_url="admin_login")
-def admin_order(request):
-    search_query = request.GET.get('search', '')
-    status_filter = request.GET.get('status', '')
-    orders = Order.objects.select_related('user', 'address').prefetch_related('items').all()
-    if search_query:
-        orders = orders.filter(
-            Q(order_number__icontains=search_query) |
-            Q(user__username__icontains=search_query) |
-            Q(user__email__icontains=search_query)
-        )
-    if status_filter:
-        orders = orders.filter(order_status=status_filter)
-    
-    total_revenue = Order.objects.filter(
-        payment_status='paid'
-    ).aggregate(total=Sum('total_amount'))['total'] or 0
-    
-    completed_orders = Order.objects.filter(order_status='delivered').count()
-    
-    pending_payment_amount = Order.objects.filter(
-        payment_status='pending'
-    ).aggregate(total=Sum('total_amount'))['total'] or 0
-    
-    pending_payment_count = Order.objects.filter(payment_status='pending').count()
-    
-    payment_stats = Order.objects.values('payment_status').annotate(
-        count=Count('id')
-    )
-    
-    paid_count = next((item['count'] for item in payment_stats if item['payment_status'] == 'paid'), 0)
-    pending_count = next((item['count'] for item in payment_stats if item['payment_status'] == 'pending'), 0)
-    failed_count = next((item['count'] for item in payment_stats if item['payment_status'] == 'failed'), 0)
-    
-    from django.core.paginator import Paginator
-    paginator = Paginator(orders, 2) 
-    page_number = request.GET.get('page', 1)
-    page_obj = paginator.get_page(page_number)
-    
-    filter_status_choices = [
-        ('confirmed', 'Confirmed'),
-        ('shipped', 'Shipped'),
-        ('out_for_delivery', 'Out for Delivery'),
-        ('delivered', 'Delivered'),
-        ('cancelled', 'Cancelled'),
-    ]
-    
-    context = {
-        'orders': page_obj,
-        'total_revenue': total_revenue,
-        'completed_orders': completed_orders,
-        'pending_payment_amount': pending_payment_amount,
-        'pending_payment_count': pending_payment_count,
-        'paid_count': paid_count,
-        'pending_count': pending_count,
-        'failed_count': failed_count,
-        'search_query': search_query,
-        'status_filter': status_filter,
-        'status_choices': filter_status_choices,
-    }
-    
-    return render(request, "admin_panel/order_management/order_management.html", context)
-
-
-@cache_control(no_cache=True, must_revalidate=True, no_store=True)
-@user_passes_test(lambda u: u.is_superuser, login_url="admin_login")
-def update_order_status(request, order_id):
-    if request.method == 'POST':
-        try:
-            order = get_object_or_404(Order, id=order_id)
-            new_status = request.POST.get('status')
-            current_status = order.order_status
-            if current_status == 'cancelled':
-                return JsonResponse({
-                    'success': False,
-                    'message': 'Cannot modify cancelled orders.'
-                }, status=400)
-            
-            if new_status == 'cancelled':
-                return JsonResponse({
-                    'success': False,
-                    'message': 'Admins cannot cancel orders.'
-                }, status=400)
-
-            if current_status == 'delivered':
-                return JsonResponse({
-                    'success': False,
-                    'message': 'Cannot modify delivered orders.'
-                }, status=400)
-
-            valid_transitions = {
-                'confirmed': ['shipped'],
-                'shipped': ['out_for_delivery'],
-                'out_for_delivery': ['delivered'],
-            }
-
-            if current_status not in valid_transitions:
-                return JsonResponse({
-                    'success': False,
-                    'message': f'Cannot update order from {current_status} status.'
-                }, status=400)
-            
-            if new_status not in valid_transitions[current_status]:
-                return JsonResponse({
-                    'success': False,
-                    'message': f'Invalid status transition from {current_status} to {new_status}.'
-                }, status=400)
-
-            order.order_status = new_status
-            payment_updated = False
-
-            if new_status == 'delivered':
-                order.payment_status = 'paid'
-                order.is_paid = True
-                payment_updated = True
-
-            order.save(update_fields=['order_status', 'payment_status', 'is_paid', 'updated_at'])
-
-            return JsonResponse({
-                'success': True,
-                'message': f'Order status updated to {new_status.replace("_", " ").title()}',
-                'new_status': new_status,
-                'payment_updated': payment_updated  
-            })
-        
-        except Exception as e:
-            return JsonResponse({
-                'success': False,
-                'message': f'An error occurred: {str(e)}'
-            }, status=500)
-    
-    return JsonResponse({'success': False, 'message': 'Invalid request'}, status=400)
-
-
-@cache_control(no_cache=True, must_revalidate=True, no_store=True)
-@user_passes_test(lambda u: u.is_superuser, login_url="admin_login")
-def admin_order_details(request, order_id):
-    order = get_object_or_404(Order, id=order_id)
-    return render(request, 'admin_panel/order_management/order_detail.html', {'order': order})
