@@ -299,7 +299,7 @@
         confirmBtn.textContent = 'Updating...';
         confirmBtn.disabled = true;
 
-        fetch(`/admin_panel/order-status/${currentOrderId}/`, {
+        fetch(`/orders/admin-management/update-status/${currentOrderId}/`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
