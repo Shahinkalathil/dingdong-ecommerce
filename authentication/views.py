@@ -4,13 +4,12 @@ from django.contrib.auth import authenticate, login, get_user_model
 from django.utils import timezone
 from django.utils.timezone import now
 from datetime import timedelta
-import random
-import re
-import uuid
 from .models import CustomUser
 from .utils import send_otp_email, send_forget_password_mail, redirect_authenticated
 from django.views.decorators.cache import never_cache
-
+import random
+import re
+import uuid
 
 @redirect_authenticated
 @never_cache

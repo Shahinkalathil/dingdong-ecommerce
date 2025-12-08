@@ -4,8 +4,8 @@ from django.db import transaction
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from cart.models import Cart
-from uProfile.utils import get_user_addresses, get_default_address
-from uProfile.models import Address
+from profiles.utils import get_user_addresses, get_default_address
+from profiles.models import Address
 from orders.models import Order, OrderItem, OrderAddress
 
 

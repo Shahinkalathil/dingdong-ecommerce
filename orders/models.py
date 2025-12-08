@@ -1,6 +1,6 @@
 from django.db import models
 from products.models import ProductVariant
-from uProfile.models import Address
+from profiles.models import Address
 import uuid
 from django.contrib.auth import get_user_model
 from datetime import datetime
