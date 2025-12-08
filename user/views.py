@@ -1,45 +1,18 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login
 from django.urls import reverse
-from userlogin.models import CustomUser
+from authentication.models import CustomUser
 from django.contrib import messages
 from django.contrib.auth.decorators import user_passes_test
 from django.views.decorators.cache import cache_control
 from django.db.models import Q
 from django.core.paginator import Paginator
 from django.contrib.auth import get_user_model
-from django.db.models import Q
+from django.contrib.auth import authenticate, login
 
-
-@cache_control(no_cache=True, must_revalidate=True, no_store=True)
-def admin_login(request):
-    if request.user.is_authenticated and request.user.is_superuser:
-        return redirect('admin_index')
-
-    if request.method == "POST":
-        email = request.POST.get("email")
-        password = request.POST.get("password")
-        user = authenticate(request, username=email, password=password)
-        if user is not None:
-            if user.is_superuser:
-                login(request, user)
-                return redirect("admin_index")
-            else:
-                messages.error(request, "You don't have access to the Admin Panel.")
-        else:
-            messages.error(request, "Invalid username or password.")
-
-    return render(request, "admin_panel/admin_login.html")
-
+# Create your views here.
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 @user_passes_test(lambda u: u.is_superuser, login_url="admin_login")
-def admin_logout(request):
-    request.session.flush()
-    return redirect("admin_login")
-
-@cache_control(no_cache=True, must_revalidate=True, no_store=True)
-@user_passes_test(lambda u: u.is_superuser, login_url="admin_login")
-def users(request):
+def AdminUserListView(request):
     User = get_user_model()
     superusers = User.objects.filter(is_superuser=True).values("username", "email")
     current_super = request.user
@@ -60,7 +33,7 @@ def users(request):
 
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 @user_passes_test(lambda u: u.is_superuser, login_url="admin_login")
-def user_status(request, id):
+def AdminUserStatusView(request, id):
     try:
         user = CustomUser.objects.get(id=id)
         if not user.is_superuser:  
@@ -84,7 +57,7 @@ def user_status(request, id):
 
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 @user_passes_test(lambda u: u.is_superuser, login_url="admin_login")
-def users_search(request):
+def AdminUserSearchView(request):
     keyword = request.GET.get("keyword", "").strip()
     message = None
     users = CustomUser.objects.none() 
@@ -115,4 +88,30 @@ def users_search(request):
         "total_results": users.count() if keyword else 0,
     }
     return render(request, "admin_panel/user_list/users_management.html", context)
+
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
+def admin_login(request):
+    if request.user.is_authenticated and request.user.is_superuser:
+        return redirect('admin_index')
+
+    if request.method == "POST":
+        email = request.POST.get("email")
+        password = request.POST.get("password")
+        user = authenticate(request, username=email, password=password)
+        if user is not None:
+            if user.is_superuser:
+                login(request, user)
+                return redirect("admin_index")
+            else:
+                messages.error(request, "You don't have access to the Admin Panel.")
+        else:
+            messages.error(request, "Invalid username or password.")
+
+    return render(request, "admin_panel/admin_login.html")
+
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
+@user_passes_test(lambda u: u.is_superuser, login_url="admin_login")
+def admin_logout(request):
+    request.session.flush()
+    return redirect("admin_login")
 

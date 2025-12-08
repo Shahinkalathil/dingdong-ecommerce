@@ -1,7 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from userlogin.models import CustomUser
+from authentication.models import CustomUser
 from django.http import JsonResponse
 from django.contrib.auth import update_session_auth_hash
 from .models import Address

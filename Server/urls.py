@@ -20,23 +20,23 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 urlpatterns = [
+    # Django Admin
     path('admin/', admin.site.urls),
-    path('', include('home.urls')),
-    path('accounts/', include("allauth.urls")),  #google Auth
-    path('dashboard/', include('dashboard.urls')),
-    path('admin-products/', include('products.urls')),
-    path('admin-brands/', include('brands.urls')),
-
-    path('admin-categories/', include('categories.urls')),
-    path('admin-panel/', include('admin_panel.urls')),
-    path('auth/', include('userlogin.urls')),
-
-
+    # Google OAuth (allauth)
+    path('accounts/', include('allauth.urls')),
     
-    path('profile/', include('uProfile.urls')),
+    path('', include('home.urls')),
+    path('dashboard/', include('dashboard.urls')),
+    path('user/', include('user.urls')),
+    path('products/', include('products.urls')),
+    path('orders/', include('orders.urls')),
+    path('brands/', include('brands.urls')),
+    path('categories/', include('categories.urls')),
+    path('auth/', include('authentication.urls')),
+    path('profile/', include('profiles.urls')),
     path('cart/', include('cart.urls')),
     path('checkout/', include('checkout.urls')),
-    path('orders/', include('orders.urls')),
+    
 ]
 
 # Serve static files during development

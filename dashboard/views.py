@@ -1,10 +1,8 @@
-from django.shortcuts import render,redirect, get_object_or_404
+from django.shortcuts import render
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.views.decorators.cache import cache_control
 from django.contrib.auth import get_user_model
-from django.contrib import messages
-from django.db.models import Q
-from products.models import Brand
+
 
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 @login_required(login_url="admin_login")

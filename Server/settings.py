@@ -39,7 +39,7 @@ CSRF_TRUSTED_ORIGINS = [
     "http://localhost:8000",
 ]
 
-AUTH_USER_MODEL = "userlogin.CustomUser"
+AUTH_USER_MODEL = "authentication.CustomUser"
 
 # Email Backend for Gmail (or use console for testing)
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
@@ -67,15 +67,15 @@ INSTALLED_APPS = [
     'products',
     'categories',
     'brands',
-
+    'orders',
+    'user', 
     
-    'userlogin',
+    'authentication',
     'home',
-    'uProfile',
+    'profiles',
     'cart',
     'checkout',
-    'orders',
-    'admin_panel',
+    
     
     
 ]
@@ -214,8 +214,8 @@ SOCIALACCOUNT_PROVIDERS = {
 }
 
 # Custom Adapters
-ACCOUNT_ADAPTER = 'userlogin.adapters.CustomAccountAdapter'
-SOCIALACCOUNT_ADAPTER = 'userlogin.adapters.CustomSocialAccountAdapter'
+ACCOUNT_ADAPTER = 'authentication.adapters.CustomAccountAdapter'
+SOCIALACCOUNT_ADAPTER = 'authentication.adapters.CustomSocialAccountAdapter'
 
 # Redirect URLs
 LOGIN_REDIRECT_URL = '/'
