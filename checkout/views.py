@@ -50,7 +50,6 @@ def checkout(request):
 
     return render(request, 'user_side/checkout/checkout.html', context)
 
-
 @require_POST
 @transaction.atomic
 def place_order(request):
@@ -144,7 +143,6 @@ def place_order(request):
             'success': False,
             'message': 'An error occurred while placing your order. Please try again.'
         }, status=500)
-
 
 def set_default_address(request, address_id):
     address = get_object_or_404(Address, id=address_id, user=request.user)

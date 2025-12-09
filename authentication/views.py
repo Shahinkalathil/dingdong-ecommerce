@@ -10,6 +10,7 @@ from django.views.decorators.cache import never_cache
 import random
 import re
 import uuid
+from django.contrib.auth import logout
 
 @redirect_authenticated
 @never_cache
@@ -129,9 +130,13 @@ def sign_up(request):
             })
 
         otp_sent = str(random.randint(100000, 999999))
-        otp_expiry = now() + timedelta(seconds=60)
+        otp_expiry = now() + timedelta(minutes=5)
+
+        print("✅ OTP Generated:", otp_sent)
+        print("✅ OTP Expiry:", otp_expiry)
 
         if existing_user and not existing_user.is_active:
+            print("♻️ Updating existing inactive user")
             existing_user.fullname = fullname
             existing_user.phone = phone
             existing_user.set_password(password)
@@ -140,23 +145,36 @@ def sign_up(request):
             existing_user.save()
             user = existing_user
         else:
+            print("🆕 Creating new user")
             user = CustomUser.objects.create_user(
                 username=email,
+                fullname=fullname,
                 phone=phone,
                 email=email,
                 password=password,
-                fullname=fullname,
                 is_active=False,
                 otp=otp_sent,
                 otp_expiry=otp_expiry,
             )
+        print("✅ USER SAVED IN DB")
+        print("ID:", user.id)
+        print("Email:", user.email)
+        print("OTP:", user.otp)
+        print("Active:", user.is_active)
+
 
         send_otp_email(email, otp_sent)
+        print("📧 OTP EMAIL SENT")
+
+
         request.session["email"] = email
         request.session["user_id"] = user.id
+
+        print("✅ SESSION STORED:", request.session["user_id"])
+        print("➡️ Redirecting to OTP page\n")
+
         return redirect("otp")
     return render(request, 'user_side/auth/sign_up.html')
-
 
 def otp(request):
     if "user_id" not in request.session:
@@ -175,6 +193,7 @@ def otp(request):
     if request.method == "POST":
         entered_otp = request.POST.get("otp")
         if entered_otp != user.otp:
+            user.save()
             messages.error(request, "Invalid OTP")
             return redirect("otp")
         else:
@@ -183,7 +202,6 @@ def otp(request):
             user.save()
 
             login(request, user, backend="django.contrib.auth.backends.ModelBackend")
-
             return redirect("home")
 
     return render(request, "user_side/auth/otp.html", {"otp_expiry": otp_expiry, "user": user})
@@ -213,11 +231,10 @@ def sign_in(request):
         return render(request, 'user_side/auth/sign_in.html', {'email': email})
     return render(request, 'user_side/auth/sign_in.html', {'email': email})
 
-
 def resend_otp(request):
     user = CustomUser.objects.get(id=request.session["user_id"])
     otp_sent = str(random.randint(100000, 999999))
-    otp_expiry = now() + timedelta(seconds=60)
+    otp_expiry = now() + timedelta(minutes=5)
 
     user.otp = otp_sent
     user.otp_expiry = otp_expiry
@@ -225,7 +242,6 @@ def resend_otp(request):
     send_otp_email(user.email, otp_sent)
     messages.success(request, "A new OTP has been sent to your email")
     return redirect("otp")
-
 
 def forgot_email_check(request):
     email_sent = False
@@ -244,7 +260,6 @@ def forgot_email_check(request):
         else:
             messages.error(request, "Email not registered. Sign in?")
     return render(request, "user_side/auth/forgot_email_check.html", {"email_sent": email_sent, "reset_done": reset_done})
-
 
 def reset_password(request):
     token = request.GET.get("token", "")
@@ -270,6 +285,10 @@ def reset_password(request):
         messages.success(request, "Password reset successfully!")
         return redirect("sign_in")
     return render(request, "user_side/auth/reset_password.html", {"token": token})
+
+def user_logout(request):
+    logout(request)
+    return redirect('sign_in')
 
 def check(request):
     """

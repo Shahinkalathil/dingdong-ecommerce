@@ -12,7 +12,7 @@ import logging
 from django.views.decorators.http import require_http_methods
 
 @login_required
-def overview(request):
+def OverView(request):
     user = request.user
     addresses = user.addresses.all()
     total_orders = Order.objects.count()
@@ -33,7 +33,7 @@ def overview(request):
 logger = logging.getLogger(__name__)
 @login_required
 @require_http_methods(["POST"])
-def change_password(request):
+def ChangePasswordView(request):
     """
     Handle password change via AJAX request
     """
@@ -92,9 +92,8 @@ def change_password(request):
             'errors': {'general': 'An error occurred. Please try again.'}
         })
 
-
 @login_required
-def edit_profile(request, id):
+def ProfileUpdateView(request, id):
     user = get_object_or_404(CustomUser, id=id)
     if user != request.user:
         return redirect("profile")
@@ -135,7 +134,7 @@ def edit_profile(request, id):
     return render(request, 'user_side/profile/edit_profile.html', context) 
 
 @login_required
-def add_address(request):
+def AddressCreateView(request):
     next_url = request.GET.get('next', None)
     if request.method == 'POST':
         errors = {}
@@ -307,7 +306,7 @@ def add_address(request):
     return render(request, 'user_side/profile/add_address.html', {'next': next_url,})
 
 @login_required
-def edit_address(request, address_id):
+def AddressUpdateView(request, address_id):
     address = get_object_or_404(Address, id=address_id, user=request.user)
     next_url = request.GET.get('next', reverse('profile'))
     
@@ -472,9 +471,8 @@ def set_default_address(request, address_id):
     
     return redirect('profile')
 
-
 @login_required
-def delete_address(request, address_id):
+def AddressDeleteView(request, address_id):
     """
     Delete an address with proper handling of default address transfer
     """
