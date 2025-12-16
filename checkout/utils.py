@@ -1,4 +1,5 @@
 from cart.models import Cart
+
 def get_user_cart_items(user):
     cart, _ = Cart.objects.get_or_create(user=user)
     cart_items = (

@@ -189,7 +189,7 @@ def otp(request):
     
 
     otp_expiry = user.otp_expiry
-
+    otp = user.otp
     if request.method == "POST":
         entered_otp = request.POST.get("otp")
         if entered_otp != user.otp:
@@ -204,7 +204,7 @@ def otp(request):
             login(request, user, backend="django.contrib.auth.backends.ModelBackend")
             return redirect("home")
 
-    return render(request, "user_side/auth/otp.html", {"otp_expiry": otp_expiry, "user": user})
+    return render(request, "user_side/auth/otp.html", {"otp_expiry": otp_expiry, "user": user, "otp":otp})
 
 @redirect_authenticated
 @never_cache

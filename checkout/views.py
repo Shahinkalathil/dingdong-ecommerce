@@ -17,7 +17,6 @@ def checkout(request):
         .prefetch_related('variant__images')
         .all()
     )
-    
     if not cart_items:
         messages.warning(request, 'Your cart is empty.')
         return redirect('cart')
