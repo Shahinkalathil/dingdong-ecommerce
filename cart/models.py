@@ -53,8 +53,6 @@ class CartItem(models.Model):
         verbose_name = 'Cart Item'
         verbose_name_plural = 'Cart Items'
 
-
-
 class WishlistItem(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='wishlist_items')
     variant = models.ForeignKey(ProductVariant, on_delete=models.CASCADE)

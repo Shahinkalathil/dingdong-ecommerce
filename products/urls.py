@@ -11,5 +11,6 @@ urlpatterns = [
     path("admin-management/detail/<int:id>/", views.AdminProductDetailView, name="product_variant"),  
 
     # User-side product 
-    
+    path('', views.products, name='products'),
+    path('details/<int:product_id>/', views.product_detail, name='product_detail'),
 ]
