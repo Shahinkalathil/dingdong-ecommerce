@@ -69,15 +69,11 @@ INSTALLED_APPS = [
     'brands',
     'orders',
     'user', 
-    
     'authentication',
     'home',
     'profiles',
     'cart',
     'checkout',
-    
-    
-    
 ]
 
 # Site ID Configuration
@@ -91,8 +87,8 @@ else:
     GOOGLE_REDIRECT_URI = config("GOOGLE_REDIRECT_URI")
 
 # Razorpay TEST KEYS Configuration
-RAZORPAY_KEY_ID = config("RAZORPAY_KEY_ID")
-RAZORPAY_KEY_SECRET = config("RAZORPAY_KEY_SECRET")
+RAZORPAY_KEY_ID = os.getenv('RAZORPAY_KEY_ID')
+RAZORPAY_KEY_SECRET = os.getenv('RAZORPAY_KEY_SECRET')
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

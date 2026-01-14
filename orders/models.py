@@ -32,6 +32,8 @@ class Order(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     order_number = models.CharField(max_length=50, unique=True, editable=False)
+    razorpay_order_id = models.CharField(max_length=100, blank=True, null=True)
+    razorpay_payment_id = models.CharField(max_length=100, blank=True, null=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='orders')
     address = models.ForeignKey(Address, on_delete=models.SET_NULL, null=True)
     payment_id = models.CharField(max_length=100, blank=True, null=True)  

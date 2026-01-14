@@ -1,0 +1,107 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Order Success</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-50">
+
+<div class="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4">
+    <div class="max-w-md w-full bg-white rounded-3xl shadow-2xl p-8 text-center">
+        
+        <!-- Success Icon -->
+        <div class="relative mb-6">
+            <div class="mx-auto w-20 h-20 bg-green-100 rounded-full flex items-center justify-center">
+                <svg class="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+                </svg>
+            </div>
+        </div>
+        
+        <!-- Success Message -->
+        <div class="mb-6">
+            <h1 class="text-3xl font-bold text-gray-800 mb-2">Order Confirmed!</h1>
+            <p class="text-gray-600 mb-1">Thank you for your purchase</p>
+            <p class="text-sm text-gray-500">We've received your order and will process it shortly</p>
+        </div>
+        
+        <!-- Order Details -->
+        <div class="bg-gray-50 rounded-2xl p-6 mb-6">
+            <div class="flex justify-between items-center mb-3">
+                <span class="text-gray-600 font-medium">Order Number:</span>
+                <span class="text-gray-800 font-bold">#{{ order.order_number }}</span>
+            </div>
+            <div class="flex justify-between items-center mb-3">
+                <span class="text-gray-600 font-medium">Total Amount:</span>
+                <span class="text-green-600 font-bold text-xl">₹{{ order.total_amount }}</span>
+            </div>
+            <div class="flex justify-between items-center mb-3">
+                <span class="text-gray-600 font-medium">Payment Method:</span>
+                <span class="text-gray-800 font-medium">
+                    {% if order.payment_method == 'cod' %}
+                        Cash on Delivery
+                    {% elif order.payment_method == 'online' %}
+                        Online Payment
+                    {% else %}
+                        {{ order.payment_method|title }}
+                    {% endif %}
+                </span>
+            </div>
+            <div class="flex justify-between items-center mb-3">
+                <span class="text-gray-600 font-medium">Payment Status:</span>
+                <span class="inline-block {% if order.is_paid %}bg-green-100 text-green-800{% else %}bg-yellow-100 text-yellow-800{% endif %} text-sm px-3 py-1 rounded-full font-medium">
+                    {% if order.is_paid %}Paid{% else %}Pending{% endif %}
+                </span>
+            </div>
+            <div class="flex justify-between items-center">
+                <span class="text-gray-600 font-medium">Order Status:</span>
+                <span class="inline-block bg-blue-100 text-blue-800 text-sm px-3 py-1 rounded-full font-medium">
+                    {{ order.get_order_status_display }}
+                </span>
+            </div>
+        </div>
+        
+        <!-- Order Items Summary -->
+        <div class="bg-gray-50 rounded-2xl p-6 mb-6 text-left">
+            <h3 class="font-semibold text-gray-800 mb-3">Order Items</h3>
+            {% for item in order.items.all %}
+            <div class="flex justify-between items-center mb-2">
+                <span class="text-sm text-gray-600">{{ item.product_name }} ({{ item.color_name }}) x{{ item.quantity }}</span>
+                <span class="text-sm font-medium text-gray-800">₹{{ item.subtotal }}</span>
+            </div>
+            {% endfor %}
+            <div class="border-t border-gray-300 mt-3 pt-3">
+                <div class="flex justify-between items-center mb-1">
+                    <span class="text-sm text-gray-600">Subtotal:</span>
+                    <span class="text-sm text-gray-800">₹{{ order.subtotal }}</span>
+                </div>
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-sm text-gray-600">Delivery Charge:</span>
+                    <span class="text-sm text-gray-800">₹{{ order.delivery_charge }}</span>
+                </div>
+                <div class="flex justify-between items-center font-bold">
+                    <span class="text-gray-800">Total:</span>
+                    <span class="text-green-600">₹{{ order.total_amount }}</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Actions -->
+        <div class="space-y-3">
+            <a href="{% url 'order' %}" class="block w-full bg-white text-black border border-black py-3 px-4 rounded-2xl font-semibold hover:bg-gray-50 transition-all duration-300">
+                Track Order
+            </a>
+            <a href="{% url 'home' %}" class="block w-full bg-black text-white py-3 px-4 rounded-2xl font-semibold hover:bg-gray-800 transition-all duration-300">
+                Continue Shopping
+            </a>
+        </div>
+
+    </div>
+</div>
+
+
+</body>
+</html>

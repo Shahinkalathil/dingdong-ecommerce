@@ -1,510 +1,193 @@
 {% extends 'user_side/base.html' %}
 {% load static %}
 
-{% block title %}DINGDONG - Checkout{% endblock %}
-{% block Script %}
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#000000',
-                        secondary: '#6b7280',
-                        accent: '#f59e0b',
-                        success: '#10b981',
-                        danger: '#ef4444'
-                    }
-                }
-            }
-        }
-    </script>
-{% endblock %}
+{% block title %}Checkout{% endblock %}
 
 {% block content %}
-<body class="bg-gray-50 font-sans">
-    <div class="min-h-screen py-8">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-             
-            <div class="text-center mb-8">
-                <h1 class="text-3xl font-bold text-gray-900">CHECKOUT</h1>
-            </div>
-
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold mb-8">Checkout</h1>
+    
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Left Section: Address & Payment -->
+        <div class="lg:col-span-2 space-y-6">
+            
+            <!-- Delivery Address Section -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-semibold">Delivery Address</h2>
+                    <a href="{% url 'add_address' %}?next=checkout" class="text-blue-600 hover:underline text-sm">
+                        + Add New Address
+                    </a>
+                </div>
                 
-                <div class="lg:col-span-2 space-y-8">
-                    
-                    <!-- Order items -->
-                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                        <h2 class="text-xl font-semibold text-gray-900 mb-6">Order Items</h2>
-                        
-                        {% for item in cart_items %}
-                        <div class="flex items-center space-x-4 pb-6 border-b border-gray-200 mb-6 last:mb-0 last:pb-0 last:border-b-0">
-                            {% if item.first_image %}
-                                <img src="{{ item.first_image.image.url }}" 
-                                    alt="{{ item.variant.product.name }}" 
-                                    class="w-20 h-20 object-cover rounded-lg border border-gray-200">
-                            {% else %}
-                                <div class="w-20 h-20 bg-gray-200 rounded-lg border border-gray-200 flex items-center justify-center">
-                                    <span class="text-gray-400 text-xs">No image</span>
-                                </div>
+                {% if default_address %}
+                <div class="border border-gray-300 rounded-lg p-4 bg-gray-50">
+                    <div class="flex justify-between items-start">
+                        <div class="flex-1">
+                            <p class="font-semibold text-lg">{{ default_address.full_name }}</p>
+                            <p class="text-gray-600 mt-2">{{ default_address.flat_house }}, {{ default_address.area_street }}</p>
+                            {% if default_address.landmark %}
+                            <p class="text-gray-600">Landmark: {{ default_address.landmark }}</p>
                             {% endif %}
-
-                            <div class="flex-1">
-                                <h3 class="font-semibold text-gray-900">
-                                    {{ item.variant.product.name }}
-                                </h3>
-
-                                <div class="flex items-center space-x-2 mb-3">
-                                    <span class="text-sm text-gray-600">Color:</span>
-                                    <div class="flex items-center space-x-2">
-                                        <div class="w-5 h-5 rounded-full border border-gray-300" 
-                                            style="background-color: {{ item.variant.color_code }}"
-                                            title="{{ item.variant.color_name }}"></div>
-                                        <span class="text-sm text-gray-700">
-                                            {{ item.variant.color_name }}
-                                        </span>
-                                    </div>
-                                </div>
-
-                                <div class="flex items-center mt-2">
-                                    <span class="text-sm text-gray-600">Qty: {{ item.quantity }}</span>
-                                    <span class="mx-2 text-gray-400">|</span>
-                                    <span class="text-sm font-medium text-gray-900">
-                                        ₹{{ item.variant.price }} × {{ item.quantity }}
-                                    </span>
-                                    <span class="mx-2 text-gray-400">|</span>
-                                    <span class="text-sm font-medium text-gray-900">
-                                        ₹{{ item.get_subtotal }}
-                                    </span>
-                                </div>
-                            </div>
+                            <p class="text-gray-600">{{ default_address.town_city }}, {{ default_address.state }} - {{ default_address.pincode }}</p>
+                            <p class="text-gray-600 mt-2">Phone: {{ default_address.mobile_number }}</p>
                         </div>
-                        {% endfor %}
-                    </div>
-
-                    <!-- Delivery address -->
-                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                        <div class="flex items-center justify-between mb-6">
-                            <h2 class="text-xl font-semibold text-gray-900">1. Delivery Address</h2>
-                            <a href="{% url 'add_address' %}?next={% url 'checkout' %}" 
-                            class="text-blue-600 hover:text-blue-800 text-sm font-medium">
-                                + Add New Address
+                        <div class="flex flex-col gap-2">
+                            <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded">Default</span>
+                            <a href="{% url 'edit_address' default_address.id %}?next=checkout" 
+                               class="text-blue-600 hover:underline text-xs text-center">
+                                Edit
                             </a>
                         </div>
-
-                        {% if addresses %}
-                            <div class="space-y-4">
-                                {% for address in addresses %}
-                                    <div class="{% if address.is_default %}border-2 border-blue-500 bg-blue-50{% else %}border border-gray-200 hover:border-gray-300{% endif %} rounded-lg p-4 transition-colors duration-200">
-                                        <div class="flex items-start justify-between">
-                                            <div class="flex items-start space-x-3">
-                                                <div>
-                                                    <div class="font-semibold text-gray-900">{{ address.full_name }}</div>
-                                                    <div class="text-gray-700">{{ address.flat_house }}, {{ address.area_street }}</div>
-                                                    {% if address.landmark %}
-                                                        <div class="text-gray-700">{{ address.landmark }}</div>
-                                                    {% endif %}
-                                                    <div class="text-gray-700">{{ address.town_city }}, {{ address.state }} - {{ address.pincode }}</div>
-                                                    <div class="text-sm text-gray-600 mt-2">Phone: {{ address.mobile_number }}</div>
-
-                                                    {% if address.is_default %}
-                                                        <span class="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full mt-2">
-                                                            Default Address
-                                                        </span>
-                                                    {% endif %}
-                                                </div>
-                                            </div>
-
-                                            <div class="flex space-x-2">
-                                                {% if not address.is_default %}
-                                                    <a href="{% url 'set_default_address' address.id %}?next={% url 'checkout' %}" 
-                                                    class="text-blue-600 hover:text-blue-800 text-sm font-medium">Select</a>
-                                                {% endif %}
-                                                <a href="{% url 'edit_address' address.id %}?next={% url 'checkout' %}" 
-                                                class="text-gray-600 hover:text-gray-800 text-sm font-medium">Edit</a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                {% endfor %}
-                            </div>
-                        {% else %}
-                            <p class="text-gray-500">No addresses found. Please add one.</p>
-                        {% endif %}
                     </div>
-
-                    <!-- Payment method -->
-                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                        <h2 class="text-xl font-semibold text-gray-900 mb-6">2. Payment Method</h2>
-
-                        <div class="space-y-4">
-                            <!-- Cash on Delivery -->
-                            <label class="flex items-start space-x-3 border-2 border-blue-500 bg-blue-50 rounded-lg p-4 cursor-pointer">
-                            <input type="radio" name="payment_method" value="cod" checked class="mt-1 text-blue-600 focus:ring-blue-500">
-                            <div>
-                                <div class="font-medium text-gray-900">Cash on Delivery (COD)</div>
-                                <p class="text-sm text-gray-600">Pay when you receive your order.</p>
+                </div>
+                
+                <!-- Change Address -->
+                {% if addresses.count > 1 %}
+                <div class="mt-4">
+                    <button onclick="toggleAddresses()" class="text-blue-600 hover:underline text-sm">
+                        Change Address
+                    </button>
+                    
+                    <div id="addressList" class="hidden mt-4 space-y-3">
+                        {% for address in addresses %}
+                        {% if address.id != default_address.id %}
+                        <div class="border border-gray-300 rounded-lg p-4 hover:border-blue-500 transition-colors">
+                            <div class="flex justify-between items-start">
+                                <div class="flex-1">
+                                    <p class="font-semibold">{{ address.full_name }}</p>
+                                    <p class="text-sm text-gray-600">{{ address.flat_house }}, {{ address.area_street }}</p>
+                                    <p class="text-sm text-gray-600">{{ address.town_city }}, {{ address.state }} - {{ address.pincode }}</p>
+                                    <p class="text-sm text-gray-600">Phone: {{ address.mobile_number }}</p>
+                                </div>
+                                <div class="flex flex-col gap-2">
+                                    <a href="{% url 'set_default_address' address.id %}?next=checkout" 
+                                       class="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700 text-center whitespace-nowrap">
+                                        Deliver Here
+                                    </a>
+                                    <a href="{% url 'edit_address' address.id %}?next=checkout" 
+                                       class="text-blue-600 hover:underline text-xs text-center">
+                                        Edit
+                                    </a>
+                                </div>
                             </div>
-                            </label>
-
-                        <!--  Credit / Debit Card -->
-                        <label class="flex items-start space-x-3 border border-gray-200 hover:border-blue-400 rounded-lg p-4 cursor-pointer transition">
-                            <input type="radio" name="payment_method" value="card" class="mt-1 text-blue-600 focus:ring-blue-500">
-                            <div>
-                                <div class="font-medium text-gray-900">Wallet</div>
-                                <p class="text-sm text-gray-600">you can pay with wallet</p>
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+                {% else %}
+                <div class="text-center py-8">
+                    <p class="text-red-600 mb-4">No delivery address found. Please add an address.</p>
+                    <a href="{% url 'add_address' %}?next=checkout" class="inline-block bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">
+                        Add Address
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Payment Method Section -->
+            {% if default_address %}
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-xl font-semibold mb-4">Payment Method</h2>
+                
+                <form method="POST" action="{% url 'place_order' %}" id="checkoutForm">
+                    {% csrf_token %}
+                    
+                    <div class="space-y-3">
+                        <!-- Cash on Delivery -->
+                        <label class="flex items-center p-4 border border-gray-300 rounded-lg cursor-pointer hover:border-blue-500 transition-colors">
+                            <input type="radio" name="payment_method" value="cod" checked class="w-4 h-4 text-blue-600">
+                            <div class="ml-3">
+                                <p class="font-medium">Cash on Delivery</p>
+                                <p class="text-sm text-gray-600">Pay when you receive</p>
                             </div>
                         </label>
-
-                        <!--  Online Payment (UPI / PayPal) -->
-                        <label class="flex items-start space-x-3 border border-gray-200 hover:border-blue-400 rounded-lg p-4 cursor-pointer transition">
-                            <input type="radio" name="payment_method" value="online" class="mt-1 text-blue-600 focus:ring-blue-500">
-                            <div>
-                                <div class="font-medium text-gray-900">Online Payment</div>
-                                <p class="text-sm text-gray-600">Pay instantly via UPI, Google Pay, or PayPal.</p>
+                        
+                        <!-- Online Payment -->
+                        <label class="flex items-center p-4 border border-gray-300 rounded-lg cursor-pointer hover:border-blue-500 transition-colors">
+                            <input type="radio" name="payment_method" value="online" class="w-4 h-4 text-blue-600">
+                            <div class="ml-3">
+                                <p class="font-medium">Online Payment (Razorpay)</p>
+                                <p class="text-sm text-gray-600">UPI, Cards, NetBanking, Wallets</p>
                             </div>
-                        </label> 
+                        </label>
                     </div>
+                    
+                    <!-- Place Order Button -->
+                    <button type="submit" 
+                            class="w-full mt-6 bg-black text-white py-4 rounded-lg font-semibold hover:bg-gray-800 transition-all duration-300">
+                        Place Order
+                    </button>
+                </form>
+            </div>
+            {% endif %}
+            
+        </div>
+        
+        <!-- Right Section: Order Summary -->
+        <div class="lg:col-span-1">
+            <div class="bg-white rounded-lg shadow-md p-6 sticky top-4">
+                <h2 class="text-xl font-semibold mb-4">Order Summary</h2>
+                
+                <!-- Cart Items -->
+                <div class="space-y-4 mb-4 max-h-64 overflow-y-auto">
+                    {% for item in cart_items %}
+                    <div class="flex items-center space-x-3">
+                        {% if item.first_image %}
+                        <img src="{{ item.first_image.image.url }}" alt="{{ item.variant.product.name }}" 
+                             class="w-16 h-16 object-cover rounded">
+                        {% else %}
+                        <div class="w-16 h-16 bg-gray-200 rounded flex items-center justify-center">
+                            <span class="text-gray-400 text-xs">No Image</span>
+                        </div>
+                        {% endif %}
+                        <div class="flex-1">
+                            <p class="font-medium text-sm">{{ item.variant.product.name }}</p>
+                            <p class="text-xs text-gray-600">{{ item.variant.color_name }} | Qty: {{ item.quantity }}</p>
+                            <p class="text-sm font-semibold">₹{{ item.get_subtotal }}</p>
+                        </div>
                     </div>
+                    {% endfor %}
                 </div>
-
-                <!-- Order summary -->
-                <div class="lg:col-span-1">
-                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 sticky top-8">
-                        
-                        <div class="text-right mb-6">
-                            <span class="text-2xl font-bold text-gray-900">₹{{ subtotal }}</span>
-                        </div>
-
-                        <div class="bg-gray-50 rounded-lg p-4 mb-6">
-                            <h3 class="text-lg font-semibold text-gray-900 mb-4">Order Summary</h3>
-                            
-                            <div class="space-y-3 text-sm">
-                                <div class="flex justify-between">
-                                    <span class="text-gray-600">Sub Total</span>
-                                    <span class="font-medium">₹{{ subtotal }}</span>
-                                </div>
-                                <div class="flex justify-between">
-                                    <span class="text-gray-600">Delivery charge</span>
-                                    {% if delivery_charge == 0 %}
-                                        <span class="font-medium text-green-600">Free</span>
-                                    {% else %}
-                                        <span class="font-medium">₹{{ delivery_charge }}</span>
-                                    {% endif %}
-                                </div>
-                                {% if subtotal < 500 %}
-                                <p class="text-xs text-amber-600">Add ₹{{ free_delivery }} more for free delivery!</p>
-                                {% endif %}
-                                <hr class="border-gray-300">
-                                <div class="flex justify-between text-lg font-bold">
-                                    <span>Total</span>
-                                    <span>₹{{ total }}</span>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Place Order Form -->
-                        <form id="placeOrderForm">
-                            {% csrf_token %}
-                            <button type="submit" id="placeOrderBtn" class="w-full bg-yellow-400 text-white py-4 px-6 rounded-lg font-semibold text-lg hover:bg-yellow-500 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-2 shadow-lg">
-                                Place Order
-                            </button>
-                        </form>
-                        
-                        <div class="mt-4 text-center">
-                            <div class="flex items-center justify-center space-x-2 text-sm text-gray-600">
-                                <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
-                                </svg>
-                                <span>Secure checkout</span>
-                            </div>
-                        </div>
+                
+                <!-- Price Breakdown -->
+                <div class="border-t border-gray-300 pt-4 space-y-2">
+                    <div class="flex justify-between text-gray-700">
+                        <span>Subtotal ({{ cart_items.count }} items)</span>
+                        <span>₹{{ subtotal }}</span>
+                    </div>
+                    
+                    <div class="flex justify-between text-gray-700">
+                        <span>Delivery Charge</span>
+                        <span>₹{{ delivery_charge }}</span>
+                    </div>
+                    
+                    {% if free_delivery > 0 %}
+                    <div class="bg-green-50 border border-green-200 rounded p-2 text-sm text-green-700">
+                        Add ₹{{ free_delivery }} more for FREE delivery!
+                    </div>
+                    {% else %}
+                    <div class="bg-green-50 border border-green-200 rounded p-2 text-sm text-green-700">
+                        ✓ You've got FREE delivery!
+                    </div>
+                    {% endif %}
+                    
+                    <div class="flex justify-between font-bold text-lg border-t border-gray-300 pt-2 mt-2">
+                        <span>Total</span>
+                        <span>₹{{ total }}</span>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+</div>
 
-    <!-- Loading Overlay -->
-    <div id="loadingOverlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
-        <div class="bg-white rounded-lg p-8 text-center">
-            <div class="animate-spin rounded-full h-16 w-16 border-b-4 border-yellow-400 mx-auto mb-4"></div>
-            <p class="text-gray-700 font-medium">Processing your order...</p>
-        </div>
-    </div>
-
-    <!-- Order confirmation modal -->
-    <div id="orderModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 hidden">
-        <div id="modalContent" class="bg-white rounded-3xl shadow-2xl p-6 max-w-sm w-full text-center relative transform scale-0 transition-transform duration-300">
-            
-            <!-- Success icon -->
-            <div class="relative mb-6">
-                <div class="mx-auto w-16 h-16 relative">
-                    <svg class="w-16 h-16 mx-auto" viewBox="0 0 100 100">
-                        <circle 
-                            cx="50" 
-                            cy="50" 
-                            r="45" 
-                            fill="none" 
-                            stroke="#10b981" 
-                            stroke-width="8"
-                            class="opacity-0"
-                            id="successCircle"
-                            style="stroke-dasharray: 314; stroke-dashoffset: 314;"
-                        />
-                        <path 
-                            fill="none" 
-                            stroke="#10b981" 
-                            stroke-width="8" 
-                            stroke-linecap="round" 
-                            stroke-linejoin="round" 
-                            d="M30 50l10 10 25 -25"
-                            class="opacity-0"
-                            id="successCheck"
-                            style="stroke-dasharray: 100; stroke-dashoffset: 100;"
-                        />
-                    </svg>
-                </div>
-                <div class="absolute inset-0 rounded-full bg-green-100 animate-pulse -z-10"></div>
-            </div>
-            
-            <!-- Success message -->
-            <div class="mb-6 opacity-0" id="modalMessage">
-                <h1 class="text-2xl font-bold text-gray-800 mb-2">Order Confirmed!</h1>
-                <p class="text-gray-600 text-sm mb-1">Thank you for your purchase</p>
-                <p class="text-xs text-gray-500">We've received your order and will process it shortly</p>
-            </div>
-            
-            <!-- Order details -->
-            <div class="bg-gray-50 rounded-2xl p-4 mb-6 opacity-0" id="modalDetails">
-                <div class="flex justify-between items-center mb-2">
-                    <span class="text-gray-600 font-medium text-sm">Order Number:</span>
-                    <span class="text-gray-800 font-bold text-sm" id="orderNumber"></span>
-                </div>
-                <div class="flex justify-between items-center mb-2">
-                    <span class="text-gray-600 font-medium text-sm">Total Amount:</span>
-                    <span class="text-green-600 font-bold text-base" id="orderTotal"></span>
-                </div>
-                <div class="flex justify-between items-center">
-                    <span class="text-gray-600 font-medium text-sm">Estimated Delivery:</span>
-                    <span class="text-gray-800 font-medium text-sm">3-5 Business Days</span>
-                </div>
-            </div>
-            
-            <!-- Status timeline -->
-            <div class="mb-6 opacity-0" id="modalTimeline">
-                <h3 class="text-base font-semibold text-gray-800 mb-3">Order Status</h3>
-                <div class="flex items-center justify-between">
-                    <div class="flex flex-col items-center">
-                        <div class="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center mb-1">
-                            <svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                            </svg>
-                        </div>
-                        <span class="text-xs text-green-600 font-medium">Confirmed</span>
-                    </div>
-                    <div class="flex-1 h-1 bg-gray-200 mx-2 relative">
-                        <div class="absolute inset-y-0 left-0 w-0 bg-green-500 rounded transition-all duration-1000" id="progressBar"></div>
-                    </div>
-                    <div class="flex flex-col items-center">
-                        <div class="w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center mb-1">
-                            <svg class="w-3 h-3 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                                <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"/>
-                            </svg>
-                        </div>
-                        <span class="text-xs text-gray-400 font-medium">Processing</span>
-                    </div>
-                    <div class="flex-1 h-1 bg-gray-200 mx-2"></div>
-                    <div class="flex flex-col items-center">
-                        <div class="w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center mb-1">
-                            <svg class="w-3 h-3 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                                <path d="M8 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"/>
-                                <path d="M3 4a1 1 0 00-1 1v10a1 1 0 001 1h1.05a2.5 2.5 0 014.9 0H10a1 1 0 001-1V5a1 1 0 00-1-1H3zM14 7a1 1 0 00-1 1v6.05A2.5 2.5 0 0115.95 16H17a1 1 0 001-1V8a1 1 0 00-1-1h-3z"/>
-                            </svg>
-                        </div>
-                        <span class="text-xs text-gray-400 font-medium">Delivered</span>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Modal actions -->
-            <div class="space-y-3 opacity-0" id="modalActions">
-                <a href="{% url 'order' %}" class="block w-full bg-white text-black border border-black py-3 px-4 rounded-2xl font-semibold text-sm transition-all duration-300">
-                    track order
-                </a>
-                <a href="{% url 'home' %}" class="block w-full bg-black text-white py-3 px-4 rounded-2xl font-semibold text-sm hover:bg-gray-800 transition-all duration-300">
-                    Continue Shopping
-                </a>
-            </div>
-        </div>
-    </div>
-
-    <!-- Add this modal HTML to your template (bottom of body) -->
-    <div id="messageModal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-    <div class="bg-white rounded-2xl p-6 w-96 shadow-xl text-center">
-        <h2 id="messageTitle" class="text-xl font-semibold mb-2 text-gray-800">Notification</h2>
-        <p id="messageText" class="text-gray-600 mb-4"></p>
-        <button onclick="closeMessageModal()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">OK</button>
-    </div>
-    </div>
 <script>
-    // --- Utility: Get CSRF token ---
-    function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
-            }
-        }
-        return cookieValue;
-    }
-
-    // --- Modal Controls ---
-    function showMessageModal(title, message) {
-        document.getElementById('messageTitle').textContent = title;
-        document.getElementById('messageText').textContent = message;
-        document.getElementById('messageModal').classList.remove('hidden');
-    }
-
-    function closeMessageModal() {
-        document.getElementById('messageModal').classList.add('hidden');
-    }
-
-    // --- Show Order Success Modal with Animation ---
-    function showOrderModal(orderData) {
-        const modal = document.getElementById('orderModal');
-        const modalContent = document.getElementById('modalContent');
-        const modalMessage = document.getElementById('modalMessage');
-        const modalDetails = document.getElementById('modalDetails');
-        const modalTimeline = document.getElementById('modalTimeline');
-        const modalActions = document.getElementById('modalActions');
-        const progressBar = document.getElementById('progressBar');
-        const successCircle = document.getElementById('successCircle');
-        const successCheck = document.getElementById('successCheck');
-        const orderNumber = document.getElementById('orderNumber');
-        const orderTotal = document.getElementById('orderTotal');
-        
-        // Set order data
-        orderNumber.textContent = '#' + orderData.order_number;
-        orderTotal.textContent = '₹' + orderData.total_amount;
-        
-        // Show modal
-        modal.classList.remove('hidden');
-        
-        // Animate modal entrance
-        setTimeout(() => {
-            modalContent.classList.remove('scale-0');
-            modalContent.classList.add('scale-100');
-            
-            // Animate SVG circle
-            setTimeout(() => {
-                successCircle.style.opacity = '1';
-                successCircle.style.strokeDashoffset = '0';
-                successCircle.style.transition = 'stroke-dashoffset 1s ease-in-out';
-            }, 200);
-            
-            // Animate SVG checkmark
-            setTimeout(() => {
-                successCheck.style.opacity = '1';
-                successCheck.style.strokeDashoffset = '0';
-                successCheck.style.transition = 'stroke-dashoffset 0.6s ease-in-out';
-            }, 800);
-            
-            // Fade in message section
-            setTimeout(() => { 
-                modalMessage.style.opacity = '1';
-                modalMessage.style.transition = 'opacity 0.8s ease-out';
-            }, 1000);
-            
-            // Fade in details section
-            setTimeout(() => { 
-                modalDetails.style.opacity = '1';
-                modalDetails.style.transition = 'opacity 0.8s ease-out';
-            }, 1200);
-            
-            // Fade in timeline section
-            setTimeout(() => { 
-                modalTimeline.style.opacity = '1';
-                modalTimeline.style.transition = 'opacity 0.8s ease-out';
-            }, 1400);
-            
-            // Fade in action buttons
-            setTimeout(() => { 
-                modalActions.style.opacity = '1';
-                modalActions.style.transition = 'opacity 0.8s ease-out';
-            }, 1600);
-            
-            // Progress bar animation
-            setTimeout(() => {
-                progressBar.style.width = '50%';
-            }, 1800);
-            
-            
-        }, 100);
-    }
-
-    // --- Form Submission Logic ---
-    const form = document.getElementById('placeOrderForm');
-    const loadingOverlay = document.getElementById('loadingOverlay');
-    const placeOrderBtn = document.getElementById('placeOrderBtn');
-
-    if (form) {
-        form.addEventListener('submit', async function(e) {
-            e.preventDefault();
-
-            // Show loading overlay
-            loadingOverlay.classList.remove('hidden');
-            placeOrderBtn.disabled = true;
-            placeOrderBtn.textContent = 'Processing...';
-
-            try {
-                const response = await fetch('/checkout/place-order/', { // Update with your actual URL
-                    method: 'POST',
-                    headers: {
-                        'X-CSRFToken': getCookie('csrftoken'),
-                        'Content-Type': 'application/json',
-                    },
-                });
-
-                const data = await response.json();
-
-                // Hide loading overlay
-                loadingOverlay.classList.add('hidden');
-
-                if (data.success) {
-                    // Show success modal with order details
-                    showOrderModal({
-                        order_number: data.order.order_number || 'N/A',
-                        total_amount: data.order.total_amount || '0'
-                    });
-                } else {
-                    // Show error message
-                    showMessageModal('Order Failed ⚠️', data.message || 'An error occurred while placing your order.');
-                    placeOrderBtn.disabled = false;
-                    placeOrderBtn.textContent = 'Place Order';
-                }
-            } catch (error) {
-                // Hide loading and show error
-                loadingOverlay.classList.add('hidden');
-                console.error('Order placement error:', error);
-                showMessageModal('Network Error', 'Please check your internet connection and try again.');
-                placeOrderBtn.disabled = false;
-                placeOrderBtn.textContent = 'Place Order';
-            }
-        });
-    }
-
-    // Optional: Close modal on clicking outside
-    document.getElementById('orderModal')?.addEventListener('click', function(e) {
-        if (e.target === this) {
-            // Don't close automatically - let user click buttons
-            this.classList.add('hidden');
-        }
-    });
+function toggleAddresses() {
+    const addressList = document.getElementById('addressList');
+    addressList.classList.toggle('hidden');
+}
 </script>
 {% endblock %}
