@@ -17,6 +17,7 @@ def checkout(request):
         .prefetch_related('variant__images')
         .all()
     )
+    
     if not cart_items:
         messages.warning(request, 'Your cart is empty.')
         return redirect('cart')
@@ -46,7 +47,6 @@ def checkout(request):
         'total': total,
         'free_delivery': free_delivery,
     }
-
     return render(request, 'user_side/checkout/checkout.html', context)
 
 @require_POST
@@ -142,6 +142,7 @@ def place_order(request):
             'success': False,
             'message': 'An error occurred while placing your order. Please try again.'
         }, status=500)
+
 
 def set_default_address(request, address_id):
     address = get_object_or_404(Address, id=address_id, user=request.user)

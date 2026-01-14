@@ -69,15 +69,11 @@ INSTALLED_APPS = [
     'brands',
     'orders',
     'user', 
-    
     'authentication',
     'home',
     'profiles',
     'cart',
     'checkout',
-    
-    
-    
 ]
 
 # Site ID Configuration

@@ -341,11 +341,11 @@
 
     <!-- Add this modal HTML to your template (bottom of body) -->
     <div id="messageModal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-    <div class="bg-white rounded-2xl p-6 w-96 shadow-xl text-center">
-        <h2 id="messageTitle" class="text-xl font-semibold mb-2 text-gray-800">Notification</h2>
-        <p id="messageText" class="text-gray-600 mb-4"></p>
-        <button onclick="closeMessageModal()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">OK</button>
-    </div>
+        <div class="bg-white rounded-2xl p-6 w-96 shadow-xl text-center">
+            <h2 id="messageTitle" class="text-xl font-semibold mb-2 text-gray-800">Notification</h2>
+            <p id="messageText" class="text-gray-600 mb-4"></p>
+            <button onclick="closeMessageModal()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">OK</button>
+        </div>
     </div>
 <script>
     // --- Utility: Get CSRF token ---
@@ -498,11 +498,8 @@
             }
         });
     }
-
-    // Optional: Close modal on clicking outside
     document.getElementById('orderModal')?.addEventListener('click', function(e) {
         if (e.target === this) {
-            // Don't close automatically - let user click buttons
             this.classList.add('hidden');
         }
     });

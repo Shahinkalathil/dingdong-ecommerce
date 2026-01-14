@@ -41,8 +41,7 @@ def cart(request):
     return render(request, 'user_side/cart/cart.html', context)
 
 def add_to_cart(request, product_variant_id):
-    variant = get_object_or_404(ProductVariant, id=product_variant_id)
-    
+    variant = get_object_or_404(ProductVariant, id=product_variant_id)  
     if not variant.is_listed or not variant.product.is_listed:
         messages.error(request, 'This product is not available.')
         return redirect('product_detail', product_id=variant.product.id)
@@ -58,7 +57,6 @@ def add_to_cart(request, product_variant_id):
         variant=variant,
         defaults={'quantity': 1}
     )
-    
     if not item_created:
         if cart_item.quantity < variant.stock:
             cart_item.quantity += 1
@@ -77,7 +75,6 @@ def add_to_cart(request, product_variant_id):
         messages.info(request, 'Item removed from wishlist.')
     except WishlistItem.DoesNotExist:
         pass
-    
     return redirect('cart')
 
 @require_POST
