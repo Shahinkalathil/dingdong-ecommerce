@@ -60,7 +60,7 @@ def HomeView(request):
                 'in_stock': default_variant.stock > 0,
                 'available_variants': list(available_variants)
             })
-    paginator = Paginator(products_data, 2)
+    paginator = Paginator(products_data, 8)
     page = request.GET.get('page', 1)
     
     try:
@@ -70,7 +70,7 @@ def HomeView(request):
     except EmptyPage:
         products_page = paginator.page(paginator.num_pages)
     
-    context = {
+    context = { 
         'banners': banners,
         'categories': featured_categories,
         'brands': brands,
