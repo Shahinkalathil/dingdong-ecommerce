@@ -98,7 +98,3 @@ def categories(request):
     }
     return render(request, 'user_side/brands/category.html', context)
 
-def wishlist(request):
-    return render(request, 'user_side/wishlist/wishlist.html')
-
-
