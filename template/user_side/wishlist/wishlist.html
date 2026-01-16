@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wishlist</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+    <div class="min-h-screen py-8 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-4xl mx-auto">
+            <!-- Header -->
+            <h1 class="text-3xl font-bold text-center text-gray-900 mb-8">WISHLIST</h1>
+
+            <!-- Table Container -->
+            <div class="bg-white rounded-lg shadow overflow-hidden">
+                <!-- Table Header -->
+                <div class="grid grid-cols-12 gap-4 px-6 py-4 bg-gray-50 border-b border-gray-200">
+                    <div class="col-span-1"></div>
+                    <div class="col-span-3">
+                        <p class="text-sm font-semibold text-gray-700">Product name</p>
+                    </div>
+                    <div class="col-span-2">
+                        <p class="text-sm font-semibold text-gray-700">Price</p>
+                    </div>
+                    <div class="col-span-2">
+                        <p class="text-sm font-semibold text-gray-700">Stock status</p>
+                    </div>
+                    <div class="col-span-2">
+                        <p class="text-sm font-semibold text-gray-700">Actions</p>
+                    </div>
+                    <div class="col-span-2"></div>
+                </div>
+
+                <!-- Product Row 1 -->
+                <div class="grid grid-cols-12 gap-4 px-6 py-6 border-b border-gray-200 items-center hover:bg-gray-50 transition">
+                    <div class="col-span-1">
+                        <button class="text-gray-400 hover:text-gray-600 text-lg font-bold">×</button>
+                    </div>
+                    <div class="col-span-3 flex items-center gap-4">
+                        <img src="https://images.unsplash.com/photo-1523170335684-f042070fe1c9?w=80&h=80&fit=crop" alt="Watch" class="w-16 h-16 object-cover rounded">
+                        <span class="text-sm font-medium text-gray-900">AB ROOX H1 QUOD INDIA WRIT</span>
+                    </div>
+                    <div class="col-span-2">
+                        <p class="text-sm font-semibold text-gray-900">₹1,499.00 INR</p>
+                    </div>
+                    <div class="col-span-2">
+                        <span class="text-sm font-semibold text-green-600">in stock</span>
+                    </div>
+                    <div class="col-span-2">
+                        <button class="bg-black text-white px-4 py-2 rounded text-sm font-medium hover:bg-gray-800 transition">
+                            Add to cart
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Product Row 2 -->
+                <div class="grid grid-cols-12 gap-4 px-6 py-6 items-center hover:bg-gray-50 transition">
+                    <div class="col-span-1">
+                        <button class="text-gray-400 hover:text-gray-600 text-lg font-bold">×</button>
+                    </div>
+                    <div class="col-span-3 flex items-center gap-4">
+                        <img src="https://images.unsplash.com/photo-1579123768342-f8163215a929?w=80&h=80&fit=crop" alt="Watch" class="w-16 h-16 object-cover rounded">
+                        <span class="text-sm font-medium text-gray-900">CAT Mens Wbatch- Tokyo AJ-1261-94 127</span>
+                    </div>
+                    <div class="col-span-2">
+                        <p class="text-sm font-semibold text-gray-900">₹1,800.00</p>
+                    </div>
+                    <div class="col-span-2">
+                        <span class="text-sm font-semibold text-green-600">in stock</span>
+                    </div>
+                    <div class="col-span-2">
+                        <button class="bg-black text-white px-4 py-2 rounded text-sm font-medium hover:bg-gray-800 transition">
+                            Add to cart
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
