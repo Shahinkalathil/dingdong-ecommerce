@@ -5,9 +5,6 @@ urlpatterns = [
     path('', views.HomeView, name='home'),
     path('Repair-and-Service', views.RepairServiceView, name="Repair_and_Service"),
    
-
-   
-    path('wishlist/', views.wishlist, name='wishlist'),
     path('brands/', views.brands, name='brands_list'),
     path('categories', views.categories, name='categories'),
     

@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
-from .models import Cart, CartItem, WishlistItem
+from .models import Cart, CartItem
 from products.models import ProductVariant
 
 
@@ -218,3 +218,4 @@ def remove_from_cart(request, item_id):
             'success': False,
             'message': 'An error occurred. Please try again.'
         }, status=500)
+    
