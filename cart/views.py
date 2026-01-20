@@ -209,3 +209,4 @@ def remove_from_cart(request, item_id):
             'success': False,
             'message': 'An error occurred. Please try again.'
         }, status=500)
+    
