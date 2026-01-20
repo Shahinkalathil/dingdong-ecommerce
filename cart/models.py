@@ -52,3 +52,4 @@ class CartItem(models.Model):
         unique_together = ['cart', 'variant']  
         verbose_name = 'Cart Item'
         verbose_name_plural = 'Cart Items'
+

@@ -66,15 +66,6 @@ def add_to_cart(request, product_variant_id):
             messages.warning(request, f'Cannot add more. Only {variant.stock} items available in stock.')
     else:
         messages.success(request, f'{variant.product.name} added to cart successfully.')
-    try:
-        wishlist_item = WishlistItem.objects.get(
-            user=request.user,
-            variant=variant
-        )
-        wishlist_item.delete()
-        messages.info(request, 'Item removed from wishlist.')
-    except WishlistItem.DoesNotExist:
-        pass
     return redirect('cart')
 
 @require_POST
