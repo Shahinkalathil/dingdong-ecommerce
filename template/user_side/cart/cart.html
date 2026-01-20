@@ -26,9 +26,6 @@
     <div class="min-h-screen py-8">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             
-            <!-- Messages Container for Popups -->
-            <div id="messagePopups" class="fixed top-4 right-4 space-y-2 z-50"></div>
-
             <!-- Cart Header -->
             <div class="flex items-center justify-between mb-8">
                 <h1 class="text-3xl font-bold text-gray-900">Shopping Cart</h1>
@@ -337,97 +334,6 @@ document.addEventListener('DOMContentLoaded', function() {
         return cookieValue;
     }
     const csrftoken = getCookie('csrftoken');
-
-    // Message popup handling
-    const messagePopupsContainer = document.getElementById('messagePopups');
-    let activeQuantityMessage = null;
-    let quantityUpdateTimer = null;
-    
-    function showMessagePopup(message, tag, isQuantityUpdate = false) {
-        const bgColor = {
-            'success': 'bg-green-100 text-green-800 border-green-300',
-            'error': 'bg-red-100 text-red-800 border-red-300',
-            'warning': 'bg-yellow-100 text-yellow-800 border-yellow-300',
-            'info': 'bg-blue-100 text-blue-800 border-blue-300'
-        }[tag] || 'bg-blue-100 text-blue-800 border-blue-300';
-
-        if (isQuantityUpdate && activeQuantityMessage) {
-            const messageText = activeQuantityMessage.querySelector('.message-text');
-            messageText.textContent = message;
-            
-            clearTimeout(quantityUpdateTimer);
-            quantityUpdateTimer = setTimeout(() => {
-                closeMessagePopup(activeQuantityMessage);
-                activeQuantityMessage = null;
-            }, 3000);
-            
-            return;
-        }
-
-        const popup = document.createElement('div');
-        popup.className = `w-80 bg-white rounded-lg shadow-xl border p-4 transform transition-all duration-300 ${bgColor} opacity-0 scale-0`;
-        popup.innerHTML = `
-            <div class="flex items-center justify-between mb-2">
-                <span class="text-sm font-semibold">${tag.charAt(0).toUpperCase() + tag.slice(1)}</span>
-                <button class="close-message text-gray-400 hover:text-gray-600">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
-                </button>
-            </div>
-            <p class="text-sm message-text">${message}</p>
-        `;
-
-        messagePopupsContainer.appendChild(popup);
-
-        setTimeout(() => {
-            popup.classList.remove('scale-0', 'opacity-0');
-            popup.classList.add('scale-100', 'opacity-100');
-        }, 100);
-
-        if (isQuantityUpdate) {
-            activeQuantityMessage = popup;
-            quantityUpdateTimer = setTimeout(() => {
-                closeMessagePopup(popup);
-                activeQuantityMessage = null;
-            }, 1000);
-        } else {
-            setTimeout(() => {
-                closeMessagePopup(popup);
-            }, 5000);
-        }
-
-        popup.querySelector('.close-message').addEventListener('click', () => {
-            if (isQuantityUpdate) {
-                activeQuantityMessage = null;
-                clearTimeout(quantityUpdateTimer);
-            }
-            closeMessagePopup(popup);
-        });
-    }
-
-    function closeMessagePopup(popup) {
-        popup.classList.remove('scale-100', 'opacity-100');
-        popup.classList.add('scale-0', 'opacity-0');
-        setTimeout(() => {
-            if (popup.parentNode) {
-                popup.parentNode.removeChild(popup);
-            }
-        }, 300);
-    }
-
-    // Show Django messages on page load
-    const messages = [
-        {% for message in messages %}
-            {
-                text: "{{ message|escapejs }}",
-                tag: "{{ message.tags|escapejs }}"
-            }{% if not forloop.last %},{% endif %}
-        {% endfor %}
-    ];
-    messages.forEach(msg => {
-        showMessagePopup(msg.text, msg.tag);
-    });
 
     // Update cart totals
     function updateCartTotals(data) {

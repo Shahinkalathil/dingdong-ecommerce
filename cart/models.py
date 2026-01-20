@@ -53,14 +53,3 @@ class CartItem(models.Model):
         verbose_name = 'Cart Item'
         verbose_name_plural = 'Cart Items'
 
-class WishlistItem(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='wishlist_items')
-    variant = models.ForeignKey(ProductVariant, on_delete=models.CASCADE)
-    added_at = models.DateTimeField(auto_now_add=True)
-    
-    class Meta:
-        unique_together = ['user', 'variant']
-        ordering = ['-added_at']
-    
-    def __str__(self):
-        return f"{self.user.username} - {self.variant.product.name}"
