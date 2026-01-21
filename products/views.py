@@ -5,6 +5,7 @@ from django.core.files.base import ContentFile
 from django.contrib import messages
 from django.db.models import Q
 from PIL import Image
+from wishlist.models import WishlistItem
 from .models import Category, Product, Brand, ProductVariant, ProductImage
 from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
@@ -116,6 +117,7 @@ def product_detail(request, product_id):
         variants = ProductVariant.objects.filter(product=product, is_listed=True).prefetch_related('images')
         if not variants.exists():
             return redirect('products')
+            
         variant_id = request.GET.get("variant")
         if variant_id:
             try:
@@ -124,6 +126,13 @@ def product_detail(request, product_id):
                 default_variant = variants.first()
         else:
             default_variant = variants.first()
+
+        # Get wishlist variants for current user
+        wishlist_variants = []
+        if request.user.is_authenticated:
+            wishlist_variants = WishlistItem.objects.filter(
+                user=request.user
+            ).values_list("variant_id", flat=True)
 
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             variant_data = {
@@ -148,10 +157,7 @@ def product_detail(request, product_id):
         discount_percentage = round(((original_price - default_variant.price) / original_price) * 100)
         current_variant_stock = default_variant.stock
         total_stock = sum(variant.stock for variant in variants)
-        related_products = Product.objects.filter(
-            category=product.category,
-            is_listed=True
-        ).exclude(id=product.id).prefetch_related('variants__images')[:4]
+        related_products = Product.objects.filter(category=product.category,is_listed=True).exclude(id=product.id).prefetch_related('variants__images')[:4]
 
         related_products_data = []
         for related_product in related_products:
@@ -185,6 +191,7 @@ def product_detail(request, product_id):
             })
 
         context = {
+            "wishlist_variants": wishlist_variants,
             'product': product,
             'variants': variants,
             'variants_data': variants_data,  
@@ -224,7 +231,9 @@ def product_detail(request, product_id):
     except Product.DoesNotExist:
         return render(request, "errors/404.html", status=404)
     except Exception as e:
+        print(e)
         return redirect('products')
+
     
 
 # product management

@@ -98,3 +98,7 @@ def categories(request):
     }
     return render(request, 'user_side/brands/category.html', context)
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 6925381 (feat: whislist button funtionly in the product_listing page complted with error handling)
