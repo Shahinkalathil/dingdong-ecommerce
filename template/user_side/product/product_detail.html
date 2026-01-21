@@ -4,6 +4,20 @@
 {% block title %}{{ product.name }} - {{ product.brand.name }} - DINGDONG{% endblock %}
 
 {% block content %}
+    <!-- Toast Notification Container -->
+    <div id="toastContainer" class="fixed top-20 right-4 z-50 space-y-2"></div>
+
+    <!-- Messages Display -->
+    {% if messages %}
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                {% for message in messages %}
+                    showToast("{{ message }}", "{{ message.tags }}");
+                {% endfor %}
+            });
+        </script>
+    {% endif %}
+
     <!-- Breadcrumb -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         <nav class="text-sm text-gray-500">
@@ -16,8 +30,6 @@
             <span class="text-gray-900">{{ product.name }}</span>
         </nav>
     </div>
-
-    <!-- CSRF Token for AJAX -->
     {% csrf_token %}
 
     <!-- Main Product Section -->
@@ -66,17 +78,28 @@
                         </div>
                     </div>
                 </div>
-                    <button class="wishlist-btn absolute top-4 right-4 
-                        w-14 h-14 
-                        flex items-center justify-center 
-                        bg-white rounded-full shadow-xl 
-                        text-gray-400 hover:text-red-500 
-                        transition-all duration-300 hover:scale-110">
 
-                        <i class="far fa-heart text-2xl"></i>
+                <!-- Wishlist Button -->
+                <form id="wishlistForm" method="post" action="{% url 'toggle_wishlist' default_variant.id %}">
+                    {% csrf_token %}
+                    <button type="submit"
+                        class="wishlist-btn absolute top-4 right-4
+                            w-14 h-14 flex items-center justify-center
+                            bg-white rounded-full shadow-xl
+                            transition-all duration-300 hover:scale-110
+                            {% if default_variant.id in wishlist_variants %}
+                                text-red-500
+                            {% else %}
+                                text-gray-400 hover:text-red-500
+                            {% endif %}">
+                        {% if default_variant.id in wishlist_variants %}
+                            <i class="fas fa-heart text-2xl"></i>
+                        {% else %}
+                            <i class="far fa-heart text-2xl"></i>
+                        {% endif %}
                     </button>
-
-
+                </form>
+                
                 <!-- Brand & Title -->
                 <div>
                     <p class="text-sm text-gray-500 uppercase tracking-wide">{{ product.brand.name }}</p>
@@ -432,8 +455,47 @@
     </div>
 
  <script>
+    // Toast Notification System
+    function showToast(message, type = 'success') {
+        const toastContainer = document.getElementById('toastContainer');
+            
+            const toast = document.createElement('div');
+            toast.className = `transform transition-all duration-300 ease-in-out translate-x-full`;
+            
+            const bgColor = type === 'error' ? 'bg-red-500' : 
+                        type === 'warning' ? 'bg-yellow-500' : 
+                        'bg-green-500';
+            
+            const icon = type === 'error' ? 'fa-exclamation-circle' : 
+                        type === 'warning' ? 'fa-exclamation-triangle' : 
+                        'fa-check-circle';
+            
+            toast.innerHTML = `
+                <div class="${bgColor} text-white px-6 py-4 rounded-lg shadow-2xl flex items-center space-x-3 min-w-[320px] max-w-md">
+                    <i class="fas ${icon} text-xl"></i>
+                    <p class="flex-1 font-medium">${message}</p>
+                    <button onclick="this.parentElement.parentElement.remove()" class="text-white hover:text-gray-200">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
+            
+            toastContainer.appendChild(toast);
+            
+            // Slide in
+            setTimeout(() => {
+                toast.classList.remove('translate-x-full');
+            }, 10);
+            
+            // Auto remove after 4 seconds
+            setTimeout(() => {
+                toast.classList.add('translate-x-full');
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
+        }
         // Enhanced Product Detail Functionality with AJAX
         class ProductDetail {
+            
             constructor() {
                 this.currentVariantId = {{ default_variant.id }};
                 this.productId = {{ product.id }};
@@ -647,7 +709,7 @@
                 selectedOption.style.transform = 'scale(1.15)';
                 selectedOption.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
             }
-
+            
             updateVariantUI(variantData) {
                 // Update main + zoom image
                 const mainImage = document.getElementById('mainImage');
@@ -733,11 +795,23 @@
                         <p class="text-center text-sm text-blue-600">Other colors may be available above</p>
                     `;
                 }
-
+                
+                // Update wishlist form action
+                this.updateWishlistForm(variantData.variant_id);
+                
                 // Update color name
                 const colorNameEl = document.getElementById('currentColorName');
                 if (colorNameEl) {
                     colorNameEl.textContent = variantData.color_name;
+                }
+            } // <-- Close updateVariantUI method here
+
+            // This should be a SEPARATE method, not inside updateVariantUI
+            updateWishlistForm(variantId) {
+                const wishlistForm = document.getElementById('wishlistForm');
+                if (wishlistForm) {
+                    const urlTemplate = "{% url 'toggle_wishlist' 0 %}";
+                    wishlistForm.action = urlTemplate.replace("0", variantId);
                 }
             }
 
@@ -763,4 +837,6 @@
         });
 
  </script>
+
+ 
 {% endblock %}

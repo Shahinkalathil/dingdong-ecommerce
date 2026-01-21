@@ -1,9 +1,10 @@
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from .models import WishlistItem
 from cart.models import CartItem, Cart
-from products.models import ProductImage
+from products.models import ProductImage,ProductVariant
+from django.urls import reverse
 
 @login_required
 def wishlist(request):
@@ -47,3 +48,37 @@ def remove_from_wishlist(request, variant_id):
     except WishlistItem.DoesNotExist:
         messages.error(request, 'Item not found in your wishlist.')
     return redirect('wishlist')
+<<<<<<< HEAD
+=======
+
+@login_required
+def toggle_wishlist(request, variant_id):
+    if request.method != 'POST':
+        return redirect('products')
+    
+    try:
+        variant = get_object_or_404(ProductVariant, id=variant_id, is_listed=True)
+        
+        # Check if variant is in cart
+        cart = getattr(request.user, 'cart', None)
+        if cart and CartItem.objects.filter(cart=cart, variant=variant).exists():
+            messages.error(request, "already in your cart..")
+            return redirect('product_detail', variant.product.id)
+        
+        # Toggle wishlist
+        wishlist_item = WishlistItem.objects.filter(user=request.user, variant=variant).first()
+        
+        if wishlist_item:
+            wishlist_item.delete()
+            messages.success(request, "removed from wishlist.")
+        else:
+            WishlistItem.objects.create(user=request.user, variant=variant)
+            messages.success(request, "added to wishlist!")
+
+    except ProductVariant.DoesNotExist:
+        messages.error(request, "Product variant not found.")
+    except Exception as e:
+        messages.error(request, "Something went wrong. Please try again.")
+    
+    return redirect('product_detail', variant.product.id)
+>>>>>>> 6925381 (feat: whislist button funtionly in the product_listing page complted with error handling)
