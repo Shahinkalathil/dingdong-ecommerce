@@ -75,6 +75,7 @@ INSTALLED_APPS = [
     'cart',
     'checkout',
     'wishlist',
+    'coupons',
 ]
 
 # Site ID Configuration

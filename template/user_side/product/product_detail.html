@@ -7,12 +7,15 @@
     <!-- Toast Notification Container -->
     <div id="toastContainer" class="fixed top-20 right-4 z-50 space-y-2"></div>
 
-    <!-- Messages Display -->
+    <!-- Only show wishlist-related messages as toasts -->
     {% if messages %}
         <script>
             document.addEventListener('DOMContentLoaded', function() {
                 {% for message in messages %}
-                    showToast("{{ message }}", "{{ message.tags }}");
+                    // Only show messages that contain these exact phrases
+                    {% if "removed from wishlist." in message or "added to wishlist!" in message or "already in your cart" %}
+                        showToast("{{ message }}", "{% if message.tags == 'success' %}success{% else %}error{% endif %}");
+                    {% endif %}
                 {% endfor %}
             });
         </script>
@@ -491,7 +494,7 @@
             setTimeout(() => {
                 toast.classList.add('translate-x-full');
                 setTimeout(() => toast.remove(), 300);
-            }, 4000);
+            }, 2000);
         }
         // Enhanced Product Detail Functionality with AJAX
         class ProductDetail {
@@ -709,7 +712,7 @@
                 selectedOption.style.transform = 'scale(1.15)';
                 selectedOption.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
             }
-            
+
             updateVariantUI(variantData) {
                 // Update main + zoom image
                 const mainImage = document.getElementById('mainImage');

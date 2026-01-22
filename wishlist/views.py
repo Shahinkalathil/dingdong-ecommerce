@@ -48,8 +48,6 @@ def remove_from_wishlist(request, variant_id):
     except WishlistItem.DoesNotExist:
         messages.error(request, 'Item not found in your wishlist.')
     return redirect('wishlist')
-<<<<<<< HEAD
-=======
 
 @login_required
 def toggle_wishlist(request, variant_id):
@@ -81,4 +79,3 @@ def toggle_wishlist(request, variant_id):
         messages.error(request, "Something went wrong. Please try again.")
     
     return redirect('product_detail', variant.product.id)
->>>>>>> 6925381 (feat: whislist button funtionly in the product_listing page complted with error handling)
