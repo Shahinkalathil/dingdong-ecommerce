@@ -1,0 +1,209 @@
+{% extends 'admin_panel/base.html' %}
+{% load static %}
+{% block title %}DINGDONG - Edit Coupon{% endblock %}
+
+{% block content %}
+<div class="min-h-screen p-4 md:p-8">
+    <div class="max-w-4xl mx-auto">
+        <!-- Header -->
+        <div class="mb-6">
+            <h1 class="text-2xl md:text-3xl font-bold text-gray-900 mb-2">Edit Coupon</h1>
+            <p class="text-gray-600 text-sm md:text-base">Update coupon details for {{ coupon.code }}</p>
+        </div>
+
+        <!-- Error Messages -->
+        {% if errors.general %}
+        <div class="bg-red-50 border-l-4 border-red-500 p-4 mb-6 rounded-lg">
+            <div class="flex">
+                <svg class="h-5 w-5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                </svg>
+                <p class="ml-3 text-sm font-medium text-red-800">{{ errors.general }}</p>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Form Card -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <form method="post" novalidate>
+                {% csrf_token %}
+                
+                <div class="space-y-6">
+                    <!-- Coupon Code -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700">
+                                Coupon Code <span class="text-red-500">*</span>
+                            </label>
+                            <p class="text-xs text-gray-500 mt-1">Unique code for customers</p>
+                        </div>
+                        <div class="md:col-span-2">
+                            <input 
+                                type="text"
+                                name="couponCode"
+                                value="{% if old.couponCode %}{{ old.couponCode }}{% else %}{{ coupon.code }}{% endif %}"
+                                placeholder="e.g., SAVE25"
+                                class="w-full px-4 py-2.5 border {% if errors.couponCode %}border-red-500{% else %}border-gray-300{% endif %} rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                            />
+                            {% if errors.couponCode %}
+                            <p class="mt-1 text-sm text-red-600">{{ errors.couponCode }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Discount Percentage -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700">
+                                Discount (%) <span class="text-red-500">*</span>
+                            </label>
+                            <p class="text-xs text-gray-500 mt-1">1-100</p>
+                        </div>
+                        <div class="md:col-span-2">
+                            <input 
+                                type="number"
+                                name="discountValue"
+                                value="{% if old.discountValue %}{{ old.discountValue }}{% else %}{{ coupon.discount_percentage }}{% endif %}"
+                                placeholder="25"
+                                min="1"
+                                max="100"
+                                class="w-full px-4 py-2.5 border {% if errors.discountValue %}border-red-500{% else %}border-gray-300{% endif %} rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                            />
+                            {% if errors.discountValue %}
+                            <p class="mt-1 text-sm text-red-600">{{ errors.discountValue }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Minimum Purchase -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700">
+                                Minimum Purchase (₹) <span class="text-red-500">*</span>
+                            </label>
+                            <p class="text-xs text-gray-500 mt-1">Minimum cart value</p>
+                        </div>
+                        <div class="md:col-span-2">
+                            <input 
+                                type="number"
+                                name="minPurchase"
+                                value="{% if old.minPurchase %}{{ old.minPurchase }}{% else %}{{ coupon.min_purchase_amount }}{% endif %}"
+                                placeholder="2000"
+                                min="0"
+                                step="0.01"
+                                class="w-full px-4 py-2.5 border {% if errors.minPurchase %}border-red-500{% else %}border-gray-300{% endif %} rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                            />
+                            {% if errors.minPurchase %}
+                            <p class="mt-1 text-sm text-red-600">{{ errors.minPurchase }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Max Discount (Optional) -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700">
+                                Max Discount Cap (₹)
+                            </label>
+                            <p class="text-xs text-gray-500 mt-1">Optional limit</p>
+                        </div>
+                        <div class="md:col-span-2">
+                            <input 
+                                type="number"
+                                name="maxDiscount"
+                                value="{% if old.maxDiscount %}{{ old.maxDiscount }}{% else %}{{ coupon.max_discount_amount|default:'' }}{% endif %}"
+                                placeholder="500"
+                                min="0"
+                                step="0.01"
+                                class="w-full px-4 py-2.5 border {% if errors.maxDiscount %}border-red-500{% else %}border-gray-300{% endif %} rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                            />
+                            {% if errors.maxDiscount %}
+                            <p class="mt-1 text-sm text-red-600">{{ errors.maxDiscount }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Valid From -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700">
+                                Valid From <span class="text-red-500">*</span>
+                            </label>
+                            <p class="text-xs text-gray-500 mt-1">Start date</p>
+                        </div>
+                        <div class="md:col-span-2">
+                            <input 
+                                type="date"
+                                name="validFrom"
+                                value="{% if old.validFrom %}{{ old.validFrom }}{% else %}{{ coupon.valid_from|date:'Y-m-d' }}{% endif %}"
+                                class="w-full px-4 py-2.5 border {% if errors.validFrom %}border-red-500{% else %}border-gray-300{% endif %} rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                            />
+                            {% if errors.validFrom %}
+                            <p class="mt-1 text-sm text-red-600">{{ errors.validFrom }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Valid Until -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700">
+                                Valid Until <span class="text-red-500">*</span>
+                            </label>
+                            <p class="text-xs text-gray-500 mt-1">Expiry date</p>
+                        </div>
+                        <div class="md:col-span-2">
+                            <input 
+                                type="date"
+                                name="validUntil"
+                                value="{% if old.validUntil %}{{ old.validUntil }}{% else %}{{ coupon.valid_until|date:'Y-m-d' }}{% endif %}"
+                                class="w-full px-4 py-2.5 border {% if errors.validUntil %}border-red-500{% else %}border-gray-300{% endif %} rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                            />
+                            {% if errors.validUntil %}
+                            <p class="mt-1 text-sm text-red-600">{{ errors.validUntil }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Total Usage Limit -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700">
+                                Total Usage Limit <span class="text-red-500">*</span>
+                            </label>
+                            <p class="text-xs text-gray-500 mt-1">Total uses across all users</p>
+                        </div>
+                        <div class="md:col-span-2">
+                            <input 
+                                type="number"
+                                name="usageLimit"
+                                value="{% if old.usageLimit %}{{ old.usageLimit }}{% else %}{{ coupon.usage_limit }}{% endif %}"
+                                placeholder="100"
+                                min="1"
+                                class="w-full px-4 py-2.5 border {% if errors.usageLimit %}border-red-500{% else %}border-gray-300{% endif %} rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                            />
+                            {% if errors.usageLimit %}
+                            <p class="mt-1 text-sm text-red-600">{{ errors.usageLimit }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="mt-8 pt-6 border-t border-gray-200 flex flex-col sm:flex-row justify-center gap-4">
+                    <button 
+                        type="submit"
+                        class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-8 rounded-lg transition-colors">
+                        Update Coupon
+                    </button>
+                    <a 
+                        href="{% url 'admin_coupons' %}"
+                        class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-2.5 px-8 rounded-lg transition-colors inline-flex items-center justify-center">
+                        Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
