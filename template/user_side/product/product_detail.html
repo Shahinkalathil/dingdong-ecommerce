@@ -13,13 +13,14 @@
             document.addEventListener('DOMContentLoaded', function() {
                 {% for message in messages %}
                     // Only show messages that contain these exact phrases
-                    {% if "removed from wishlist." in message or "added to wishlist!" in message or "already in your cart" %}
+                    {% if "removed from wishlist." in message or "added to wishlist!" in message or "already in your cart" in message %}
                         showToast("{{ message }}", "{% if message.tags == 'success' %}success{% else %}error{% endif %}");
                     {% endif %}
                 {% endfor %}
             });
         </script>
     {% endif %}
+
 
     <!-- Breadcrumb -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
@@ -33,8 +34,8 @@
             <span class="text-gray-900">{{ product.name }}</span>
         </nav>
     </div>
-    {% csrf_token %}
 
+    {% csrf_token %}
     <!-- Main Product Section -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">

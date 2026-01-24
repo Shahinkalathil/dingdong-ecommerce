@@ -1,0 +1,223 @@
+{% extends 'admin_panel/base.html' %}
+{% load static %}
+{% block title %}DINGDONG - Coupons Management{% endblock %}
+
+{% block content %}
+    
+<div class="min-h-screen p-4 md:p-8">
+    <div class="max-w-7xl mx-auto">
+        <!-- Header with Search -->
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-900">Coupons</h1>
+            <!-- Header with Working Search -->
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+                <h1 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">Coupons</h1>
+
+                <!-- Search Form -->
+                <form method="get" action="{% url 'coupon_search' %}" class="flex items-center bg-white dark:bg-white border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 w-full md:w-96 focus-within:ring-2 focus-within:ring-indigo-500 transition-all">
+                    <input 
+                        type="text" 
+                        name="q" 
+                        value="{{ query|default:'' }}" 
+                        placeholder="Search by coupon code or offer..." 
+                        class="w-full outline-none bg-transparent text-sm text-gray-700 dark:text-black-400 placeholder-gray-400 dark:placeholder-gray-500"
+                    />
+                    <button type="submit" class="ml-2 text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                    </button>
+                </form>
+            </div>
+        </div>
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <!-- Add Button -->
+            <div class="mb-6">
+                <a href="{% url 'add_coupons' %}"
+                class="inline-block bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-colors shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
+                    + Add Coupon
+                </a>
+            </div>
+            <!-- Table Container -->
+            <div class="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
+                <!-- Table for larger screens -->
+                <div class="hidden md:block overflow-x-auto">
+                    <table class="w-full">
+                <thead class="bg-gray-50 border-b border-gray-200">
+                    <tr>
+                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700">Code</th>
+                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700">Discount</th>
+                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700">Min Purchase</th>
+                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700">Valid From</th>
+                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700">Valid Until</th>
+                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700">Status</th>
+                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for coupon in coupons %}
+                    <tr class="border-b border-gray-200 hover:bg-gray-50 transition-colors">
+                        <td class="px-6 py-4 text-sm font-medium text-gray-900">{{ coupon.code }}</td>
+                        <td class="px-6 py-4 text-sm text-gray-900">{{ coupon.discount_percentage }}%</td>
+                        <td class="px-6 py-4 text-sm text-gray-900">₹{{ coupon.min_purchase_amount }}</td>
+                        <td class="px-6 py-4 text-sm text-gray-900">{{ coupon.valid_from|date:"d M Y" }}</td>
+                        <td class="px-6 py-4 text-sm text-gray-900">
+                            {% if coupon.valid_until %}
+                                {{ coupon.valid_until|date:"d M Y" }}
+                            {% else %}
+                                No Expiry
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4">
+                            {% if coupon.is_active %}
+                                {% if coupon.valid_until and coupon.valid_until < now %}
+                                    <span class="inline-block px-3 py-1 bg-red-100 text-red-800 text-xs font-medium rounded-full">
+                                        Expired
+                                    </span>
+                                {% else %}
+                                    <span class="inline-block px-3 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">
+                                        Active
+                                    </span>
+                                {% endif %}
+                            {% else %}
+                                <span class="inline-block px-3 py-1 bg-gray-100 text-gray-800 text-xs font-medium rounded-full">
+                                    Inactive
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-2">
+                                <!-- View Details -->
+                                <a href="{% url 'admin_coupons' %}?view_coupon={{ coupon.id }}"
+                                    class="text-blue-600 hover:text-blue-800 transition-colors" 
+                                    title="View Details">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                    </svg>
+                                </a>
+                                
+                                <!-- Edit -->
+                                <a href="{% url 'edit_coupons' coupon.id %}" 
+                                    class="text-green-600 hover:text-green-800 transition-colors" 
+                                    title="Edit">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
+                                        </path>
+                                    </svg>
+                                </a>
+
+                                <!-- Toggle Status -->
+                                <form method="post" action="{% url 'toggle_coupon_status' coupon.id %}" class="inline">
+                                    {% csrf_token %}
+                                    <button type="submit" 
+                                            class="{% if coupon.is_active %}text-yellow-600 hover:text-yellow-800{% else %}text-green-600 hover:text-green-800{% endif %} transition-colors" 
+                                            title="{% if coupon.is_active %}Deactivate{% else %}Activate{% endif %}">
+                                        {% if coupon.is_active %}
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path>
+                                            </svg>
+                                        {% else %}
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                            </svg>
+                                        {% endif %}
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="px-6 py-10 text-center text-gray-500">
+                            No coupons found. Click "Add Coupon" to create one.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+    </div>
+</div>
+
+<!-- Coupon Detail Modal -->
+{% if selected_coupon %}
+<div id="couponModal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 overflow-hidden border border-gray-200">
+
+        <!-- Modal Body -->
+        <div class="p-6 space-y-4">
+            <div class="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                    <p class="font-semibold text-gray-700">Coupon Code</p>
+                    <p class="text-gray-900 font-medium mt-1">{{ selected_coupon.code }}</p>
+                </div>
+                <div>
+                    <p class="font-semibold text-gray-700">Discount</p>
+                    <p class="text-gray-900 font-medium mt-1">{{ selected_coupon.discount_percentage }}%</p>
+                </div>
+                <div>
+                    <p class="font-semibold text-gray-700">Minimum Purchase</p>
+                    <p class="text-gray-900 font-medium mt-1">₹{{ selected_coupon.min_purchase_amount }}</p>
+                </div>
+                <div>
+                    <p class="font-semibold text-gray-700">Max Discount Cap</p>
+                    <p class="text-gray-900 font-medium mt-1">
+                        {% if selected_coupon.max_discount_amount %}
+                            ₹{{ selected_coupon.max_discount_amount }}
+                        {% else %}
+                            No Limit
+                        {% endif %}
+                    </p>
+                </div>
+                <div>
+                    <p class="font-semibold text-gray-700">Valid From</p>
+                    <p class="text-gray-900 font-medium mt-1">{{ selected_coupon.valid_from|date:"d M Y" }}</p>
+                </div>
+                <div>
+                    <p class="font-semibold text-gray-700">Valid Until</p>
+                    <p class="text-gray-900 font-medium mt-1">
+                        {% if selected_coupon.valid_until %}
+                            {{ selected_coupon.valid_until|date:"d M Y" }}
+                        {% else %}
+                            No Expiry
+                        {% endif %}
+                    </p>
+                </div>
+                <div>
+                    <p class="font-semibold text-gray-700">Usage Limit (Total)</p>
+                    <p class="text-gray-900 font-medium mt-1">{{ selected_coupon.usage_limit }}</p>
+                </div>
+                <div>
+                    <p class="font-semibold text-gray-700">Usage Per User</p>
+                    <p class="text-gray-900 font-medium mt-1">{{ selected_coupon.usage_per_user }}</p>
+                </div>
+                <div>
+                    <p class="font-semibold text-gray-700">Status</p>
+                    <p class="font-medium mt-1 {% if selected_coupon.is_active %}text-green-600{% else %}text-red-600{% endif %}">
+                        {% if selected_coupon.is_active %}Active{% else %}Inactive{% endif %}
+                    </p>
+                </div>
+                <div>
+                    <p class="font-semibold text-gray-700">Created At</p>
+                    <p class="text-gray-900 font-medium mt-1">{{ selected_coupon.created_at|date:"d M Y H:i" }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-end">
+            <a href="{% url 'admin_coupons' %}"
+               class="px-6 py-2.5 bg-gray-700 hover:bg-gray-800 text-white rounded-lg font-medium transition-colors shadow-sm">
+                Close
+            </a>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
