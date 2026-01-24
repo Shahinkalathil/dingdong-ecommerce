@@ -4,7 +4,7 @@
 
 {% block content %}
 <main class="flex-1 p-6 lg:p-8">
-    <div class="max-w-2xl mx-auto">
+    <div class="max-w-4xl mx-auto">
         <!-- Page Header -->
         <div class="mb-8">
             <a href="{% url 'admin_brands' %}" class="inline-flex items-center text-blue-600 hover:text-blue-800 mb-4">
@@ -16,100 +16,357 @@
             <h2 class="text-3xl font-bold text-gray-900">Edit Brand</h2>
         </div>
 
-        <!-- Form Card -->
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <form method="POST" enctype="multipart/form-data" class="space-y-6">
-                {% csrf_token %}
-                
-                <!-- Brand Name -->
-                <div>
-                    <label for="name" class="block text-sm font-semibold text-gray-700 mb-2">
-                        Brand Name <span class="text-red-500">*</span>
-                    </label>
-                    <input type="text" 
-                           id="name" 
-                           name="name" 
-                           value="{{ brand.name }}"
-                           required
-                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                           placeholder="Enter brand name">
-                </div>
-
-                <!-- Current Image Display -->
-                {% if brand.image %}
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">Current Image</label>
-                    <div class="flex items-center space-x-4">
-                        <img src="{{ brand.image.url }}" alt="{{ brand.name }}" class="w-24 h-24 object-contain border-2 border-gray-300 rounded-lg p-2">
-                        <label class="flex items-center space-x-2 cursor-pointer">
-                            <input type="checkbox" name="remove_image" class="w-4 h-4 text-red-600 border-gray-300 rounded focus:ring-2 focus:ring-red-500">
-                            <span class="text-sm text-red-600 font-medium">Remove current image</span>
+            <!-- Brand Details Form -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+                <h3 class="text-xl font-semibold text-gray-900 mb-6">Brand Details</h3>
+                <form method="POST" enctype="multipart/form-data" class="space-y-6">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="update_brand">
+                    
+                    <!-- Brand Name -->
+                    <div>
+                        <label for="name" class="block text-sm font-semibold text-gray-700 mb-2">
+                            Brand Name <span class="text-red-500">*</span>
                         </label>
+                        <input type="text" 
+                            id="name" 
+                            name="name" 
+                            value="{{ brand.name }}"
+                            required
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            placeholder="Enter brand name">
                     </div>
-                </div>
-                {% endif %}
 
-                <!-- Brand Image -->
-                <div>
-                    <label for="image" class="block text-sm font-semibold text-gray-700 mb-2">
-                        {% if brand.image %}Update Image{% else %}Add Image{% endif %}
-                    </label>
-                    <div class="flex items-center space-x-4">
-                        <div id="imagePreview" class="hidden w-24 h-24 border-2 border-gray-300 rounded-lg overflow-hidden">
-                            <img id="previewImg" src="" alt="Preview" class="w-full h-full object-contain">
+                    <!-- Image Management -->
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Brand Image</label>
+                        
+                        {% if brand.image %}
+                        <!-- Current Image with Replace Button -->
+                        <div class="mb-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                            <p class="text-xs text-gray-600 mb-3">Current Image:</p>
+                            <div class="relative inline-block">
+                                <img id="currentImage" 
+                                    src="{{ brand.image.url }}" 
+                                    alt="{{ brand.name }}" 
+                                    class="w-32 h-32 object-contain border-2 border-gray-300 rounded-lg bg-white p-2">
+                                
+                                <!-- Replace Button Badge -->
+                                <button type="button" 
+                                        onclick="document.getElementById('image').click()"
+                                        class="absolute -top-2 -right-2 bg-blue-600 text-white rounded-full w-20 h-8 flex items-center justify-center text-xs font-semibold shadow-lg hover:bg-blue-700 transition-all">
+                                    <span class="mr-1">Replace</span>
+                                </button>
+                            </div>
+
+                            <!-- Action Buttons -->
+                            <div class="flex space-x-4 pt-4 border-t">
+                                <button type="submit" 
+                                        class="flex-1 px-6 py-2.5 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors">
+                                    Update Brand
+                                </button>
+                                <a href="{% url 'admin_brands' %}" 
+                                class="flex-1 px-6 py-2.5 bg-gray-200 text-gray-800 font-medium rounded-lg hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors text-center">
+                                    Cancel
+                                </a>
+                            </div>
                         </div>
-                        <div class="flex-1">
-                            <input type="file" 
-                                   id="image" 
-                                   name="image" 
-                                   accept="image/*"
-                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            <p class="text-xs text-gray-500 mt-1">Recommended: Square image (PNG, JPG, JPEG)</p>
+                        {% endif %}
+                        
+
+                        <!-- Hidden File Input -->
+                        <input type="file" 
+                            id="image" 
+                            name="image" 
+                            accept="image/*"
+                            class="hidden">
+
+                    </div>
+                </form>
+            </div>
+
+                <!-- Brand Offer Section -->
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-xl font-semibold text-gray-900">Brand Offer</h3>
+                        {% if brand_offer %}
+                        <div class="flex items-center space-x-3">
+                            <form method="POST" class="inline">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="toggle_offer">
+                                <button type="submit" 
+                                        class="px-4 py-2 rounded-lg font-medium transition-colors {% if brand_offer.is_active %}bg-green-100 text-green-700 hover:bg-green-200{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %}">
+                                    {% if brand_offer.is_active %}
+                                        <span class="flex items-center">
+                                            <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                            </svg>
+                                            Active
+                                        </span>
+                                    {% else %}
+                                        <span class="flex items-center">
+                                            <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                                            </svg>
+                                            Inactive
+                                        </span>
+                                    {% endif %}
+                                </button>
+                            </form>
+                            <button type="button" 
+                                    onclick="document.getElementById('editOfferModal').classList.remove('hidden')"
+                                    class="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors">
+                                Edit Offer
+                            </button>
+                            <button type="button" 
+                                    onclick="document.getElementById('deleteOfferModal').classList.remove('hidden')"
+                                    class="px-4 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition-colors">
+                                Delete
+                            </button>
+                        </div>
+                        {% else %}
+                        <button type="button" 
+                                onclick="document.getElementById('addOfferModal').classList.remove('hidden')"
+                                class="px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors">
+                            + Add Offer
+                        </button>
+                        {% endif %}
+                    </div>
+
+                    {% if brand_offer %}
+                    <!-- Existing Offer Display -->
+                    <div class="bg-gradient-to-r from-green-50 to-blue-50 rounded-lg p-6 border-2 border-green-200">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <p class="text-sm text-gray-600 mb-1">Discount</p>
+                                <p class="text-2xl font-bold text-green-600">{{ brand_offer.discount_percentage }}% OFF</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-600 mb-1">Valid Until</p>
+                                <p class="text-lg font-semibold text-gray-800">{{ brand_offer.valid_until|date:"M d, Y" }}</p>
+                                <p class="text-xs text-gray-500">{{ brand_offer.valid_until|date:"h:i A" }}</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-600 mb-1">Status</p>
+                                <p class="text-lg font-semibold {% if brand_offer.is_active %}text-green-600{% else %}text-gray-500{% endif %}">
+                                    {% if brand_offer.is_active %}Active{% else %}Inactive{% endif %}
+                                </p>
+                            </div>
                         </div>
                     </div>
-                </div>
+                    {% else %}
+                    <!-- No Offer Message -->
+                    <div class="text-center py-8">
+                        <svg class="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"/>
+                        </svg>
+                        <p class="text-gray-500 text-lg">No offer available for this brand</p>
+                        <p class="text-gray-400 text-sm mt-1">Click "Add Offer" to create a promotional discount</p>
+                    </div>
+                    {% endif %}
+                </div>       
+        
+    </div>
+</main>
 
-                <!-- Status -->
+
+    <!-- Add Offer Modal -->
+    <div id="addOfferModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-lg bg-white">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-xl font-semibold text-gray-900">Add Brand Offer</h3>
+                <button onclick="document.getElementById('addOfferModal').classList.add('hidden')" class="text-gray-400 hover:text-gray-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+            <form method="POST" class="space-y-4">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="save_offer">
+                
                 <div>
-                    <label class="flex items-center space-x-3 cursor-pointer">
-                        <input type="checkbox" 
-                               id="is_listed" 
-                               name="is_listed" 
-                               {% if brand.is_listed %}checked{% endif %}
-                               class="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-2 focus:ring-blue-500">
-                        <span class="text-sm font-semibold text-gray-700">List this brand</span>
+                    <label for="add_discount" class="block text-sm font-semibold text-gray-700 mb-2">
+                        Discount Percentage <span class="text-red-500">*</span>
                     </label>
-                    <p class="text-xs text-gray-500 mt-1 ml-8">Listed brands will be visible to customers</p>
+                    <input type="number" 
+                        id="add_discount" 
+                        name="discount_percentage" 
+                        min="1" 
+                        max="100" 
+                        step="0.01"
+                        required
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                        placeholder="e.g., 20">
+                </div>
+                
+                <div>
+                    <label for="add_valid_until" class="block text-sm font-semibold text-gray-700 mb-2">
+                        Valid Until <span class="text-red-500">*</span>
+                    </label>
+                    <input type="datetime-local" 
+                        id="add_valid_until" 
+                        name="valid_until" 
+                        required
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
                 </div>
 
-                <!-- Action Buttons -->
-                <div class="flex space-x-4 pt-4">
-                    <button type="submit" 
-                            class="flex-1 px-6 py-2.5 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors">
-                        Update Brand
+                <div class="flex space-x-3 pt-4">
+                    <button type="submit" class="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors">
+                        Create Offer
                     </button>
-                    <a href="{% url 'admin_brands' %}" 
-                       class="flex-1 px-6 py-2.5 bg-gray-200 text-gray-800 font-medium rounded-lg hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors text-center">
+                    <button type="button" 
+                            onclick="document.getElementById('addOfferModal').classList.add('hidden')"
+                            class="flex-1 px-4 py-2 bg-gray-200 text-gray-800 rounded-lg font-medium hover:bg-gray-300 transition-colors">
                         Cancel
-                    </a>
+                    </button>
                 </div>
             </form>
         </div>
     </div>
-</main>
 
+    <!-- Edit Offer Modal -->
+    {% if brand_offer %}
+    <div id="editOfferModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-lg bg-white">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-xl font-semibold text-gray-900">Edit Brand Offer</h3>
+                <button onclick="document.getElementById('editOfferModal').classList.add('hidden')" class="text-gray-400 hover:text-gray-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+            <form method="POST" class="space-y-4">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="save_offer">
+                
+                <div>
+                    <label for="edit_discount" class="block text-sm font-semibold text-gray-700 mb-2">
+                        Discount Percentage <span class="text-red-500">*</span>
+                    </label>
+                    <input type="number" 
+                        id="edit_discount" 
+                        name="discount_percentage" 
+                        value="{{ brand_offer.discount_percentage }}"
+                        min="1" 
+                        max="100" 
+                        step="0.01"
+                        required
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="e.g., 20">
+                </div>
+                
+                <div>
+                    <label for="edit_valid_until" class="block text-sm font-semibold text-gray-700 mb-2">
+                        Valid Until <span class="text-red-500">*</span>
+                    </label>
+                    <input type="datetime-local" 
+                        id="edit_valid_until" 
+                        name="valid_until" 
+                        value="{{ brand_offer.valid_until|date:'Y-m-d\TH:i' }}"
+                        required
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                
+                <div>
+                    <label class="flex items-center space-x-3 cursor-pointer">
+                        <input type="checkbox" 
+                            name="is_active" 
+                            {% if brand_offer.is_active %}checked{% endif %}
+                            class="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-2 focus:ring-blue-500">
+                        <span class="text-sm font-semibold text-gray-700">Offer is active</span>
+                    </label>
+                </div>
+                
+                <div class="flex space-x-3 pt-4">
+                    <button type="submit" class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors">
+                        Update Offer
+                    </button>
+                    <button type="button" 
+                            onclick="document.getElementById('editOfferModal').classList.add('hidden')"
+                            class="flex-1 px-4 py-2 bg-gray-200 text-gray-800 rounded-lg font-medium hover:bg-gray-300 transition-colors">
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Delete Offer Modal -->
+    <div id="deleteOfferModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-lg bg-white">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-xl font-semibold text-gray-900">Delete Offer</h3>
+                <button onclick="document.getElementById('deleteOfferModal').classList.add('hidden')" class="text-gray-400 hover:text-gray-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="mb-6">
+                <p class="text-gray-700">Are you sure you want to delete this offer? This action cannot be undone.</p>
+            </div>
+            <form method="POST" class="flex space-x-3">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="delete_offer">
+                <button type="submit" class="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition-colors">
+                    Delete
+                </button>
+                <button type="button" 
+                        onclick="document.getElementById('deleteOfferModal').classList.add('hidden')"
+                        class="flex-1 px-4 py-2 bg-gray-200 text-gray-800 rounded-lg font-medium hover:bg-gray-300 transition-colors">
+                    Cancel
+                </button>
+            </form>
+        </div>
+    </div>
+
+    {% endif %}
 <script>
-    // Image preview
-    document.getElementById('image').addEventListener('change', function(e) {
-        const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                document.getElementById('previewImg').src = e.target.result;
-                document.getElementById('imagePreview').classList.remove('hidden');
+// Image replacement with preview
+document.getElementById('image').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    const currentImage = document.getElementById('currentImage');
+    const removeCheckbox = document.getElementById('removeImageCheckbox');
+    
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            // Replace current image preview
+            if (currentImage) {
+                currentImage.src = e.target.result;
+                currentImage.classList.add('ring-4', 'ring-blue-500');
             }
-            reader.readAsDataURL(file);
+        }
+        reader.readAsDataURL(file);
+        
+        // Uncheck remove if new image is selected
+        if (removeCheckbox) {
+            removeCheckbox.checked = false;
+        }
+    }
+});
+
+// Handle remove checkbox
+const removeCheckbox = document.getElementById('removeImageCheckbox');
+if (removeCheckbox) {
+    removeCheckbox.addEventListener('change', function() {
+        const currentImage = document.getElementById('currentImage');
+        if (this.checked) {
+            // Clear file input
+            document.getElementById('image').value = '';
+            // Add visual indicator
+            if (currentImage) {
+                currentImage.classList.add('opacity-50', 'grayscale');
+            }
+        } else {
+            // Remove visual indicator
+            if (currentImage) {
+                currentImage.classList.remove('opacity-50', 'grayscale');
+            }
         }
     });
+}
 </script>
 {% endblock %}
