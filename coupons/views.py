@@ -1,12 +1,14 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.cache import cache_control
 from django.utils import timezone
 from django.contrib import messages
 from decimal import Decimal, InvalidOperation
-from .models import Coupon
-from django.db.models import Q 
+from .models import Coupon 
 from datetime import datetime
 
-
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
+@login_required(login_url="admin_login")
 def AdminCouponsListView(request):
     """Display list of all coupons"""
     # Fetch all coupons ordered by creation date
@@ -26,6 +28,8 @@ def AdminCouponsListView(request):
     }
     return render(request, 'admin_panel/coupons/coupon_management.html', context)
 
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
+@login_required(login_url="admin_login")
 def AdminCouponsSearchView(request):
     """Search coupons by code or filter by active/inactive status"""
     query = request.GET.get('q', '').strip()
@@ -54,6 +58,8 @@ def AdminCouponsSearchView(request):
     }
     return render(request, 'admin_panel/coupons/coupon_management.html', context)
 
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
+@login_required(login_url="admin_login")
 def AdminCouponsCreateView(request):
     """Create a new coupon - Admin view"""
     if request.method == "POST":
@@ -192,6 +198,8 @@ def AdminCouponsCreateView(request):
     # GET request → show empty form
     return render(request, "admin_panel/coupons/coupon_add.html")
 
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
+@login_required(login_url="admin_login")
 def AdminCouponsUpdateView(request, coupon_id):
     """Edit an existing coupon"""
     coupon = get_object_or_404(Coupon, id=coupon_id)
@@ -311,6 +319,8 @@ def AdminCouponsUpdateView(request, coupon_id):
     context = {'coupon': coupon}
     return render(request, "admin_panel/coupons/coupon_edit.html", context)
 
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
+@login_required(login_url="admin_login")
 def AdminCouponsToggleStatusView(request, coupon_id):
     """
     Toggle coupon active/inactive status
