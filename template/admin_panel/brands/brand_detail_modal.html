@@ -23,15 +23,6 @@
                 <p class="text-gray-900 font-medium mt-1">{{ brand.updated_at|date:"d M Y H:i" }}</p>
             </div>
 
-            <!-- Brand Image (Full Width) -->
-            {% if brand.image %}
-            <div class="col-span-2 border-t border-gray-200 pt-4 mt-2">
-                <p class="font-semibold text-gray-700 mb-2">Brand Image</p>
-                <img src="{{ brand.image.url }}" alt="{{ brand.name }}" 
-                     class="max-h-48 object-contain rounded-lg border border-gray-300 mx-auto">
-            </div>
-            {% endif %}
-
             <!-- Brand Offer Section -->
             <div class="col-span-2 border-t border-gray-200 pt-4 mt-2">
                 <p class="font-semibold text-gray-900 mb-3 text-base">Brand Offer</p>
