@@ -10,22 +10,12 @@
         <h2 class="text-3xl font-bold text-gray-900 mb-4 sm:mb-0">Brands</h2>
         <!-- Right Side: Refresh + Search --> 
         <div class="flex flex-col sm:flex-row items-center gap-3"> 
-            <!-- Refresh Button --> 
-            {% if keyword %}
-            <a href="{% url 'admin_brands' %}" class="px-4 py-2 bg-blue-600 text-white font-medium rounded-lg shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 transition"> 
-                <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-                </svg>
-                Refresh 
-            </a> 
-            {% endif %}
-            
             <!-- Search Form --> 
             <form action="{% url 'brands_search' %}" method="GET" class="relative"> 
                 <input id="searchInput" 
                        name="keyword" 
                        type="text" 
-                       value="{{ keyword }}"
+                       value="{{ ''}}"
                        placeholder="Search by Brand Name..." 
                        class="w-full sm:w-80 px-4 py-2 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white transition"  
                        autocomplete="on"> 
@@ -113,7 +103,32 @@
                             </td>
                             
                             <td class="px-6 py-4">
+                                
                                 <div class="flex items-center space-x-2">
+                                    <!-- View Details Button -->
+                                    <a href="{% url 'toggle_list_brand' brand.id %}" 
+                                    class="text-blue-600 hover:text-blue-800 transition-colors" 
+                                    title="View Details"
+                                    onclick="event.preventDefault(); openBrandModal(this.href);">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                        </svg>
+                                    </a>
+
+                                    <!-- Edit Button -->
+                                    <a href="{% url 'edit_brand' brand.id %}" 
+                                        class="p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-md transition-colors" 
+                                        title="Edit Brand">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
+                                            </path>
+                                        </svg>
+                                    </a>
+
                                     <!-- List/Unlist Toggle -->
                                     <form action="{% url 'toggle_brand_status' brand.id %}" method="POST" class="inline">
                                         {% csrf_token %}
@@ -131,17 +146,7 @@
                                             </button>
                                         {% endif %}
                                     </form>
-                                    
-                                    <!-- Edit Button -->
-                                    <a href="{% url 'edit_brand' brand.id %}" 
-                                        class="p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-md transition-colors" 
-                                        title="Edit Brand">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                                                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
-                                            </path>
-                                        </svg>
-                                    </a>
+
                                 </div>
                             </td>
                         </tr>
@@ -206,6 +211,19 @@
                     
                     <!-- Action Buttons -->
                     <div class="flex items-center justify-end space-x-2 pt-3 border-t border-gray-100">
+                        <!-- View Details Button for Mobile -->
+                        <a href="{% url 'toggle_list_brand' brand.id %}" 
+                           class="p-2 text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
+                           title="View Details"
+                           onclick="event.preventDefault(); openBrandModal(this.href);">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                            </svg>
+                        </a>
+
                         <!-- List/Unlist Toggle -->
                         <form action="{% url 'toggle_brand_status' brand.id %}" method="POST" class="inline">
                             {% csrf_token %}
@@ -226,13 +244,6 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                             </svg>
                         </a>
-
-                        <!-- Delete Button -->
-                        <button onclick="confirmDelete('{{ brand.id }}', '{{ brand.name }}')" class="p-2 text-red-600 hover:bg-red-50 rounded-md transition-colors">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                            </svg>
-                        </button>
                     </div>
                 </div>
                 {% empty %}
@@ -250,73 +261,32 @@
     </div>
 </main>
 
-<!-- Delete Confirmation Modal -->
-<div id="deleteModal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-50 z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
-        <div class="flex items-center justify-center w-12 h-12 mx-auto bg-red-100 rounded-full mb-4">
-            <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
-            </svg>
-        </div>
-        <h3 class="text-lg font-semibold text-gray-900 text-center mb-2">Delete Brand</h3>
-        <p class="text-gray-600 text-center mb-6">Are you sure you want to delete <span id="brandName" class="font-semibold"></span>? This action cannot be undone.</p>
-        <div class="flex space-x-3">
-            <button onclick="closeDeleteModal()" class="flex-1 px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors font-medium">
-                Cancel
-            </button>
-            <form id="deleteForm" method="POST" class="flex-1">
-                {% csrf_token %}
-                <button type="submit" class="w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium">
-                    Delete
-                </button>
-            </form>
-        </div>
-    </div>
+<!-- Brand Detail Modal Container -->
+<div id="brandDetailModal" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
+    <!-- Content will be loaded here dynamically -->
 </div>
 
 <script>
-    // Delete confirmation
-    function confirmDelete(brandId, brandName) {
-        document.getElementById('brandName').textContent = brandName;
-        document.getElementById('deleteForm').action = `/admin/brands/delete/${brandId}/`;
-        document.getElementById('deleteModal').classList.remove('hidden');
+    // Brand Detail Modal Functions
+    function openBrandModal(url) {
+        fetch(url)
+            .then(response => response.text())
+            .then(html => {
+                document.getElementById('brandDetailModal').innerHTML = html;
+                document.getElementById('brandDetailModal').classList.remove('hidden');
+            })
+            .catch(error => console.error('Error loading modal:', error));
     }
 
-    function closeDeleteModal() {
-        document.getElementById('deleteModal').classList.add('hidden');
+    function closeBrandModal() {
+        document.getElementById('brandDetailModal').classList.add('hidden');
     }
 
     // Close modal on outside click
-    document.getElementById('deleteModal').addEventListener('click', function(e) {
+    document.getElementById('brandDetailModal').addEventListener('click', function(e) {
         if (e.target === this) {
-            closeDeleteModal();
+            closeBrandModal();
         }
     });
-
-    // Mobile menu functionality (if needed)
-    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
-    const mobileMenuOverlay = document.getElementById('mobileMenuOverlay');
-    const closeMobileMenu = document.getElementById('closeMobileMenu');
-
-    if (mobileMenuBtn) {
-        mobileMenuBtn.addEventListener('click', () => {
-            mobileMenuOverlay.classList.remove('hidden');
-        });
-    }
-
-    if (closeMobileMenu) {
-        closeMobileMenu.addEventListener('click', () => {
-            mobileMenuOverlay.classList.add('hidden');
-        });
-    }
-
-    if (mobileMenuOverlay) {
-        mobileMenuOverlay.addEventListener('click', (e) => {
-            if (e.target === mobileMenuOverlay) {
-                mobileMenuOverlay.classList.add('hidden');
-            }
-        });
-    }
 </script>
-</body>
 {% endblock %}
