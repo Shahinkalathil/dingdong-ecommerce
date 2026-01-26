@@ -9,5 +9,6 @@ urlpatterns = [
     path('admin-management/create/', views.AdminBrandCreateView, name='add_brand'),
     path('admin-management/update/<int:brand_id>/', views.AdminBrandUpdateView, name='edit_brand'),
     path('admin-management/toggle/<int:brand_id>/', views.AdminBrandStatusView, name='toggle_brand_status'),
+    path('admin-management/toggle-list/<int:brand_id>/', views.AdminBrandToggleListView, name='toggle_list_brand'),
 
 ] 

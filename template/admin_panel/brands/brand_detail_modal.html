@@ -1,0 +1,91 @@
+<!-- Just the modal content, no extends, no base template -->
+<div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 overflow-hidden border border-gray-200">
+
+    <!-- Modal Body -->
+    <div class="p-6 space-y-4">
+        <div class="grid grid-cols-2 gap-4 text-sm">
+            <div>
+                <p class="font-semibold text-gray-700">Brand Name</p>
+                <p class="text-gray-900 font-medium mt-1">{{ brand.name }}</p>
+            </div>
+            <div>
+                <p class="font-semibold text-gray-700">Status</p>
+                <p class="font-medium mt-1 {% if brand.is_listed %}text-green-600{% else %}text-red-600{% endif %}">
+                    {% if brand.is_listed %}Listed{% else %}Unlisted{% endif %}
+                </p>
+            </div>
+            <div>
+                <p class="font-semibold text-gray-700">Created At</p>
+                <p class="text-gray-900 font-medium mt-1">{{ brand.created_at|date:"d M Y H:i" }}</p>
+            </div>
+            <div>
+                <p class="font-semibold text-gray-700">Last Updated</p>
+                <p class="text-gray-900 font-medium mt-1">{{ brand.updated_at|date:"d M Y H:i" }}</p>
+            </div>
+
+            <!-- Brand Image (Full Width) -->
+            {% if brand.image %}
+            <div class="col-span-2 border-t border-gray-200 pt-4 mt-2">
+                <p class="font-semibold text-gray-700 mb-2">Brand Image</p>
+                <img src="{{ brand.image.url }}" alt="{{ brand.name }}" 
+                     class="max-h-48 object-contain rounded-lg border border-gray-300 mx-auto">
+            </div>
+            {% endif %}
+
+            <!-- Brand Offer Section -->
+            <div class="col-span-2 border-t border-gray-200 pt-4 mt-2">
+                <p class="font-semibold text-gray-900 mb-3 text-base">Brand Offer</p>
+                
+                {% if brand_offer %}
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <p class="font-semibold text-gray-700">Discount</p>
+                        <p class="text-gray-900 font-medium mt-1 text-lg">{{ brand_offer.discount_percentage }}%</p>
+                    </div>
+                    <div>
+                        <p class="font-semibold text-gray-700">Status</p>
+                        <p class="font-medium mt-1 {% if brand_offer.is_active %}text-green-600{% else %}text-red-600{% endif %}">
+                            {% if brand_offer.is_active %}Active{% else %}Inactive{% endif %}
+                        </p>
+                    </div>
+                    <div>
+                        <p class="font-semibold text-gray-700">Valid From</p>
+                        <p class="text-gray-900 font-medium mt-1">{{ brand_offer.valid_from|date:"d M Y" }}</p>
+                    </div>
+                    <div>
+                        <p class="font-semibold text-gray-700">Valid Until</p>
+                        <p class="text-gray-900 font-medium mt-1">
+                            {% if brand_offer.valid_until %}
+                                {{ brand_offer.valid_until|date:"d M Y" }}
+                                {% if brand_offer.valid_until < now %}
+                                    <span class="text-red-600 text-xs ml-1">(Expired)</span>
+                                {% endif %}
+                            {% else %}
+                                No Expiry
+                            {% endif %}
+                        </p>
+                    </div>
+                    <div>
+                        <p class="font-semibold text-gray-700">Created At</p>
+                        <p class="text-gray-900 font-medium mt-1">{{ brand_offer.created_at|date:"d M Y H:i" }}</p>
+                    </div>
+                    <div>
+                        <p class="font-semibold text-gray-700">Last Updated</p>
+                        <p class="text-gray-900 font-medium mt-1">{{ brand_offer.updated_at|date:"d M Y H:i" }}</p>
+                    </div>
+                </div>
+                {% else %}
+                <p class="text-gray-500 text-center py-4">No brand offer created yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Footer -->
+    <div class="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-end">
+        <button onclick="closeBrandModal()" 
+                class="px-6 py-2.5 bg-gray-700 hover:bg-gray-800 text-white rounded-lg font-medium transition-colors shadow-sm">
+            Close
+        </button>
+    </div>
+</div>

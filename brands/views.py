@@ -6,21 +6,45 @@ from django.db.models import Q
 from products.models import Brand
 from offers.models import BrandOffer
 from django.utils import timezone
-from datetime import datetime
+
+
 # Create your views here.
+
 
 
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 @login_required(login_url="admin_login")
 def AdminBrandListView(request):
     brands = Brand.objects.all().order_by('-id')
-    
     context = {
         'brands': brands,
         'keyword': None
     }
     return render(request, 'admin_panel/brands/brand_management.html', context)
 
+
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
+@login_required(login_url="admin_login")
+def AdminBrandToggleListView(request, brand_id):
+    """
+    Returns brand detail modal HTML content (not a full page)
+    """
+    brand = get_object_or_404(Brand, id=brand_id)
+    
+    # Try to get the brand offer if it exists
+    try:
+        brand_offer = BrandOffer.objects.get(brand=brand)
+    except BrandOffer.DoesNotExist:
+        brand_offer = None
+    
+    context = {
+        'brand': brand,
+        'brand_offer': brand_offer,
+        'now': timezone.now(),
+    }
+    
+    # Return only the modal HTML content (not a full page)
+    return render(request, 'admin_panel/brands/brand_detail_modal.html', context)
 
 # Search brands
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
@@ -128,81 +152,7 @@ def AdminBrandUpdateView(request, brand_id):
             except Exception as e:
                 messages.error(request, f'Error updating brand: {str(e)}')
                 return redirect('edit_brand', brand_id=brand_id)
-        
-        # Handle offer creation/update
-        elif action == 'save_offer':
-            discount = request.POST.get('discount_percentage', '').strip()
-            valid_until = request.POST.get('valid_until', '').strip()
-            is_active = request.POST.get('is_active') == 'on'
-            
-            # Validation
-            if not discount:
-                messages.error(request, 'Discount percentage is required.')
-                return redirect('edit_brand', brand_id=brand_id)
-            
-            try:
-                discount = float(discount)
-                if discount < 1 or discount > 100:
-                    messages.error(request, 'Discount must be between 1 and 100.')
-                    return redirect('edit_brand', brand_id=brand_id)
-            except ValueError:
-                messages.error(request, 'Invalid discount percentage.')
-                return redirect('edit_brand', brand_id=brand_id)
-            
-            if not valid_until:
-                messages.error(request, 'End date is required.')
-                return redirect('edit_brand', brand_id=brand_id)
-            
-            try:
-                # Parse the date
-                valid_until_date = datetime.strptime(valid_until, '%Y-%m-%dT%H:%M')
-                valid_until_date = timezone.make_aware(valid_until_date)
-                
-                # Check if date is in the future
-                if valid_until_date <= timezone.now():
-                    messages.error(request, 'End date must be in the future.')
-                    return redirect('edit_brand', brand_id=brand_id)
-                
-                # Create or update offer
-                if brand_offer:
-                    brand_offer.discount_percentage = discount
-                    brand_offer.valid_until = valid_until_date
-                    brand_offer.is_active = is_active
-                    brand_offer.save()
-                    messages.success(request, 'Brand offer updated successfully!')
-                else:
-                    BrandOffer.objects.create(
-                        brand=brand,
-                        discount_percentage=discount,
-                        valid_until=valid_until_date,
-                        is_active=is_active
-                    )
-                    messages.success(request, 'Brand offer created successfully!')
-                
-                return redirect('edit_brand', brand_id=brand_id)
-            except ValueError:
-                messages.error(request, 'Invalid date format.')
-                return redirect('edit_brand', brand_id=brand_id)
-            except Exception as e:
-                messages.error(request, f'Error saving offer: {str(e)}')
-                return redirect('edit_brand', brand_id=brand_id)
-        
-        # Handle offer activation toggle
-        elif action == 'toggle_offer':
-            if brand_offer:
-                brand_offer.is_active = not brand_offer.is_active
-                brand_offer.save()
-                status = 'activated' if brand_offer.is_active else 'deactivated'
-                messages.success(request, f'Offer {status} successfully!')
-            return redirect('edit_brand', brand_id=brand_id)
-        
-        # Handle offer deletion
-        elif action == 'delete_offer':
-            if brand_offer:
-                brand_offer.delete()
-                messages.success(request, 'Offer deleted successfully!')
-            return redirect('edit_brand', brand_id=brand_id)
-    
+              
     context = {
         'brand': brand,
         'brand_offer': brand_offer,
@@ -225,4 +175,6 @@ def AdminBrandStatusView(request, brand_id):
     return redirect('admin_brands')
 
 
+
+       
 
