@@ -93,7 +93,7 @@
 
                 <!-- Products -->
                 <a href="{% url 'admin_products' %}" class="nav-item flex items-center px-4 py-3 text-sm font-medium rounded-lg sidebar-item 
-                    {% if request.resolver_match.url_name in 'admin_products add_products product_variant products_search' %} active-nav {% else %} text-gray-700 hover:bg-gray-100 hover:text-gray-900 {% endif %}">
+                    {% if request.resolver_match.url_name in 'admin_products add_products product_variant products_search edit_products' %} active-nav {% else %} text-gray-700 hover:bg-gray-100 hover:text-gray-900 {% endif %}">
                     <svg class="w-5 h-5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
@@ -103,7 +103,7 @@
 
                 <!-- Users -->
                 <a href="{% url 'admin_users' %}" class="nav-item flex items-center px-4 py-3 text-sm font-medium rounded-lg sidebar-item 
-                    {% if request.resolver_match.url_name == 'admin_users'%} active-nav {% else %} text-gray-700 hover:bg-gray-100 hover:text-gray-900 {% endif %}">
+                    {% if request.resolver_match.url_name in 'admin_users'%} active-nav {% else %} text-gray-700 hover:bg-gray-100 hover:text-gray-900 {% endif %}">
                     <svg class="w-5 h-5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />

@@ -108,12 +108,12 @@
                             <!-- Actions -->
                             <td class="py-4 px-6 text-center">
                                 {% if category.is_listed %}
-                                <button onclick="openConfirmModal('{{ category.id }}', 'unlist', '{{ category.name|escapejs }}')"
+                                <button onclick="openConfirmModal('{{ category.id }}', 'unlist', '{{ category.name }}')"
                                     class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 hover:shadow-md">
                                     Unlist
                                 </button>
                                 {% else %}
-                                <button onclick="openConfirmModal('{{ category.id }}', 'list', '{{ category.name|escapejs }}')"
+                                <button onclick="openConfirmModal('{{ category.id }}', 'list', '{{ category.name }}')"
                                     class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 hover:shadow-md">
                                     List
                                 </button>

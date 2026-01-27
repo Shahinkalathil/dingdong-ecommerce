@@ -42,7 +42,7 @@ def AdminBrandToggleListView(request, brand_id):
         'now': timezone.now(),
     }
     
-    # Return only the modal HTML content (not a full page)
+    # Return only the modal HTML content 
     return render(request, 'admin_panel/brands/brand_detail_modal.html', context)
 
 # Search brands
@@ -116,25 +116,19 @@ def AdminBrandCreateView(request):
 @login_required(login_url="admin_login")
 def AdminBrandUpdateView(request, brand_id):
     brand = get_object_or_404(Brand, id=brand_id)
-    
-    # Get existing brand offer if any
     try:
         brand_offer = BrandOffer.objects.get(brand=brand)
     except BrandOffer.DoesNotExist:
         brand_offer = None
-    
-    # Prepare context
     context = {
         'brand': brand,
         'brand_offer': brand_offer,
-        'errors': {},  # ← Field-specific errors will go here
-        'old_name': brand.name,  # For repopulating on error
+        'errors': {},  
+        'old_name': brand.name,  
     }
 
     if request.method == 'POST':
         action = request.POST.get('action')
-        
-        # Handle brand update
         if action == 'update_brand':
             name = request.POST.get('name', '').strip()
             is_listed = request.POST.get('is_listed') == 'on'

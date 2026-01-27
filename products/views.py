@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import user_passes_test
 from django.views.decorators.cache import cache_control
+from django.views.decorators.http import require_POST
 from django.core.files.base import ContentFile
 from django.contrib import messages
 from django.db.models import Q
@@ -18,6 +19,8 @@ import base64
 import io
 
 # Userside
+# -------------------------------------------
+# Product Listing
 def products(request):
     products = Product.objects.filter(
         is_listed=True,
@@ -107,6 +110,7 @@ def products(request):
     
     return render(request, 'user_side/product/product_listing.html', context)
 
+# Product Detail
 def product_detail(request, product_id):
     try:
         product = get_object_or_404(Product, id=product_id)
@@ -234,8 +238,10 @@ def product_detail(request, product_id):
         print(e)
         return redirect('products')
 
-    
 
+
+# Adminside
+# -------------------------------------------
 # product management
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 @user_passes_test(lambda u: u.is_superuser, login_url="admin_login")
@@ -436,32 +442,12 @@ def process_base64_image(base64_data, filename):
         print(f"Error processing base64 image: {e}")
         return None
 
-def validate_cropped_image(base64_data, expected_width=400, expected_height=500):
-    """
-    Validate that the cropped image has the expected dimensions
-    """
-    try:
-        if ',' in base64_data:
-            base64_data = base64_data.split(',')[1]
-        
-        image_data = base64.b64decode(base64_data)
-        image = Image.open(io.BytesIO(image_data))
-        
-        return image.size == (expected_width, expected_height)
-    except:
-        return False
-
-
+# Product Update
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 @user_passes_test(lambda u: u.is_superuser, login_url="admin_login")
 def AdminProductUpdateView(request, product_id):
-
     product = get_object_or_404(Product, id=product_id)
     variants = product.variants.prefetch_related("images").all()
-
-    # ======================
-    # GET → show old data
-    # ======================
     if request.method == "GET":
         return render(
             request,
@@ -473,62 +459,74 @@ def AdminProductUpdateView(request, product_id):
                 "variants": variants,
             }
         )
-
-    # ======================
-    # POST → update data
-    # ======================
     if request.method == "POST":
-
+        # ---- Check if list/unlist action ----
+        for index, variant in enumerate(variants, start=1):
+            action_field = f"variant_action_{index}"
+            if action_field in request.POST:
+                action = request.POST.get(action_field)
+                if action == "list":
+                    variant.is_listed = True
+                elif action == "unlist":
+                    variant.is_listed = False
+                variant.save()
+                return redirect("edit_products", product_id=product.id)
         # ---- Product update ----
         product.name = request.POST.get("product_name", "").strip()
         product.description = request.POST.get("product_description", "").strip()
         brand_id = request.POST.get("product_brand")
         category_id = request.POST.get("product_category")
-
         if brand_id:
             product.brand = Brand.objects.get(id=brand_id)
 
         if category_id:
             product.category = Category.objects.get(id=category_id)
-
         product.save()
 
         # ---- Variants update ----
         for index, variant in enumerate(variants, start=1):
-
             color_name = request.POST.get(f"color_name_{index}")
             color_code = request.POST.get(f"color_code_{index}")
             price = request.POST.get(f"price_{index}")
             stock = request.POST.get(f"stock_{index}")
-
             if not color_name:
                 continue
-
             variant.color_name = color_name
             variant.color_code = color_code or "#000000"
             variant.price = price or variant.price
             variant.stock = stock or variant.stock
             variant.save()
 
-            # ---- Replace / Add images ----
-            for img_slot in range(1, 5):  # 1 to 4
+            # ---- Replace images ----
+            for img_slot in range(1, 5):  
                 field_name = f"image{img_slot}_{index}"
                 image_file = request.FILES.get(field_name)
 
                 if image_file:
-                    # Try to update existing image in this position (by order)
                     existing_images = variant.images.all().order_by('id')
                     if img_slot <= existing_images.count():
-                        # Replace existing image
                         old_image = existing_images[img_slot - 1]
                         old_image.image = image_file
                         old_image.save()
                     else:
-                        # Create new image
                         ProductImage.objects.create(
                             variant=variant,
                             image=image_file
                         )
-
         return redirect("edit_products", product_id=product.id)
+
+# Product Delecte
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
+@user_passes_test(lambda u: u.is_superuser, login_url="admin_login")
+def AdminProductVariantDeleteView(request, variant_id):
+    variant = get_object_or_404(ProductVariant, id=variant_id)
+    product = variant.product
+    current_variant_count = product.variants.count()
+    if current_variant_count <= 1:
+        messages.error(request,"Cannot delete the last variant of a product.")
+        return redirect("edit_products", product_id=product.id)
+    variant_color = variant.color_name
+    variant.delete()
+    messages.success(request,f"Variant '{variant_color}' was successfully deleted.")
+    return redirect("edit_products", product_id=product.id)
 
