@@ -8,7 +8,9 @@ urlpatterns = [
     path('admin-management/create', views.AdminProductCreateView, name='add_products'),
     path("admin-management/search/", views.AdminProductsearchView, name="products_search"),
     path('admin-management/update/<int:product_id>/', views.AdminProductUpdateView, name='edit_products'),
-    path("admin-management/detail/<int:id>/", views.AdminProductDetailView, name="product_variant"),  
+    path("admin-management/detail/<int:id>/", views.AdminProductDetailView, name="product_variant"), 
+    path('admin-management/variant/delete/<int:variant_id>/', views.AdminProductVariantDeleteView, name='delete_variant'),
+    
 
     # User-side product 
     path('', views.products, name='products'),
