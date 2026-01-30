@@ -10,7 +10,7 @@ urlpatterns = [
     path('admin-management/update/<int:product_id>/', views.AdminProductUpdateView, name='edit_products'),
     path("admin-management/detail/<int:id>/", views.AdminProductDetailView, name="product_variant"), 
     path('admin-management/variant/delete/<int:variant_id>/', views.AdminProductVariantDeleteView, name='delete_variant'),
-    
+    path('admin-management/create-variant/<int:product_id>', views.AdminProductVariantAddView, name='add_variant'),
 
     # User-side product 
     path('', views.products, name='products'),

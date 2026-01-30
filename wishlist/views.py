@@ -4,7 +4,7 @@ from django.contrib import messages
 from .models import WishlistItem
 from cart.models import CartItem, Cart
 from products.models import ProductImage,ProductVariant
-from django.urls import reverse
+
 
 @login_required
 def wishlist(request):
