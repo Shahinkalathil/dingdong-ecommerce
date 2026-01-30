@@ -27,3 +27,9 @@ class ProductOffer(models.Model):
 
     def __str__(self):
         return f"{self.product.name} - {self.discount_percentage}%"
+    
+    def is_valid(self):
+        now = timezone.now()
+        return self.is_active and (
+            self.valid_until is None or self.valid_until >= now
+        )

@@ -13,8 +13,7 @@ import random
 from decimal import Decimal
 import base64
 import io
-from django.db import transaction
-import uuid
+from offers.models import ProductOffer
 
 # Userside
 # -------------------------------------------
@@ -244,7 +243,8 @@ def product_detail(request, product_id):
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 @user_passes_test(lambda u: u.is_superuser, login_url="admin_login")
 def AdminProductListView(request):
-    products = Product.objects.prefetch_related("variants__images").all()
+    products = Product.objects.select_related("product_offer").prefetch_related("variants__images")
+
     context = {
         "products": products,
     }
@@ -441,7 +441,6 @@ def process_base64_image(base64_data, filename):
         return None
 
 # Product Update
-
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 @user_passes_test(lambda u: u.is_superuser, login_url="admin_login")
 def AdminProductUpdateView(request, product_id):
@@ -453,16 +452,26 @@ def AdminProductUpdateView(request, product_id):
     product = get_object_or_404(Product, id=product_id)
     variants = product.variants.prefetch_related("images").all()
     
+    try:
+        product_offer = ProductOffer.objects.get(product=product)
+    except ProductOffer.DoesNotExist:
+        product_offer = None
+    
+    context = {
+        'product_offer': product_offer,  # Fixed: was 'brand_offer'
+        'errors': {},  
+        'old_name': product.name,  # Fixed: was 'procuts.name'
+        "product": product,
+        "brands": Brand.objects.filter(is_listed=True),
+        "categories": Category.objects.filter(is_listed=True),
+        "variants": variants, 
+    }
+    
     if request.method == "GET":
         return render(
             request,
             "admin_panel/product/product_edit.html",
-            {
-                "product": product,
-                "brands": Brand.objects.filter(is_listed=True),
-                "categories": Category.objects.filter(is_listed=True),
-                "variants": variants,
-            }
+            context
         )
     
     if request.method == "POST":
@@ -531,14 +540,9 @@ def AdminProductUpdateView(request, product_id):
             if any(variant_errors):
                 form_data = request.POST.copy()
                 messages.error(request, "Please fix the errors in the new variant form.")
-                return render(request, "admin_panel/product/product_edit.html", {
-                    "variant_errors": variant_errors,
-                    "form_data": form_data,
-                    "product": product,
-                    "brands": Brand.objects.filter(is_listed=True),
-                    "categories": Category.objects.filter(is_listed=True),
-                    "variants": variants,
-                })
+                context['variant_errors'] = variant_errors
+                context['form_data'] = form_data
+                return render(request, "admin_panel/product/product_edit.html", context)
             
             # Create variants
             variants_created = 0
@@ -575,7 +579,7 @@ def AdminProductUpdateView(request, product_id):
             return redirect("edit_products", product_id=product.id)
         
         # ---- Handle EXISTING PRODUCT/VARIANT UPDATE ----
-        else:
+        elif form_type == 'update_product':
             # ---- Check if list/unlist action ----
             for index, variant in enumerate(variants, start=1):
                 action_field = f"variant_action_{index}"
@@ -639,6 +643,9 @@ def AdminProductUpdateView(request, product_id):
             
             messages.success(request, "Product and variants updated successfully!")
             return redirect("edit_products", product_id=product.id)
+    
+    return render(request, "admin_panel/product/product_edit.html", context)
+
 
 # Product Delecte
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
@@ -654,7 +661,5 @@ def AdminProductVariantDeleteView(request, variant_id):
     variant.delete()
     messages.success(request,f"Variant '{variant_color}' was successfully deleted.")
     return redirect("edit_products", product_id=product.id)
-
-
 
 

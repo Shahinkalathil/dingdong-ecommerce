@@ -259,139 +259,393 @@
         </div>
       </div>
 
-<!-- Add New Variants Section -->
-<div class="border-2 border-gray-300 rounded-xl p-6 mb-6 variant-item">
-        <div class="bg-white rounded-2xl p-6 mb-6">
-    <form method="POST" enctype="multipart/form-data" class="space-y-8">
-        {% csrf_token %}
-        <!-- Hidden field to identify this form -->
-        <input type="hidden" name="form_type" value="add_variant">
+    <!-- Add New Variants Section -->
+    <div class="border-2 border-gray-300 rounded-xl p-6 mb-6 variant-item">
+            <div class="bg-white rounded-2xl p-6 mb-6">
+        <form method="POST" enctype="multipart/form-data" class="space-y-8">
+            {% csrf_token %}
+            <!-- Hidden field to identify this form -->
+            <input type="hidden" name="form_type" value="add_variant">
 
-        <!-- Variants Section -->
-        <section class="mb-8">
-        <div class="flex justify-between items-center mb-4">
-            <h3 class="text-lg font-semibold text-gray-800">New Variants</h3>
-            <button type="button" id="addVariantBtn"
-                    class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 text-sm">
-            + Add Another Variant
+            <!-- Variants Section -->
+            <section class="mb-8">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold text-gray-800">New Variants</h3>
+                <button type="button" id="addVariantBtn"
+                        class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 text-sm">
+                + Add Another Variant
+                </button>
+            </div>
+
+            <div id="variantsContainer">
+                <!-- First variant template -->
+                <div class="variant-item bg-gray-50 rounded-xl p-6 mb-4 relative">
+                <button type="button" class="remove-variant hidden absolute -right-2 -top-2 h-8 w-8 rounded-full bg-red-500 hover:bg-red-600 text-white">&times;</button>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                    <!-- Price -->
+                    <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Price *</label>
+                    <input name="variant_price[]" type="text" placeholder="Price"
+                            value="{{ form_data.variant_price.0|default:'' }}"
+                            class="px-3 py-2 border rounded-lg w-full
+                            {% if variant_errors.0.price %}border-red-500{% endif %}">
+                    {% if variant_errors.0.price %}
+                        <p class="text-red-600 text-xs mt-1">{{ variant_errors.0.price }}</p>
+                    {% endif %}
+                    </div>
+
+                    <!-- Stock -->
+                    <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Stock *</label>
+                    <input name="variant_stock[]" type="text" placeholder="Stock"
+                            value="{{ form_data.variant_stock.0|default:'' }}"
+                            class="px-3 py-2 border rounded-lg w-full
+                            {% if variant_errors.0.stock %}border-red-500{% endif %}">
+                    {% if variant_errors.0.stock %}
+                        <p class="text-red-600 text-xs mt-1">{{ variant_errors.0.stock }}</p>
+                    {% endif %}
+                    </div>
+
+                    <!-- Color Name -->
+                    <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Color Name *</label>
+                    <input name="variant_color_name[]" type="text" placeholder="Color Name"
+                            value="{{ form_data.variant_color_name.0|default:'' }}"
+                            class="px-3 py-2 border rounded-lg w-full
+                            {% if variant_errors.0.color_name %}border-red-500{% endif %}">
+                    {% if variant_errors.0.color_name %}
+                        <p class="text-red-600 text-xs mt-1">{{ variant_errors.0.color_name }}</p>
+                    {% endif %}
+                    </div>
+
+                    <!-- Color Picker -->
+                    <div class="flex items-center gap-2">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Color</label>
+                        <input name="variant_color_hex[]" type="color" value="{{ form_data.variant_color_hex.0|default:'#000000' }}"
+                            class="h-10 border rounded-lg cursor-pointer" />
+                    </div>
+                    </div>
+                </div>
+
+                <!-- Images -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {% for i in "1234" %}
+                    <div class="image-upload-container">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Image {{ i }} *</label>
+                    <div class="upload-box relative bg-white border-2 border-dashed border-gray-300 rounded-xl p-4 text-center hover:border-blue-400 transition-colors duration-200 shadow-sm">
+                        <input type="file" accept="image/*" name="variant_image_{{ i }}[]" class="image-input absolute inset-0 opacity-0 cursor-pointer">
+                        <div class="placeholder text-sm text-gray-500 select-none flex flex-col items-center justify-center h-24">
+                        <svg class="w-8 h-8 mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                        </svg>
+                        <span>Image {{ i }}</span>
+                        </div>
+                        <div class="preview-container hidden">
+                        <img class="preview w-full h-24 object-cover rounded-lg shadow-sm" />
+                        <button type="button" class="remove-image absolute -top-2 -right-2 h-6 w-6 rounded-full bg-red-500 text-white text-sm hover:bg-red-600 transition-colors duration-200 flex items-center justify-center">&times;</button>
+                        <button type="button" class="crop-image absolute top-1 left-1 h-6 w-6 rounded-full bg-blue-500 text-white text-xs hover:bg-blue-600 transition-colors duration-200 flex items-center justify-center">
+                            <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M4 2a1 1 0 011 1v1h1a1 1 0 110 2H5v6h6a1 1 0 110 2H5a2 2 0 01-2-2V6H2a1 1 0 110-2h1V3a1 1 0 011-1zm9 7h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H8a1 1 0 110-2h3V6a1 1 0 112 0v3z"/>
+                            </svg>
+                        </button>
+                        </div>
+                    </div>
+                    <input type="hidden" name="variant_image_{{ i }}_cropped[]" class="cropped-data">
+                    </div>
+                    {% endfor %}
+                </div>
+                {% if variant_errors.0.images %}
+                    <p class="text-red-600 text-xs mt-2">{{ variant_errors.0.images }}</p>
+                {% endif %}
+
+                </div>
+            </div>
+            </section>
+
+            <div class="text-center flex gap-4 justify-center">
+            <button type="submit" class="bg-black text-white px-12 py-3 rounded-xl font-semibold hover:bg-gray-800 transition-colors duration-200">
+                Save Variants
+            </button>
+            </div>
+
+        </form>
+    </div>
+    </div>
+
+<!-- Product Offer Section - Replace the existing section in your template -->
+<div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+    <div class="flex items-center justify-between mb-6">
+        <h3 class="text-xl font-semibold text-gray-900">Product Offer</h3>
+        {% if product_offer %}
+        <div class="flex items-center space-x-3">
+            <!-- Toggle Offer Active/Inactive -->
+            <form method="POST" action="{% url 'toggle_productoffer' product.id %}" class="inline">
+                {% csrf_token %}
+                <button type="submit" 
+                        class="px-4 py-2 rounded-lg font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 
+                            {% if product_offer.is_active %}
+                                bg-green-100 text-green-700 hover:bg-green-200 focus:ring-green-500
+                            {% else %}
+                                bg-gray-100 text-gray-700 hover:bg-gray-300 focus:ring-gray-500
+                            {% endif %}">
+                    {% if product_offer.is_active %}
+                        <span class="flex items-center">
+                            <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                            </svg>
+                            Active
+                        </span>
+                    {% else %}
+                        <span class="flex items-center">
+                            <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                            </svg>
+                            Inactive
+                        </span>
+                    {% endif %}
+                </button>
+            </form>
+            
+            <!-- Edit Offer Button -->
+            <button type="button"
+                    onclick="document.getElementById('editOfferModal').classList.remove('hidden')"
+                    class="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors">
+                Edit Offer
+            </button>
+            
+            <!-- Delete Offer Button -->
+            <button type="button" 
+                    onclick="document.getElementById('deleteOfferModal').classList.remove('hidden')"
+                    class="px-4 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500">
+                Delete Offer
+            </button>
+        </div>
+        {% else %}
+        <button type="button" 
+                onclick="document.getElementById('addOfferModal').classList.remove('hidden')"
+                class="px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors">
+            + Add Offer
+        </button>
+        {% endif %}
+    </div>
+
+    {% if product_offer %}
+    <!-- Existing Offer Display -->
+    <div class="bg-gradient-to-r from-green-50 to-blue-50 rounded-lg p-6 border-2 border-green-200">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+                <p class="text-sm text-gray-600 mb-1">Discount</p>
+                <p class="text-2xl font-bold text-green-600">{{ product_offer.discount_percentage }}% OFF</p>
+            </div>
+            <div>
+                <p class="text-sm text-gray-600 mb-1">Valid Until</p>
+                <p class="text-lg font-semibold text-gray-800">{{ product_offer.valid_until|date:"M d, Y" }}</p>
+                <p class="text-xs text-gray-500">{{ product_offer.valid_until|date:"h:i A" }}</p>
+            </div>
+            <div>
+                <p class="text-sm text-gray-600 mb-1">Status</p>
+                <p class="text-lg font-semibold {% if product_offer.is_active %}text-green-600{% else %}text-gray-500{% endif %}">
+                    {% if product_offer.is_active %}Active{% else %}Inactive{% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <!-- No Offer Message -->
+    <div class="text-center py-8">
+        <svg class="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"/>
+        </svg>
+        <p class="text-gray-500 text-lg">No offer available for this Product</p>
+        <p class="text-gray-400 text-sm mt-1">Click "Add Offer" to create a promotional discount</p>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Add Offer Modal -->
+<div id="addOfferModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-lg bg-white">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-xl font-semibold text-gray-900">Add Product Offer</h3>
+            <button onclick="document.getElementById('addOfferModal').classList.add('hidden')" class="text-gray-400 hover:text-gray-600">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+        <form method="POST" class="space-y-4" action="{% url 'add_productoffer' product.id %}">
+            {% csrf_token %}
+            
+            <div>
+                <label for="add_discount" class="block text-sm font-semibold text-gray-700 mb-2">
+                    Discount Percentage <span class="text-red-500">*</span>
+                </label>
+                <input type="number" 
+                    id="add_discount" 
+                    name="discount_percentage" 
+                    min="0.01" 
+                    max="100" 
+                    step="0.01"
+                    required
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                    placeholder="e.g., 20">
+            </div>
+            
+            <div>
+                <label for="add_valid_until" class="block text-sm font-semibold text-gray-700 mb-2">
+                    Valid Until <span class="text-red-500">*</span>
+                </label>
+                <input type="datetime-local" 
+                    id="add_valid_until" 
+                    name="valid_until" 
+                    required
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
+            </div>
+
+            <div class="flex space-x-3 pt-4">
+                <button type="submit" class="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors">
+                    Create Offer
+                </button>
+                <button type="button" 
+                        onclick="document.getElementById('addOfferModal').classList.add('hidden')"
+                        class="flex-1 px-4 py-2 bg-gray-200 text-gray-800 rounded-lg font-medium hover:bg-gray-300 transition-colors">
+                    Cancel
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Edit Offer Modal -->
+{% if product_offer %}
+<div id="editOfferModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 z-50">
+    <div class="relative top-20 mx-auto p-5 w-96 bg-white rounded-lg shadow-lg">
+        <div class="flex justify-between mb-4">
+            <h3 class="text-xl font-semibold">Edit Product Offer</h3>
+            <button onclick="document.getElementById('editOfferModal').classList.add('hidden')" class="text-gray-400 hover:text-gray-600">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
             </button>
         </div>
 
-        <div id="variantsContainer">
-            <!-- First variant template -->
-            <div class="variant-item bg-gray-50 rounded-xl p-6 mb-4 relative">
-            <button type="button" class="remove-variant hidden absolute -right-2 -top-2 h-8 w-8 rounded-full bg-red-500 hover:bg-red-600 text-white">&times;</button>
+        <form method="POST" action="{% url 'add_productoffer' product.id %}" class="space-y-4">
+            {% csrf_token %}
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                <!-- Price -->
-                <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Price *</label>
-                <input name="variant_price[]" type="text" placeholder="Price"
-                        value="{{ form_data.variant_price.0|default:'' }}"
-                        class="px-3 py-2 border rounded-lg w-full
-                        {% if variant_errors.0.price %}border-red-500{% endif %}">
-                {% if variant_errors.0.price %}
-                    <p class="text-red-600 text-xs mt-1">{{ variant_errors.0.price }}</p>
+            <div>
+                <label class="block text-sm font-semibold mb-2">
+                    Discount Percentage <span class="text-red-500">*</span>
+                </label>
+                <input type="number" 
+                    name="discount_percentage"
+                    value="{{ product_offer.discount_percentage }}"
+                    min="0.01" 
+                    max="100" 
+                    step="0.01"
+                    required
+                    class="w-full px-3 py-2 border rounded-lg {% if errors.discount_percentage %}border-red-500{% endif %}">
+                {% if errors.discount_percentage %}
+                    <p class="mt-1 text-sm text-red-600 font-medium">
+                        {{ errors.discount_percentage }}
+                    </p>
                 {% endif %}
-                </div>
-
-                <!-- Stock -->
-                <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Stock *</label>
-                <input name="variant_stock[]" type="text" placeholder="Stock"
-                        value="{{ form_data.variant_stock.0|default:'' }}"
-                        class="px-3 py-2 border rounded-lg w-full
-                        {% if variant_errors.0.stock %}border-red-500{% endif %}">
-                {% if variant_errors.0.stock %}
-                    <p class="text-red-600 text-xs mt-1">{{ variant_errors.0.stock }}</p>
-                {% endif %}
-                </div>
-
-                <!-- Color Name -->
-                <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Color Name *</label>
-                <input name="variant_color_name[]" type="text" placeholder="Color Name"
-                        value="{{ form_data.variant_color_name.0|default:'' }}"
-                        class="px-3 py-2 border rounded-lg w-full
-                        {% if variant_errors.0.color_name %}border-red-500{% endif %}">
-                {% if variant_errors.0.color_name %}
-                    <p class="text-red-600 text-xs mt-1">{{ variant_errors.0.color_name }}</p>
-                {% endif %}
-                </div>
-
-                <!-- Color Picker -->
-                <div class="flex items-center gap-2">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Color</label>
-                    <input name="variant_color_hex[]" type="color" value="{{ form_data.variant_color_hex.0|default:'#000000' }}"
-                        class="h-10 border rounded-lg cursor-pointer" />
-                </div>
-                </div>
             </div>
 
-            <!-- Images -->
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {% for i in "1234" %}
-                <div class="image-upload-container">
-                <label class="block text-sm font-medium text-gray-700 mb-1">Image {{ i }} *</label>
-                <div class="upload-box relative bg-white border-2 border-dashed border-gray-300 rounded-xl p-4 text-center hover:border-blue-400 transition-colors duration-200 shadow-sm">
-                    <input type="file" accept="image/*" name="variant_image_{{ i }}[]" class="image-input absolute inset-0 opacity-0 cursor-pointer">
-                    <div class="placeholder text-sm text-gray-500 select-none flex flex-col items-center justify-center h-24">
-                    <svg class="w-8 h-8 mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                    </svg>
-                    <span>Image {{ i }}</span>
-                    </div>
-                    <div class="preview-container hidden">
-                    <img class="preview w-full h-24 object-cover rounded-lg shadow-sm" />
-                    <button type="button" class="remove-image absolute -top-2 -right-2 h-6 w-6 rounded-full bg-red-500 text-white text-sm hover:bg-red-600 transition-colors duration-200 flex items-center justify-center">&times;</button>
-                    <button type="button" class="crop-image absolute top-1 left-1 h-6 w-6 rounded-full bg-blue-500 text-white text-xs hover:bg-blue-600 transition-colors duration-200 flex items-center justify-center">
-                        <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M4 2a1 1 0 011 1v1h1a1 1 0 110 2H5v6h6a1 1 0 110 2H5a2 2 0 01-2-2V6H2a1 1 0 110-2h1V3a1 1 0 011-1zm9 7h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H8a1 1 0 110-2h3V6a1 1 0 112 0v3z"/>
-                        </svg>
-                    </button>
-                    </div>
-                </div>
-                <input type="hidden" name="variant_image_{{ i }}_cropped[]" class="cropped-data">
-                </div>
-                {% endfor %}
+            <div>
+                <label class="block text-sm font-semibold mb-2">
+                    Valid Until <span class="text-red-500">*</span>
+                </label>
+                <input type="datetime-local" 
+                    name="valid_until"
+                    value="{{ product_offer.valid_until|date:'Y-m-d\TH:i' }}"
+                    required
+                    class="w-full px-3 py-2 border rounded-lg {% if errors.valid_until %}border-red-500{% endif %}">
+                {% if errors.valid_until %}
+                    <p class="mt-1 text-sm text-red-600 font-medium">
+                        {{ errors.valid_until }}
+                    </p>
+                {% endif %}
             </div>
-            {% if variant_errors.0.images %}
-                <p class="text-red-600 text-xs mt-2">{{ variant_errors.0.images }}</p>
-            {% endif %}
 
+            <div class="flex gap-3 pt-4">
+                <button type="submit"
+                        class="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                    Update Offer
+                </button>
+                <button type="button"
+                        onclick="document.getElementById('editOfferModal').classList.add('hidden')"
+                        class="flex-1 bg-gray-200 py-2 rounded-lg hover:bg-gray-300 transition-colors">
+                    Cancel
+                </button>
             </div>
-        </div>
-        </section>
-
-        <div class="text-center flex gap-4 justify-center">
-        <button type="submit" class="bg-black text-white px-12 py-3 rounded-xl font-semibold hover:bg-gray-800 transition-colors duration-200">
-            Save Variants
-        </button>
-        </div>
-
-    </form>
-</div>
-</div>
-
-  <!-- Crop Modal -->
-  <div id="cropModal" class="fixed inset-0 bg-black bg-opacity-75 z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl p-6 max-w-4xl w-full max-h-[90vh] overflow-auto">
-      <div class="flex justify-between items-center mb-4">
-        <h3 class="text-xl font-semibold text-gray-900">Crop Image</h3>
-        <button id="closeCropModal" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
-      </div>
-      
-      <div class="crop-container mb-6">
-        <img id="cropImage" class="max-w-full max-h-96 mx-auto rounded-lg shadow-lg" />
-      </div>
-      
-      <div class="flex justify-center space-x-4">
-        <button id="cropCancel" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors duration-200">Cancel</button>
-        <button id="cropConfirm" class="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-200">Crop & Save</button>
-      </div>
+        </form>
     </div>
-  </div>
+</div>
+
+<!-- Delete Offer Modal -->
+<div id="deleteOfferModal" 
+    class="hidden fixed inset-0 bg-gray-900 bg-opacity-60 flex items-center justify-center z-50">
+    <div class="bg-white rounded-xl shadow-2xl w-full max-w-md mx-4 p-6 transform transition-all">
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-5">
+            <h3 class="text-xl font-bold text-gray-900">Delete Product Offer</h3>
+            <button onclick="document.getElementById('deleteOfferModal').classList.add('hidden')" class="text-gray-400 hover:text-gray-600">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Body -->
+        <div class="mb-6">
+            <p class="text-gray-700">
+                Are you sure you want to delete the offer for <strong>{{ product.name }}</strong>?
+            </p>
+            <p class="text-red-600 font-medium mt-2">
+                This action cannot be undone.
+            </p>
+        </div>
+
+        <!-- Form -->
+        <form method="POST" action="{% url 'delete_productoffer' product.id %}">
+            {% csrf_token %}
+            
+            <div class="flex space-x-4">
+                <button type="submit" 
+                        class="flex-1 px-4 py-3 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500">
+                    Yes, Delete Offer
+                </button>
+                <button type="button" 
+                        onclick="document.getElementById('deleteOfferModal').classList.add('hidden')"
+                        class="flex-1 px-4 py-3 bg-gray-200 text-gray-800 rounded-lg font-medium hover:bg-gray-300 transition-colors focus:outline-none">
+                    Cancel
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endif %}
+
+<!-- Crop Modal -->
+<div id="cropModal" class="fixed inset-0 bg-black bg-opacity-75 z-50 hidden flex items-center justify-center p-4">
+<div class="bg-white rounded-2xl p-6 max-w-4xl w-full max-h-[90vh] overflow-auto">
+    <div class="flex justify-between items-center mb-4">
+    <h3 class="text-xl font-semibold text-gray-900">Crop Image</h3>
+    <button id="closeCropModal" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+    </div>
+    
+    <div class="crop-container mb-6">
+    <img id="cropImage" class="max-w-full max-h-96 mx-auto rounded-lg shadow-lg" />
+    </div>
+    
+    <div class="flex justify-center space-x-4">
+    <button id="cropCancel" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors duration-200">Cancel</button>
+    <button id="cropConfirm" class="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-200">Crop & Save</button>
+    </div>
+</div>
+</div>
 
 </div>
 
@@ -433,9 +687,8 @@
     </div>
 </div>
 
-
-
 </main>
+
 
 
 <script>
