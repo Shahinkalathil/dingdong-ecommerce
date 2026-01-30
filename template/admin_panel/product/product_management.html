@@ -76,6 +76,7 @@
                             <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">Product Name</th>
                             <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">Category</th>
                             <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">Brand</th>
+                            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">Offers</th>
                             <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">Actions</th>
                         </tr>
                     </thead>
@@ -111,6 +112,14 @@
                             <td class="px-6 py-4 text-sm text-gray-900 font-medium">{{ product.name }}</td>
                             <td class="px-6 py-4 text-sm text-gray-600">{{ product.category.name }}</td>
                             <td class="px-6 py-4 text-sm text-gray-600">{{ product.brand.name }}</td>
+                            <td class="px-6 py-4 text-sm text-gray-600">
+                                {% if product.product_offer and product.product_offer.is_valid %}                    
+                                    {{ product.product_offer.discount_percentage }}%
+                                {% else %}
+                                        None
+                                {% endif %}
+                            </td>
+
                             
                             <td class="px-6 py-4">
                                 <div class="flex items-center space-x-2">
