@@ -48,6 +48,9 @@
               <h2 class="text-2xl font-bold text-gray-900 mb-6">Basic Information</h2>
                 <form method="POST" enctype="multipart/form-data" class="space-y-8">
                     {% csrf_token %}
+                    <!-- Hidden field to identify this form -->
+                    <input type="hidden" name="form_type" value="update_product">
+                    
                     <!-- Basic Info -->
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <!-- Product Name -->
@@ -101,7 +104,7 @@
                                   placeholder="Describe your product in detail...">{{ product.description }}</textarea>
                     </div>
                 
-                    <!-- Variant 1 -->
+                    <!-- Existing Variants -->
                      {% for variant in variants %}
                     <div class="border-2 border-gray-300 rounded-xl p-6 mb-6 variant-item">
                       
@@ -228,10 +231,10 @@
                                                 src="https://via.placeholder.com/150?text=Upload"
                                                 class="w-32 h-32 object-contain border-2 border-dashed border-gray-400 rounded-lg bg-gray-50 p-2">
                                             <input type="file" accept="image/*"
-                                                  name="image{{ forloop.counter }}_{{ forloop.parentloop.counter }}"
-                                                  id="image{{ forloop.parentloop.counter }}_{{ forloop.counter }}"
-                                                  class="hidden"
-                                                  onchange="previewImage(this, 'preview{{ forloop.parentloop.counter }}_{{ forloop.counter }}')">
+                                                    name="image{{ forloop.counter }}_{{ forloop.parentloop.counter }}"
+                                                    id="image{{ forloop.parentloop.counter }}_{{ forloop.counter }}"
+                                                    class="hidden"
+                                                    onchange="previewImage(this, 'preview{{ forloop.parentloop.counter }}_{{ forloop.counter }}')">
                                             <button type="button"
                                                     onclick="document.getElementById('image{{ forloop.parentloop.counter }}_{{ forloop.counter }}').click()"
                                                     class="absolute -top-2 -right-2 bg-green-600 text-white rounded-full w-16 h-7 text-xs font-medium shadow">
@@ -243,22 +246,26 @@
                                 {% endfor %}
                             </div>
                         </div>    
-                        </div>
+                    </div>
                     {% endfor %}
 
                     <!-- Edit Product Button -->
                     
                         <button type="submit" class="bg-gray-900 text-white px-12 py-3 rounded-lg hover:bg-gray-800 font-medium">
-                            Edit Product
+                            Update Product
                         </button>
                     
             </form>
         </div>
       </div>
+
+<!-- Add New Variants Section -->
 <div class="border-2 border-gray-300 rounded-xl p-6 mb-6 variant-item">
         <div class="bg-white rounded-2xl p-6 mb-6">
     <form method="POST" enctype="multipart/form-data" class="space-y-8">
         {% csrf_token %}
+        <!-- Hidden field to identify this form -->
+        <input type="hidden" name="form_type" value="add_variant">
 
         <!-- Variants Section -->
         <section class="mb-8">
@@ -366,6 +373,7 @@
     </form>
 </div>
 </div>
+
   <!-- Crop Modal -->
   <div id="cropModal" class="fixed inset-0 bg-black bg-opacity-75 z-50 hidden flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl p-6 max-w-4xl w-full max-h-[90vh] overflow-auto">
@@ -389,7 +397,7 @@
 
 
 
-<!-- Delete Confirmation Modal (place this once at the bottom of product_edit.html) -->
+<!-- Delete Confirmation Modal -->
 <div id="variantDeleteModal"
      class="fixed inset-0 bg-gray-900 bg-opacity-60 hidden flex items-center justify-center z-50 transition-opacity duration-200">
 
@@ -457,7 +465,7 @@ function previewImage(input, previewId) {
 
 // Initialize all color pickers
 document.querySelectorAll('input[type="color"]').forEach(picker => {
-    const hexInput = picker.nextElementSibling; // assuming hex input is right after color input
+    const hexInput = picker.nextElementSibling;
 
     if (hexInput && hexInput.tagName === 'INPUT' && hexInput.type === 'text') {
         // Color picker → hex
@@ -474,7 +482,8 @@ document.querySelectorAll('input[type="color"]').forEach(picker => {
         });
     }
 });
-// delect variant 
+
+// delete variant 
 function openVariantDeleteModal(variantId, colorName, productId) {
     const message = `Are you sure you want to delete the <strong>${colorName}</strong> variant? This cannot be undone.`;
     document.getElementById("variantDeleteMessage").innerHTML = message;
@@ -508,17 +517,24 @@ function closeVariantDeleteModal() {
         document.getElementById('colorPicker').value = e.target.value;
     });
 
-    // Preview uploaded images
-    function previewImage(input, previewId) {
-        const preview = document.getElementById(previewId);
-        if (input.files && input.files[0]) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                preview.innerHTML = `<img src="${e.target.result}" class="w-full h-full object-cover rounded-xl">`;
-            }
-            reader.readAsDataURL(input.files[0]);
-        }
+function previewImage(input, previewId) {
+    const img = document.getElementById(previewId);
+    if (!img) {
+        console.warn("Preview image element not found:", previewId);
+        return;
     }
+
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            img.src = e.target.result;
+            // Optional: remove padding / bg if you want image edge-to-edge
+            // img.style.padding = "0";
+            // img.parentElement.style.background = "transparent";
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
 </script>
 
 <!-- Cropper.js CSS and JS -->
@@ -595,7 +611,7 @@ function openCropper(imageContainer, imageSrc) {
   
   // Initialize new cropper with card-like aspect ratio
   currentCropper = new Cropper(cropImage, {
-    aspectRatio: 4/5, // Card-like ratio (adjust as needed)
+    aspectRatio: 4/5,
     viewMode: 2,
     dragMode: 'move',
     autoCropArea: 0.8,
@@ -617,7 +633,7 @@ function openCropper(imageContainer, imageSrc) {
     wheelZoomRatio: 0.1,
     cropBoxData: {
       width: 300,
-      height: 375 // 4:5 ratio
+      height: 375
     }
   });
 }
@@ -642,7 +658,7 @@ function confirmCrop() {
   // Get cropped canvas
   const canvas = currentCropper.getCroppedCanvas({
     width: 400,
-    height: 500, // 4:5 ratio
+    height: 500,
     imageSmoothingEnabled: true,
     imageSmoothingQuality: 'high',
   });
@@ -746,9 +762,10 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Handle form submission to include cropped data
-document.querySelector('form').addEventListener('submit', function(e) {
-  // The cropped data is already stored in hidden inputs
-  console.log('Form submitted with cropped images');
+document.querySelectorAll('form').forEach(form => {
+  form.addEventListener('submit', function(e) {
+    console.log('Form submitted');
+  });
 });
 </script>
 

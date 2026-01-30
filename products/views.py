@@ -441,11 +441,18 @@ def process_base64_image(base64_data, filename):
         return None
 
 # Product Update
+
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 @user_passes_test(lambda u: u.is_superuser, login_url="admin_login")
 def AdminProductUpdateView(request, product_id):
+    """
+    Combined view to handle:
+    1. Product and existing variant updates
+    2. New variant creation
+    """
     product = get_object_or_404(Product, id=product_id)
     variants = product.variants.prefetch_related("images").all()
+    
     if request.method == "GET":
         return render(
             request,
@@ -457,61 +464,181 @@ def AdminProductUpdateView(request, product_id):
                 "variants": variants,
             }
         )
+    
     if request.method == "POST":
-        # ---- Check if list/unlist action ----
-        for index, variant in enumerate(variants, start=1):
-            action_field = f"variant_action_{index}"
-            if action_field in request.POST:
-                action = request.POST.get(action_field)
-                if action == "list":
-                    variant.is_listed = True
-                elif action == "unlist":
-                    variant.is_listed = False
+        # ---- Determine which form was submitted ----
+        form_type = request.POST.get('form_type')
+        
+        # ---- Handle NEW VARIANT CREATION ----
+        if form_type == 'add_variant':
+            variant_prices = request.POST.getlist('variant_price[]')
+            variant_stocks = request.POST.getlist('variant_stock[]')
+            variant_color_names = request.POST.getlist('variant_color_name[]')
+            variant_color_hexs = request.POST.getlist('variant_color_hex[]')
+            
+            # Collect cropped images
+            cropped_images = {}
+            for i in range(len(variant_prices)):
+                cropped_images[i] = {}
+                for img_num in range(1, 5):
+                    field_name = f'variant_image_{img_num}_cropped[]'
+                    cropped_data_list = request.POST.getlist(field_name)
+                    if i < len(cropped_data_list) and cropped_data_list[i]:
+                        cropped_images[i][img_num] = cropped_data_list[i]
+
+            # Validation
+            variant_errors = []
+            
+            for i in range(len(variant_prices)):
+                ve = {}
+
+                # Validate price
+                try:
+                    price = float(variant_prices[i])
+                    if price < 0:
+                        ve["price"] = "Price must be a positive number."
+                except (ValueError, IndexError):
+                    ve["price"] = "Price must be a number."
+
+                # Validate stock
+                try:
+                    stock = int(variant_stocks[i])
+                    if stock < 0:
+                        ve["stock"] = "Stock must be a positive integer."
+                except (ValueError, IndexError):
+                    ve["stock"] = "Stock must be an integer."
+
+                # Validate color name
+                try:
+                    if not variant_color_names[i].strip():
+                        ve["color_name"] = "Color name is required."
+                except IndexError:
+                    ve["color_name"] = "Color name is required."
+
+                # Validate images (exactly 4 required)
+                cropped_image_count = 0
+                if i in cropped_images:
+                    for img_num in range(1, 5):
+                        if img_num in cropped_images[i] and cropped_images[i][img_num]:
+                            cropped_image_count += 1
+                
+                if cropped_image_count != 4:
+                    ve["images"] = "Exactly 4 cropped images must be provided for this variant."
+                
+                variant_errors.append(ve)
+
+            # If there are errors, return to form with errors
+            if any(variant_errors):
+                form_data = request.POST.copy()
+                messages.error(request, "Please fix the errors in the new variant form.")
+                return render(request, "admin_panel/product/product_edit.html", {
+                    "variant_errors": variant_errors,
+                    "form_data": form_data,
+                    "product": product,
+                    "brands": Brand.objects.filter(is_listed=True),
+                    "categories": Category.objects.filter(is_listed=True),
+                    "variants": variants,
+                })
+            
+            # Create variants
+            variants_created = 0
+            for i in range(len(variant_prices)):
+                variant = ProductVariant.objects.create(
+                    product=product,
+                    price=float(variant_prices[i]),
+                    stock=int(variant_stocks[i]),
+                    color_name=variant_color_names[i],
+                    color_code=variant_color_hexs[i],
+                )
+
+                # Process and save images
+                if i in cropped_images:
+                    for img_num in range(1, 5):
+                        if img_num in cropped_images[i] and cropped_images[i][img_num]:
+                            try:
+                                image_file = process_base64_image(
+                                    cropped_images[i][img_num],
+                                    f"{product.name}_variant_{variant.id}_img_{img_num}"
+                                )
+                                
+                                if image_file:
+                                    ProductImage.objects.create(
+                                        variant=variant,
+                                        image=image_file
+                                    )
+                            except Exception as e:
+                                print(f"Error processing cropped image: {e}")
+                
+                variants_created += 1
+            
+            messages.success(request, f"Successfully added {variants_created} new variant(s)!")
+            return redirect("edit_products", product_id=product.id)
+        
+        # ---- Handle EXISTING PRODUCT/VARIANT UPDATE ----
+        else:
+            # ---- Check if list/unlist action ----
+            for index, variant in enumerate(variants, start=1):
+                action_field = f"variant_action_{index}"
+                if action_field in request.POST:
+                    action = request.POST.get(action_field)
+                    if action == "list":
+                        variant.is_listed = True
+                        messages.success(request, f"Variant '{variant.color_name}' has been listed.")
+                    elif action == "unlist":
+                        variant.is_listed = False
+                        messages.success(request, f"Variant '{variant.color_name}' has been unlisted.")
+                    variant.save()
+                    return redirect("edit_products", product_id=product.id)
+            
+            # ---- Product update ----
+            product.name = request.POST.get("product_name", "").strip()
+            product.description = request.POST.get("product_description", "").strip()
+            brand_id = request.POST.get("product_brand")
+            category_id = request.POST.get("product_category")
+            
+            if brand_id:
+                product.brand = Brand.objects.get(id=brand_id)
+
+            if category_id:
+                product.category = Category.objects.get(id=category_id)
+            
+            product.save()
+
+            # ---- Variants update ----
+            for index, variant in enumerate(variants, start=1):
+                color_name = request.POST.get(f"color_name_{index}")
+                color_code = request.POST.get(f"color_code_{index}")
+                price = request.POST.get(f"price_{index}")
+                stock = request.POST.get(f"stock_{index}")
+                
+                if not color_name:
+                    continue
+                
+                variant.color_name = color_name
+                variant.color_code = color_code or "#000000"
+                variant.price = price or variant.price
+                variant.stock = stock or variant.stock
                 variant.save()
-                return redirect("edit_products", product_id=product.id)
-        # ---- Product update ----
-        product.name = request.POST.get("product_name", "").strip()
-        product.description = request.POST.get("product_description", "").strip()
-        brand_id = request.POST.get("product_brand")
-        category_id = request.POST.get("product_category")
-        if brand_id:
-            product.brand = Brand.objects.get(id=brand_id)
 
-        if category_id:
-            product.category = Category.objects.get(id=category_id)
-        product.save()
+                # ---- Replace images ----
+                for img_slot in range(1, 5):  
+                    field_name = f"image{img_slot}_{index}"
+                    image_file = request.FILES.get(field_name)
 
-        # ---- Variants update ----
-        for index, variant in enumerate(variants, start=1):
-            color_name = request.POST.get(f"color_name_{index}")
-            color_code = request.POST.get(f"color_code_{index}")
-            price = request.POST.get(f"price_{index}")
-            stock = request.POST.get(f"stock_{index}")
-            if not color_name:
-                continue
-            variant.color_name = color_name
-            variant.color_code = color_code or "#000000"
-            variant.price = price or variant.price
-            variant.stock = stock or variant.stock
-            variant.save()
-
-            # ---- Replace images ----
-            for img_slot in range(1, 5):  
-                field_name = f"image{img_slot}_{index}"
-                image_file = request.FILES.get(field_name)
-
-                if image_file:
-                    existing_images = variant.images.all().order_by('id')
-                    if img_slot <= existing_images.count():
-                        old_image = existing_images[img_slot - 1]
-                        old_image.image = image_file
-                        old_image.save()
-                    else:
-                        ProductImage.objects.create(
-                            variant=variant,
-                            image=image_file
-                        )
-        return redirect("edit_products", product_id=product.id)
+                    if image_file:
+                        existing_images = variant.images.all().order_by('id')
+                        if img_slot <= existing_images.count():
+                            old_image = existing_images[img_slot - 1]
+                            old_image.image = image_file
+                            old_image.save()
+                        else:
+                            ProductImage.objects.create(
+                                variant=variant,
+                                image=image_file
+                            )
+            
+            messages.success(request, "Product and variants updated successfully!")
+            return redirect("edit_products", product_id=product.id)
 
 # Product Delecte
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
@@ -529,123 +656,5 @@ def AdminProductVariantDeleteView(request, variant_id):
     return redirect("edit_products", product_id=product.id)
 
 
-# Add Variant to Existing Product
-@cache_control(no_cache=True, must_revalidate=True, no_store=True)
-@user_passes_test(lambda u: u.is_superuser, login_url="admin_login")
-def AdminProductVariantAddView(request, product_id):
-    """
-    Add new variants to an existing product
-    """
-    try:
-        product = Product.objects.get(id=product_id)
-    except Product.DoesNotExist:
-        return redirect("admin_products")
-    
-    if request.method == "POST":
-        variant_prices = request.POST.getlist('variant_price[]')
-        variant_stocks = request.POST.getlist('variant_stock[]')
-        variant_color_names = request.POST.getlist('variant_color_name[]')
-        variant_color_hexs = request.POST.getlist('variant_color_hex[]')
-        
-        # Collect cropped images
-        cropped_images = {}
-        for i in range(len(variant_prices)):
-            cropped_images[i] = {}
-            for img_num in range(1, 5):
-                field_name = f'variant_image_{img_num}_cropped[]'
-                cropped_data_list = request.POST.getlist(field_name)
-                if i < len(cropped_data_list) and cropped_data_list[i]:
-                    cropped_images[i][img_num] = cropped_data_list[i]
-
-        # Validation
-        errors = {}
-        variant_errors = []
-        
-        for i in range(len(variant_prices)):
-            ve = {}
-
-            # Validate price
-            try:
-                price = float(variant_prices[i])
-                if price < 0:
-                    ve["price"] = "Price must be a positive number."
-            except (ValueError, IndexError):
-                ve["price"] = "Price must be a number."
-
-            # Validate stock
-            try:
-                stock = int(variant_stocks[i])
-                if stock < 0:
-                    ve["stock"] = "Stock must be a positive integer."
-            except (ValueError, IndexError):
-                ve["stock"] = "Stock must be an integer."
-
-            # Validate color name
-            try:
-                if not variant_color_names[i].strip():
-                    ve["color_name"] = "Color name is required."
-            except IndexError:
-                ve["color_name"] = "Color name is required."
-
-            # Validate images (exactly 4 required)
-            cropped_image_count = 0
-            if i in cropped_images:
-                for img_num in range(1, 5):
-                    if img_num in cropped_images[i] and cropped_images[i][img_num]:
-                        cropped_image_count += 1
-            
-            if cropped_image_count != 4:
-                ve["images"] = "Exactly 4 cropped images must be provided for this variant."
-            
-            variant_errors.append(ve)
-
-        # If there are errors, return to form with errors
-        if any(variant_errors):
-            form_data = request.POST.copy()
-            return render(request, "admin_panel/product/product_edit.html", {
-                "errors": errors,
-                "variant_errors": variant_errors,
-                "form_data": form_data,
-                "product": product
-            })
-        
-        # Create variants
-        variants_created = 0
-        for i in range(len(variant_prices)):
-            variant = ProductVariant.objects.create(
-                product=product,
-                price=float(variant_prices[i]),
-                stock=int(variant_stocks[i]),
-                color_name=variant_color_names[i],
-                color_code=variant_color_hexs[i],
-            )
-
-            # Process and save images
-            if i in cropped_images:
-                for img_num in range(1, 5):
-                    if img_num in cropped_images[i] and cropped_images[i][img_num]:
-                        try:
-                            image_file = process_base64_image(
-                                cropped_images[i][img_num],
-                                f"{product.name}_variant_{variant.id}_img_{img_num}"
-                            )
-                            
-                            if image_file:
-                                ProductImage.objects.create(
-                                    variant=variant,
-                                    image=image_file
-                                )
-                        except Exception as e:
-                            print(f"Error processing cropped image: {e}")
-            
-            variants_created += 1
-        
-        return redirect("edit_products", product_id=product_id)
-    
-    # GET request - show form
-    context = {
-        "product": product,
-    }
-    return render(request, 'admin_panel/product/product_variant_add.html', context)
 
 
