@@ -89,6 +89,7 @@ else:
     SITE_ID = config("SITE_ID_LOCAL", cast=int)
     GOOGLE_REDIRECT_URI = config("GOOGLE_REDIRECT_URI")
 
+
 # Razorpay TEST KEYS Configuration
 RAZORPAY_KEY_ID = os.getenv('RAZORPAY_KEY_ID')
 RAZORPAY_KEY_SECRET = os.getenv('RAZORPAY_KEY_SECRET')
