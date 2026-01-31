@@ -128,7 +128,6 @@ def product_detail(request, product_id):
         else:
             default_variant = variants.first()
 
-        # Get wishlist variants for current user
         wishlist_variants = []
         if request.user.is_authenticated:
             wishlist_variants = WishlistItem.objects.filter(
@@ -267,7 +266,6 @@ def AdminProductDetailView(request, id):
 @user_passes_test(lambda u: u.is_superuser, login_url="admin_login")
 def AdminProductsearchView(request):
     keyword = request.GET.get('keyword', "").strip()
-    print("Keyword:", keyword)
     product = Product.objects.all()
 
     if keyword:
@@ -458,9 +456,9 @@ def AdminProductUpdateView(request, product_id):
         product_offer = None
     
     context = {
-        'product_offer': product_offer,  # Fixed: was 'brand_offer'
+        'product_offer': product_offer, 
         'errors': {},  
-        'old_name': product.name,  # Fixed: was 'procuts.name'
+        'old_name': product.name, 
         "product": product,
         "brands": Brand.objects.filter(is_listed=True),
         "categories": Category.objects.filter(is_listed=True),
@@ -468,14 +466,9 @@ def AdminProductUpdateView(request, product_id):
     }
     
     if request.method == "GET":
-        return render(
-            request,
-            "admin_panel/product/product_edit.html",
-            context
-        )
+        return render(request,"admin_panel/product/product_edit.html", context)
     
     if request.method == "POST":
-        # ---- Determine which form was submitted ----
         form_type = request.POST.get('form_type')
         
         # ---- Handle NEW VARIANT CREATION ----
@@ -485,7 +478,6 @@ def AdminProductUpdateView(request, product_id):
             variant_color_names = request.POST.getlist('variant_color_name[]')
             variant_color_hexs = request.POST.getlist('variant_color_hex[]')
             
-            # Collect cropped images
             cropped_images = {}
             for i in range(len(variant_prices)):
                 cropped_images[i] = {}
@@ -495,9 +487,7 @@ def AdminProductUpdateView(request, product_id):
                     if i < len(cropped_data_list) and cropped_data_list[i]:
                         cropped_images[i][img_num] = cropped_data_list[i]
 
-            # Validation
             variant_errors = []
-            
             for i in range(len(variant_prices)):
                 ve = {}
 

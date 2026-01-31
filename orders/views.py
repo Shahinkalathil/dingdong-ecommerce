@@ -18,7 +18,6 @@ from .models import Order, OrderItem, OrderReturn
 
 
 # userside
-
 @login_required
 def order(request):
     orders = Order.objects.filter(user=request.user).prefetch_related(
@@ -387,7 +386,7 @@ def AdminOrderListView(request):
     failed_count = next((item['count'] for item in payment_stats if item['payment_status'] == 'failed'), 0)
     
     from django.core.paginator import Paginator
-    paginator = Paginator(orders, 2) 
+    paginator = Paginator(orders, 10) 
     page_number = request.GET.get('page', 1)
     page_obj = paginator.get_page(page_number)
     
