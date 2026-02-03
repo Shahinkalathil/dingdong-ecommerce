@@ -23,6 +23,13 @@ class Order(models.Model):
         ('delivered', 'Delivered'),
         ('cancelled', 'Cancelled'),
     ]
+    PAYSTATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('paid', 'Paid'),
+        ('failed', 'Failed'),
+        ('refunded', 'Refunded'),
+    ]
+    
     
     subtotal = models.DecimalField(max_digits=10, decimal_places=2)
     delivery_charge = models.DecimalField(max_digits=10, decimal_places=2, default=0)
@@ -37,15 +44,8 @@ class Order(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='orders')
     address = models.ForeignKey(Address, on_delete=models.SET_NULL, null=True)
     payment_id = models.CharField(max_length=100, blank=True, null=True)  
-    payment_status = models.CharField(max_length=20,
-        choices=[
-            ('pending', 'Pending'),
-            ('paid', 'Paid'),
-            ('failed', 'Failed'),
-            ('refunded', 'Refunded'),
-        ],default='pending'
-    )
-    is_paid = models.BooleanField(default=False)
+    payment_status = models.CharField(max_length=20,choices=PAYSTATUS_CHOICES,default='pending')
+    is_paid = models.BooleanField(default=False) 
     cancellation_reason = models.CharField(max_length=255, blank=True, null=True)
     cancelled_at = models.DateTimeField(blank=True, null=True)
     
