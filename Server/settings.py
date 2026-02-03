@@ -77,6 +77,7 @@ INSTALLED_APPS = [
     'wishlist',
     'coupons',
     'offers',
+    'wallet',
 ]
 
 # Site ID Configuration
