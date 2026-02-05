@@ -13,5 +13,5 @@ urlpatterns = [
 
     # User-side product 
     path('', views.products, name='products'),
-    path('details/<int:product_id>/', views.product_detail, name='product_detail'),
+    path('details/<int:variant_id>/', views.product_detail, name='product_detail'),
 ]

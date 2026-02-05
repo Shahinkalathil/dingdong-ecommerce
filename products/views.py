@@ -106,68 +106,85 @@ def products(request):
     return render(request,'user_side/product/product_listing.html', context)
 
 # Product Detail
-def product_detail(request, product_id):
+
+def product_detail(request, variant_id):
+    """
+    Product detail view that handles variant selection via URL parameter
+    """
     try:
-        product = get_object_or_404(Product, id=product_id)
-
+        # Get the variant directly from the URL
+        default_variant = get_object_or_404(ProductVariant, id=variant_id, is_listed=True)
+        product = default_variant.product
+        
+        # Check if product, category, and brand are listed
         if not product.is_listed or not product.category.is_listed or not product.brand.is_listed:
+            messages.error(request, "This product is not available.")
             return redirect('products')
-
-        variants = ProductVariant.objects.filter(product=product, is_listed=True).prefetch_related('images')
+        
+        # Get all listed variants for this product
+        variants = ProductVariant.objects.filter(
+            product=product, 
+            is_listed=True
+        ).prefetch_related('images')
+        
         if not variants.exists():
+            messages.error(request, "No variants available for this product.")
             return redirect('products')
-            
-        variant_id = request.GET.get("variant")
-        if variant_id:
-            try:
-                default_variant = variants.get(id=variant_id)
-            except ProductVariant.DoesNotExist:
-                default_variant = variants.first()
-        else:
-            default_variant = variants.first()
-
+        
+        # Get wishlist variant IDs for authenticated users
         wishlist_variants = []
+        is_in_wishlist = False
         if request.user.is_authenticated:
-            wishlist_variants = WishlistItem.objects.filter(
+            wishlist_variants = list(WishlistItem.objects.filter(
                 user=request.user
-            ).values_list("variant_id", flat=True)
-
-        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-            variant_data = {
-                'variant_id': default_variant.id,
-                'color_name': default_variant.color_name,
-                'color_code': default_variant.color_code,
-                'price': str(default_variant.price),
-                'stock': default_variant.stock,
-                'images': [
-                    {
-                        'url': image.image.url,
-                        'alt': f"{default_variant.color_name} {i+1}"
-                    } for i, image in enumerate(default_variant.images.all())
-                ] if default_variant.images.exists() else [],
-                'original_price': str(default_variant.price * Decimal('1.2')),
-                'discount_percentage': round(((default_variant.price * Decimal('1.2') - default_variant.price) / (default_variant.price * Decimal('1.2'))) * 100)
-            }
-            return JsonResponse(variant_data)
-        rating = round(random.uniform(3.5, 5.0), 1)
-        review_count = random.randint(50, 5000)
-        original_price = default_variant.price * Decimal('1.2')
-        discount_percentage = round(((original_price - default_variant.price) / original_price) * 100)
-        current_variant_stock = default_variant.stock
+            ).values_list("variant_id", flat=True))
+            is_in_wishlist = default_variant.id in wishlist_variants
+        
+        # Calculate pricing with offers
+        original_price = default_variant.price
+        final_price, discount_percentage = get_best_offer_price(product, original_price)
+        
+        # Determine which offer is being applied
+        offer_type = None
+        offer_name = None
+        
+        product_offer = getattr(product, "product_offer", None)
+        brand_offer = getattr(product.brand, "brand_offer", None)
+        
+        if product_offer and product_offer.is_valid() and product_offer.discount_percentage == discount_percentage:
+            offer_type = "Product Offer"
+            offer_name = f"{discount_percentage}% off on this product"
+        elif brand_offer and brand_offer.is_active and brand_offer.discount_percentage == discount_percentage:
+            offer_type = "Brand Offer"
+            offer_name = f"{discount_percentage}% off on all {product.brand.name} products"
+        
+        # Calculate total stock across all variants
         total_stock = sum(variant.stock for variant in variants)
-        related_products = Product.objects.filter(category=product.category,is_listed=True).exclude(id=product.id).prefetch_related('variants__images')[:4]
-
+        
+        # Get related products (same category, different product)
+        related_products = Product.objects.filter(
+            category=product.category,
+            is_listed=True
+        ).exclude(id=product.id).prefetch_related('variants__images')[:4]
+        
         related_products_data = []
         for related_product in related_products:
             related_variant = related_product.variants.filter(is_listed=True).first()
             if related_variant:
+                rel_original_price = related_variant.price
+                rel_final_price, rel_discount = get_best_offer_price(related_product, rel_original_price)
+                
                 related_products_data.append({
                     'product': related_product,
                     'variant': related_variant,
+                    'original_price': rel_original_price,
+                    'final_price': rel_final_price,
+                    'discount_percentage': rel_discount,
                     'rating': round(random.uniform(3.5, 5.0), 1),
                     'review_count': random.randint(20, 1000),
                 })
-
+        
+        # Specifications
         specifications = {
             'Brand': product.brand.name,
             'Category': product.category.name,
@@ -176,30 +193,43 @@ def product_detail(request, product_id):
             'Color Options': ', '.join([v.color_name for v in variants]),
             'Current Color': default_variant.color_name,
         }
-
+        
+        # Prepare variants data for template
         variants_data = []
         for variant in variants:
+            variant_price, variant_discount = get_best_offer_price(product, variant.price)
             variants_data.append({
                 'id': variant.id,
                 'color_name': variant.color_name,
                 'color_code': variant.color_code,
                 'stock': variant.stock,
-                'price': variant.price,
-                'images_count': variant.images.count(),
+                'original_price': variant.price,
+                'final_price': variant_price,
+                'discount_percentage': variant_discount,
+                'images': list(variant.images.all()),
+                'is_current': variant.id == default_variant.id,
             })
-
+        
+        # Mock ratings and reviews
+        rating = round(random.uniform(3.5, 5.0), 1)
+        review_count = random.randint(50, 5000)
+        
         context = {
-            "wishlist_variants": wishlist_variants,
             'product': product,
             'variants': variants,
-            'variants_data': variants_data,  
+            'variants_data': variants_data,
             'default_variant': default_variant,
+            'wishlist_variants': wishlist_variants,
+            'is_in_wishlist': is_in_wishlist,
             'rating': rating,
             'review_count': review_count,
             'original_price': original_price,
+            'final_price': final_price,
             'discount_percentage': discount_percentage,
-            'current_variant_stock': current_variant_stock,  
-            'total_stock': total_stock,  
+            'offer_type': offer_type,
+            'offer_name': offer_name,
+            'current_variant_stock': default_variant.stock,
+            'total_stock': total_stock,
             'related_products': related_products_data,
             'specifications': specifications,
             'key_features': [
@@ -211,27 +241,29 @@ def product_detail(request, product_id):
             ],
             'reviews': [
                 {
-                    'name': 'Customer ' + str(random.randint(1, 100)),
+                    'name': f'Customer {random.randint(1, 100)}',
                     'rating': random.randint(4, 5),
                     'comment': 'Great product! Highly recommend.',
                     'verified': True
                 },
                 {
-                    'name': 'Customer ' + str(random.randint(1, 100)),
+                    'name': f'Customer {random.randint(1, 100)}',
                     'rating': random.randint(3, 5),
                     'comment': 'Good value for money. Fast delivery.',
                     'verified': True
                 }
             ]
         }
-
+        
         return render(request, "user_side/product/product_detail.html", context)
-    except Product.DoesNotExist:
-        return render(request, "errors/404.html", status=404)
-    except Exception as e:
-        print(e)
+        
+    except ProductVariant.DoesNotExist:
+        messages.error(request, "Product variant not found.")
         return redirect('products')
-
+    except Exception as e:
+        print(f"Error in product_detail: {e}")
+        messages.error(request, "An error occurred while loading the product.")
+        return redirect('products')
 
 
 # Adminside
