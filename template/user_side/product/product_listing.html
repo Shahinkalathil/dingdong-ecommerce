@@ -205,6 +205,24 @@
                                         <span class="font-bold">₹{{ item.variant.price }}</span>
                                         <span class="text-xs text-gray-500 line-through ml-2">₹{{ item.variant.price|add:"1500" }}</span>
                                     </div>
+                                    <!-- Color Variants -->
+          <div class="flex flex-wrap gap-2">
+    {% for variant in item.product.variants.all|slice:":6" %}
+        {% if variant.is_listed and variant.stock > 0 %}
+            <div class="group relative" title="{{ variant.color_name }}">
+                <div class="w-7 h-7 rounded-full border-2 border-gray-300 cursor-pointer transition-all hover:scale-110 hover:border-gray-600"
+                     style="background-color: {{ variant.color_code }};"></div>
+            </div>
+        {% endif %}
+    {% endfor %}
+    
+    {% if item.product.variants.count > 6 %}
+        <div class="w-7 h-7 rounded-full bg-gray-200 flex items-center justify-center text-xs font-medium text-gray-600 border-2 border-gray-300">
+            +{{ item.product.variants.count|add:"-6" }}
+        </div>
+    {% endif %}
+</div>
+          
                                 </div>
                             </div>
                         </a>

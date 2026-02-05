@@ -80,7 +80,6 @@
         </div>
         <div class="text-center">
           <h3 class="font-bold text-sm truncate max-w-full">{{ brand.name }}</h3>
-          <p class="text-xs text-gray-500 mt-1">{{ brand.product_count }} item{{ brand.product_count|pluralize }}</p>
         </div>
       </div>
     </a>
@@ -101,14 +100,17 @@
   {% if products_data %}
   <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
     {% for item in products_data %}
-    <a href="{% url 'product_detail' item.product.id %}?variant={{ item.variant.id }}" class="block">
+    <div class="block">
+      <!-- Product Card -->
       <div class="bg-white p-4 rounded-lg shadow hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 group">
         <div class="relative">
-          {% if item.image %}
-          <img src="{{ item.image.image.url }}" alt="{{ item.product.name }}" class="w-full h-48 object-contain">
-          {% else %}
-          <img src="https://via.placeholder.com/200x200?text=No+Image" alt="{{ item.product.name }}" class="w-full h-48 object-contain">
-          {% endif %}
+          <a href="{% url 'product_detail' item.product.id %}?variant={{ item.variant.id }}">
+            {% if item.image %}
+            <img src="{{ item.image.image.url }}" alt="{{ item.product.name }}" class="w-full h-48 object-contain">
+            {% else %}
+            <img src="https://via.placeholder.com/200x200?text=No+Image" alt="{{ item.product.name }}" class="w-full h-48 object-contain">
+            {% endif %}
+          </a>
           
           {% if item.variant.stock < 10 %}
           <span class="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded">Low Stock</span>
@@ -116,12 +118,20 @@
         </div>
         
         <div class="mt-4">
-          <h3 class="text-xs font-bold uppercase line-clamp-2 overflow-hidden hover:text-blue-600 transition-colors" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">
-            {{ item.product.name }}
-          </h3>
+          <a href="{% url 'product_detail' item.product.id %}?variant={{ item.variant.id }}">
+            <h3 class="text-xs font-bold uppercase line-clamp-2 overflow-hidden hover:text-blue-600 transition-colors" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">
+              {{ item.product.name }}
+            </h3>
+          </a>
           
           <div class="mt-2 flex items-center justify-between">
-            <span class="font-bold text-lg">₹ {{ item.price }}</span>
+            <div>
+              <span class="font-bold text-lg text-gray-900">₹{{ item.price }}</span>
+              {% if item.discount_percentage %}
+              <span class="text-xs text-gray-500 line-through ml-2">₹{{ item.original_price }}</span>
+              <span class="text-xs text-green-600 ml-1">({{ item.discount_percentage }}% off)</span>
+              {% endif %}
+            </div>
           </div>
 
           <!-- Color Variants -->
@@ -131,9 +141,11 @@
             <div class="flex flex-wrap gap-2">
               {% for variant in item.available_variants %}
               <div class="group/color relative" title="{{ variant.color_name }}">
-                <div class="w-6 h-6 rounded-full border-2 border-gray-300 cursor-pointer transition-all hover:scale-110 hover:border-gray-500" 
-                     style="background-color: {{ variant.color_code }};"></div>
-                <span class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 px-2 py-1 text-xs text-white bg-gray-800 rounded opacity-0 group-hover/color:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                <a href="{% url 'product_detail' item.product.id %}?variant={{ variant.id }}">
+                  <div class="w-6 h-6 rounded-full border-2 border-gray-300 cursor-pointer transition-all hover:scale-110 hover:border-gray-500" 
+                       style="background-color: {{ variant.color_code }};"></div>
+                </a>
+                <span class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 px-2 py-1 text-xs text-white bg-gray-800 rounded opacity-0 group-hover/color:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
                   {{ variant.color_name }}
                 </span>
               </div>
@@ -143,7 +155,7 @@
           {% endif %}
         </div>
       </div>
-    </a>
+    </div>
     {% endfor %}
   </div>
 
@@ -152,10 +164,10 @@
   <div class="mt-8 flex justify-center">
     <nav class="inline-flex rounded-md shadow-sm">
       {% if products_data.has_previous %}
-      <a href="?page=1" class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-l-md hover:bg-gray-50">
+      <a href="?page=1" class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-l-md hover:bg-gray-50 transition-colors">
         First
       </a>
-      <a href="?page={{ products_data.previous_page_number }}" class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border-t border-b border-gray-300 hover:bg-gray-50">
+      <a href="?page={{ products_data.previous_page_number }}" class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border-t border-b border-gray-300 hover:bg-gray-50 transition-colors">
         Previous
       </a>
       {% else %}
@@ -172,10 +184,10 @@
       </span>
 
       {% if products_data.has_next %}
-      <a href="?page={{ products_data.next_page_number }}" class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border-t border-b border-gray-300 hover:bg-gray-50">
+      <a href="?page={{ products_data.next_page_number }}" class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border-t border-b border-gray-300 hover:bg-gray-50 transition-colors">
         Next
       </a>
-      <a href="?page={{ products_data.paginator.num_pages }}" class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-r-md hover:bg-gray-50">
+      <a href="?page={{ products_data.paginator.num_pages }}" class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-r-md hover:bg-gray-50 transition-colors">
         Last
       </a>
       {% else %}
@@ -201,10 +213,10 @@
 <!-- Promotional Banner -->
 <section class="container mx-auto px-4 py-8">
   <div class="rounded-lg p-8 md:p-12 text-center text-white bg-cover bg-center bg-no-repeat"
-       style="background-image: linear-gradient(135deg, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)), url({% static 'images/offer_image.png' %});">
+       style="background-image: linear-gradient(135deg, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)), url('{% static 'images/offer_image.png' %}');">
     <h2 class="text-3xl md:text-4xl font-bold mb-4">Special Offer</h2>
     <p class="text-lg md:text-xl mb-6">Get up to 30% off on selected watches</p>
-    <a href="{% url 'products' %}" class="inline-block bg-white text-purple-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors">
+    <a href="{% url 'products' %}" class="inline-block bg-white text-purple-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors shadow-lg">
       Shop Now
     </a>
   </div>
@@ -242,6 +254,7 @@
 </section>
 {% endif %}
 
+<!-- Carousel JavaScript -->
 <script>
 document.addEventListener('DOMContentLoaded', function () {
   // Carousel functionality
@@ -342,5 +355,50 @@ document.addEventListener('DOMContentLoaded', function () {
   showSlide(0);
   startAutoPlay();
 });
+
+// Wishlist functionality
+document.querySelectorAll('.wishlist-btn').forEach(button => {
+  button.addEventListener('click', function(e) {
+    e.preventDefault();
+    const url = this.getAttribute('data-url');
+    const icon = this.querySelector('i');
+    
+    fetch(url, {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': getCookie('csrftoken'),
+        'Content-Type': 'application/json'
+      }
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.status === 'added') {
+        icon.classList.remove('far');
+        icon.classList.add('fas', 'text-red-500');
+      } else if (data.status === 'removed') {
+        icon.classList.remove('fas', 'text-red-500');
+        icon.classList.add('far', 'text-gray-600');
+      }
+    })
+    .catch(error => console.error('Error:', error));
+  });
+});
+
+// CSRF token helper function
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      if (cookie.substring(0, name.length + 1) === (name + '=')) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
 </script>
+
 {% endblock %}
