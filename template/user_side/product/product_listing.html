@@ -159,7 +159,7 @@
                 {% if product_display_data %}
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-3 mb-8">
                         {% for item in product_display_data %}
-                            <a href="{% url 'product_detail' item.product.id %}" class="bg-white rounded-lg border border-gray-200 hover:shadow-xl transition-shadow duration-200 block relative overflow-hidden">
+                            <a href="{% url 'product_detail' item.variant.id %}" class="bg-white rounded-lg border border-gray-200 hover:shadow-xl transition-shadow duration-200 block relative overflow-hidden">
                                 
                                 <!-- Out of Stock Overlay -->
                                 {% if not item.in_stock %}
