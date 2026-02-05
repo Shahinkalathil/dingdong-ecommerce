@@ -90,8 +90,10 @@ def products(request):
         return display_data
     
     product_display_data = get_product_display_data(page_obj)
+    products = Product.objects.filter(is_listed=True).prefetch_related('variants')
     
     context = {
+        'products': products,
         'page_obj': page_obj,
         'product_display_data': product_display_data,
         'categories': categories,
