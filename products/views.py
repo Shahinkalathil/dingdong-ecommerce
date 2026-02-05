@@ -8,106 +8,102 @@ from wishlist.models import WishlistItem
 from .models import Category, Product, Brand, ProductVariant, ProductImage
 from django.http import JsonResponse
 from django.core.paginator import Paginator
-from django.db.models import Min,  Q
+from django.db.models import Min,  Q, Max
 import random
 from decimal import Decimal
 import base64
 import io
 from offers.models import ProductOffer
+from offers.utils import get_best_offer_price
 
-# Userside
+# User Side
 # -------------------------------------------
-# Product Listing
+
 def products(request):
-    products = Product.objects.filter(
-        is_listed=True,
-        variants__is_listed=True
-    ).prefetch_related(
-        "variants__images", "brand", "category"
-    ).distinct()
+    products=Product.objects.filter(is_listed=True,category__is_listed=True,brand__is_listed=True,variants__is_listed=True
+    ).prefetch_related("variants__images","variants"
+    ).select_related("brand","category").distinct()
 
-    categories = Category.objects.filter(is_listed=True)
-    brands = Brand.objects.filter(is_listed=True)
+    categories=Category.objects.filter(is_listed=True)
+    brands=Brand.objects.filter(is_listed=True)
 
-    search_query = request.GET.get('search', '').strip()
+    search_query=request.GET.get('search','').strip()
     if search_query:
-        products = products.filter(
-            Q(name__icontains=search_query) |
-            Q(description__icontains=search_query) |
-            Q(brand__name__icontains=search_query)
-        )
+        products=products.filter(Q(name__icontains=search_query)|
+        Q(description__icontains=search_query)|
+        Q(brand__name__icontains=search_query)|
+        Q(category__name__icontains=search_query))
 
-    category_filter = request.GET.get('category', '').strip()
+    category_filter=request.GET.get('category','').strip()
     if category_filter:
-        products = products.filter(category__id=category_filter)
+        products=products.filter(category__id=category_filter)
 
-    brand_filter = request.GET.get('brand', '').strip()
+    brand_filter=request.GET.get('brand','').strip()
     if brand_filter:
-        products = products.filter(brand__id=brand_filter)
+        products=products.filter(brand__id=brand_filter)
 
-    price_range = request.GET.get('price_range', '').strip()
-    if price_range:
-        if price_range == '0-1000':
-            products = products.filter(variants__price__gte=0, variants__price__lte=1000)
-        elif price_range == '1000-3000':
-            products = products.filter(variants__price__gte=1000, variants__price__lte=3000)
-        elif price_range == '3000-5000':
-            products = products.filter(variants__price__gte=3000, variants__price__lte=5000)
-        elif price_range == '5000-10000':
-            products = products.filter(variants__price__gte=5000, variants__price__lte=10000)
-        elif price_range == '10000+':
-            products = products.filter(variants__price__gte=10000)
+    price_range=request.GET.get('price_range','').strip()
+    if price_range=='0-1000':
+        products=products.filter(variants__price__range=(0,1000))
+    elif price_range=='1000-3000':
+        products=products.filter(variants__price__range=(1000,3000))
+    elif price_range=='3000-5000':
+        products=products.filter(variants__price__range=(3000,5000))
+    elif price_range=='5000-10000':
+        products=products.filter(variants__price__range=(5000,10000))
+    elif price_range=='10000+':
+        products=products.filter(variants__price__gte=10000)
 
-    sort_by = request.GET.get('sort', '').strip()
-    if sort_by == 'price-low':
-        products = products.annotate(min_price=Min('variants__price')).order_by('min_price')
-    elif sort_by == 'price-high':
-        products = products.annotate(min_price=Min('variants__price')).order_by('-min_price')
-    elif sort_by == 'name-az':
-        products = products.order_by('name')
-    elif sort_by == 'name-za':
-        products = products.order_by('-name')
+    sort_by=request.GET.get('sort','').strip()
+    if sort_by=='price-low':
+        products=products.annotate(min_price=Min('variants__price')).order_by('min_price')
+    elif sort_by=='price-high':
+        products=products.annotate(max_price=Max('variants__price')).order_by('-max_price')
+    elif sort_by=='name-az':
+        products=products.order_by('name')
+    elif sort_by=='name-za':
+        products=products.order_by('-name')
     else:
-        products = products.order_by('-id')  
-    products = products.distinct()
+        products=products.order_by('-id')
 
-    rating = round(random.uniform(3.5, 5.0), 1)
-    
-    paginator = Paginator(products, 10)  
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
-    
-    def get_product_display_data(products_page):
-        display_data = []
-        for product in products_page:
-            first_variant = product.variants.filter(is_listed=True).first()
-            if first_variant:
-                display_data.append({
-                    'product': product,
-                    'variant': first_variant,
-                    'first_image': first_variant.images.first() if first_variant.images.exists() else None
+    paginator=Paginator(products.distinct(),15)
+    page_obj=paginator.get_page(request.GET.get('page'))
+
+    product_display_data=[]
+    for product in page_obj:
+        variants=product.variants.filter(is_listed=True)
+        lowest_variant=variants.order_by('price').first()
+        if not lowest_variant:
+            continue
+        total_stock=sum(v.stock for v in variants)
+        original_price=lowest_variant.price
+        final_price,discount_percentage=get_best_offer_price(product,original_price)
+        product_display_data.append(
+            {
+                'product':product,
+                'variant':lowest_variant,
+                'first_image':lowest_variant.images.first(),
+                'original_price':original_price,
+                'final_price':final_price,
+                'discount_percentage':discount_percentage,
+                'in_stock':total_stock>0,
+                'total_stock':total_stock,
+                'rating':round(random.uniform(3.5,5.0),1),
+                'review_count':random.randint(10,500)
                 })
-        return display_data
-    
-    product_display_data = get_product_display_data(page_obj)
-    products = Product.objects.filter(is_listed=True).prefetch_related('variants')
-    
-    context = {
-        'products': products,
-        'page_obj': page_obj,
-        'product_display_data': product_display_data,
-        'categories': categories,
-        'brands': brands,
-        "rating": rating,
-        'search_query': search_query,
-        'selected_category': category_filter,
-        'selected_brand': brand_filter,
-        'selected_price_range': price_range,
-        'selected_sort': sort_by,
-        'total_products': paginator.count,
-    }
-    
-    return render(request, 'user_side/product/product_listing.html', context)
+    context={
+        'page_obj':page_obj,
+        'product_display_data':product_display_data,
+        'categories':categories,
+        'brands':brands,
+        'search_query':search_query,
+        'selected_category':category_filter,
+        'selected_brand':brand_filter,
+        'selected_price_range':price_range,
+        'selected_sort':sort_by,
+        'total_products':paginator.count
+        }
+    return render(request,'user_side/product/product_listing.html', context)
 
 # Product Detail
 def product_detail(request, product_id):

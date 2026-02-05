@@ -10,24 +10,24 @@ from offers.utils import get_best_offer_price
 
 
 
-@cache_control(no_cache=True, no_store=True, must_revalidate=True)  # prevent caching after logout
+@cache_control(no_cache=True, no_store=True, must_revalidate=True)  
 def HomeView(request):
-    if not request.user.is_authenticated:  # protect home page
+    if not request.user.is_authenticated:  
         return redirect('sign_in')
 
-    banners = Banner.get_active_banners()  # only active banners
+    banners = Banner.get_active_banners()  
 
     categories = list(
         Category.objects.filter(is_listed=True, products__is_listed=True)
-        .annotate(product_count=Count('products', filter=Q(products__is_listed=True)))  # count visible products
-        .filter(product_count__gt=0)  # hide empty categories
+        .annotate(product_count=Count('products', filter=Q(products__is_listed=True)))  
+        .filter(product_count__gt=0)  
         .distinct()
     )
 
     brands = list(
         Brand.objects.filter(is_listed=True, products__is_listed=True)
-        .annotate(product_count=Count('products', filter=Q(products__is_listed=True)))  # count visible products
-        .filter(product_count__gt=0)  # hide empty brands
+        .annotate(product_count=Count('products', filter=Q(products__is_listed=True)))  
+        .filter(product_count__gt=0)  
         .distinct()
     )
 
@@ -36,9 +36,9 @@ def HomeView(request):
         category__is_listed=True,
         brand__is_listed=True,
         variants__is_listed=True,
-        variants__stock__gt=0  # ensure sellable products only
+        variants__stock__gt=0  
     ).annotate(
-        min_price=Min('variants__price')  # used for price display/sorting
+        min_price=Min('variants__price') 
     ).distinct().order_by('id')
 
     products_data = []
@@ -47,25 +47,25 @@ def HomeView(request):
         default_variant = product.variants.filter(
             is_listed=True,
             stock__gt=0
-        ).first()  # default selectable variant
+        ).first()  
 
         if not default_variant:
-            continue  # safety check
+            continue  
 
         available_variants = product.variants.filter(
             is_listed=True,
             stock__gt=0
-        ).values('id', 'color_name', 'color_code')  # for color swatches
+        ).values('id', 'color_name', 'color_code')  
 
-        image = default_variant.images.first()  # thumbnail image
+        image = default_variant.images.first()  
 
         final_price, discount_percentage = get_best_offer_price(
             product,
-            default_variant.price  # apply product/brand/category offers
+            default_variant.price  
         )
 
         products_data.append({
-            'id': default_variant.id,  # required for wishlist
+            'id': default_variant.id, 
             'product': product,
             'variant': default_variant,
             'image': image,
@@ -77,7 +77,7 @@ def HomeView(request):
             'available_variants': list(available_variants)
         })
 
-    paginator = Paginator(products_data, 8)  # homepage grid limit
+    paginator = Paginator(products_data, 8)  
     page = request.GET.get('page', 1)
 
     try:
@@ -92,7 +92,7 @@ def HomeView(request):
         'categories': categories,
         'brands': brands,
         'products_data': products_page,
-        'has_banners': bool(banners)  # template helper
+        'has_banners': bool(banners)  
     })
 
 

@@ -1,7 +1,7 @@
 {% extends 'user_side/base.html' %}
 {% load static %}
 
-{% block title %}DINGDONG - Authorized Brand Store{% endblock %}
+{% block title %}Products - DINGDONG{% endblock %}
 
 {% block content %}
 <div class="container mx-auto px-4 py-8">
@@ -12,34 +12,32 @@
                 <!-- Search Bar -->
                 <div class="bg-white p-4 rounded-lg shadow-sm">
                     <div class="flex gap-2">
-                        <input type="text" name="search" placeholder="Search products..." 
+                        <input type="text" 
+                               name="search" 
+                               placeholder="Search products..." 
                                value="{{ search_query|default:'' }}"
                                class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                         {% if search_query %}
                             <a href="{% url 'products' %}{% if selected_category %}?category={{ selected_category }}{% endif %}{% if selected_brand %}{% if selected_category %}&{% else %}?{% endif %}brand={{ selected_brand }}{% endif %}{% if selected_price_range %}{% if selected_category or selected_brand %}&{% else %}?{% endif %}price_range={{ selected_price_range }}{% endif %}{% if selected_sort %}{% if selected_category or selected_brand or selected_price_range %}&{% else %}?{% endif %}sort={{ selected_sort }}{% endif %}" 
-                               class="px-2 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors">
-                                Clear
+                               class="px-3 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors">
+                                <i class="fas fa-times"></i>
                             </a>
-                        {% else %}
-                            <button type="button" onclick="document.querySelector('input[name=search]').value=''; document.getElementById('filterForm').submit();" 
-                                    class="px-2 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors">
-                                Clear
-                            </button>
                         {% endif %}
                     </div>
                 </div>
 
-                <!-- CategoryA Filter -->
+                <!-- Category Filter -->
                 <div class="bg-white p-4 rounded-lg shadow-sm">
                     <div class="flex justify-between items-center mb-3">
                         <h3 class="font-semibold text-gray-800">Category</h3>
                         {% if selected_category %}
                             <a href="{% url 'products' %}{% if search_query %}?search={{ search_query }}{% endif %}{% if selected_brand %}{% if search_query %}&{% else %}?{% endif %}brand={{ selected_brand }}{% endif %}{% if selected_price_range %}{% if search_query or selected_brand %}&{% else %}?{% endif %}price_range={{ selected_price_range }}{% endif %}{% if selected_sort %}{% if search_query or selected_brand or selected_price_range %}&{% else %}?{% endif %}sort={{ selected_sort }}{% endif %}" 
-                               class="text-sm text-gray-500 hover:text-gray-700">Clear</a>
+                               class="text-sm text-blue-600 hover:text-blue-800">Clear</a>
                         {% endif %}
                     </div>
                     <div class="relative">
-                        <select name="category" onchange="document.getElementById('filterForm').submit();" 
+                        <select name="category" 
+                                onchange="document.getElementById('filterForm').submit();" 
                                 class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none bg-white">
                             <option value="">All Categories</option>
                             {% for category in categories %}
@@ -62,11 +60,12 @@
                         <h3 class="font-semibold text-gray-800">Brand</h3>
                         {% if selected_brand %}
                             <a href="{% url 'products' %}{% if search_query %}?search={{ search_query }}{% endif %}{% if selected_category %}{% if search_query %}&{% else %}?{% endif %}category={{ selected_category }}{% endif %}{% if selected_price_range %}{% if search_query or selected_category %}&{% else %}?{% endif %}price_range={{ selected_price_range }}{% endif %}{% if selected_sort %}{% if search_query or selected_category or selected_price_range %}&{% else %}?{% endif %}sort={{ selected_sort }}{% endif %}" 
-                               class="text-sm text-gray-500 hover:text-gray-700">Clear</a>
+                               class="text-sm text-blue-600 hover:text-blue-800">Clear</a>
                         {% endif %}
                     </div>
                     <div class="relative">
-                        <select name="brand" onchange="document.getElementById('filterForm').submit();" 
+                        <select name="brand" 
+                                onchange="document.getElementById('filterForm').submit();" 
                                 class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none bg-white">
                             <option value="">All Brands</option>
                             {% for brand in brands %}
@@ -89,11 +88,12 @@
                         <h3 class="font-semibold text-gray-800">Price Range</h3>
                         {% if selected_price_range %}
                             <a href="{% url 'products' %}{% if search_query %}?search={{ search_query }}{% endif %}{% if selected_category %}{% if search_query %}&{% else %}?{% endif %}category={{ selected_category }}{% endif %}{% if selected_brand %}{% if search_query or selected_category %}&{% else %}?{% endif %}brand={{ selected_brand }}{% endif %}{% if selected_sort %}{% if search_query or selected_category or selected_brand %}&{% else %}?{% endif %}sort={{ selected_sort }}{% endif %}" 
-                               class="text-sm text-gray-500 hover:text-gray-700">Clear</a>
+                               class="text-sm text-blue-600 hover:text-blue-800">Clear</a>
                         {% endif %}
                     </div>
                     <div class="relative">
-                        <select name="price_range" onchange="document.getElementById('filterForm').submit();" 
+                        <select name="price_range" 
+                                onchange="document.getElementById('filterForm').submit();" 
                                 class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none bg-white">
                             <option value="">All Prices</option>
                             <option value="0-1000" {% if selected_price_range == "0-1000" %}selected{% endif %}>₹0 - ₹1,000</option>
@@ -110,7 +110,7 @@
                     </div>
                 </div>
 
-                <!-- Hidden fields to preserve other filters -->
+                <!-- Hidden fields to preserve sorting -->
                 {% if selected_sort %}<input type="hidden" name="sort" value="{{ selected_sort }}">{% endif %}
             </form>
 
@@ -126,28 +126,22 @@
         <!-- Main Content -->
         <div class="lg:w-3/4">
             <!-- Sort and Results Info -->
-            <div class="flex justify-between items-center mb-6">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
                 <div class="text-gray-600">
-                    Showing {{ page_obj.start_index }} - {{ page_obj.end_index }} of {{ total_products }} products
+                    Showing <span class="font-semibold">{{ page_obj.start_index }}</span> - <span class="font-semibold">{{ page_obj.end_index }}</span> of <span class="font-semibold">{{ total_products }}</span> products
                 </div>
-                <form method="GET" action="{% url 'products' %}" class="relative">
+                
+                <form method="GET" action="{% url 'products' %}" class="relative w-full sm:w-auto">
                     <!-- Preserve current filters -->
-                    {% if search_query %}
-                        <input type="hidden" name="search" value="{{ search_query }}">
-                    {% endif %}
-                    {% if selected_category %}
-                        <input type="hidden" name="category" value="{{ selected_category }}">
-                    {% endif %}
-                    {% if selected_brand %}
-                        <input type="hidden" name="brand" value="{{ selected_brand }}">
-                    {% endif %}
-                    {% if selected_price_range %}
-                        <input type="hidden" name="price_range" value="{{ selected_price_range }}">
-                    {% endif %}
+                    {% if search_query %}<input type="hidden" name="search" value="{{ search_query }}">{% endif %}
+                    {% if selected_category %}<input type="hidden" name="category" value="{{ selected_category }}">{% endif %}
+                    {% if selected_brand %}<input type="hidden" name="brand" value="{{ selected_brand }}">{% endif %}
+                    {% if selected_price_range %}<input type="hidden" name="price_range" value="{{ selected_price_range }}">{% endif %}
                     
-                    <select name="sort" onchange="this.form.submit();" 
-                            class="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none bg-white pr-10">
-                        <option value="" {% if not selected_sort %}selected{% endif %}>SORT BY</option>
+                    <select name="sort" 
+                            onchange="this.form.submit();" 
+                            class="w-full sm:w-auto px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none bg-white pr-10">
+                        <option value="" {% if not selected_sort %}selected{% endif %}>Sort By</option>
                         <option value="price-low" {% if selected_sort == "price-low" %}selected{% endif %}>Price: Low to High</option>
                         <option value="price-high" {% if selected_sort == "price-high" %}selected{% endif %}>Price: High to Low</option>
                         <option value="name-az" {% if selected_sort == "name-az" %}selected{% endif %}>Name: A to Z</option>
@@ -161,130 +155,176 @@
                 </form>
             </div>
 
-            <!-- Product Grid -->
-            {% if product_display_data %}
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
-                    {% for item in product_display_data %}
-                        <a href="{% url 'product_detail' item.product.id %}" class="block">
-                            <div class="bg-white p-4 rounded-lg shadow hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 group">
-                                <div class="relative">
+                <!-- Product Grid -->
+                {% if product_display_data %}
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-3 mb-8">
+                        {% for item in product_display_data %}
+                            <a href="{% url 'product_detail' item.product.id %}" class="bg-white rounded-lg border border-gray-200 hover:shadow-xl transition-shadow duration-200 block relative overflow-hidden">
+                                
+                                <!-- Out of Stock Overlay -->
+                                {% if not item.in_stock %}
+                                <div class="absolute top-3 right-3 bg-red-600 text-white text-xs font-bold px-3 py-1 rounded-md z-10 shadow-md">
+                                    OUT OF STOCK
+                                </div>
+                                {% endif %}
+
+                                <!-- Product Image -->
+                                <div class="relative h-52 p-3 flex items-center justify-center bg-gray-50">
                                     {% if item.first_image %}
                                         <img src="{{ item.first_image.image.url }}" 
-                                             alt="{{ item.product.name }}" 
-                                             class="w-full h-48 object-contain">
+                                            alt="{{ item.product.name }}" 
+                                            class="w-full h-full object-contain {% if not item.in_stock %}opacity-50{% endif %}">
                                     {% else %}
-                                        <img src="{% static 'images/no_image.png' %}" 
-                                             alt="No Image" 
-                                             class="w-full h-48 object-contain">
+                                        <div class="w-full h-full flex items-center justify-center">
+                                            <i class="fas fa-image text-gray-400 text-4xl"></i>
+                                        </div>
+                                    {% endif %}
+                                   {% if item.in_stock %} 
+                                        <!-- Discount Badge -->
+                                        {% if item.discount_percentage > 0 %}
+                                        <div class="absolute top-3 left-3 bg-red-600 text-white px-2 py-1 rounded-md text-xs font-bold shadow-md">
+                                            {{ item.discount_percentage|floatformat:0 }}% OFF
+                                        </div>
+                                        {% endif %}
                                     {% endif %}
 
-
                                 </div>
-                                <div class="mt-4">
-                                    <h3 class="text-xs font-bold uppercase line-clamp-2">
+
+                                <!-- Product Details -->
+                                <div class="p-3 border-t">
+                                    <!-- Name & Brand -->
+                                    <h3 class="text-sm font-semibold text-gray-800  ">
                                         {{ item.product.name }}
                                     </h3>
-                                    <div class="flex items-center mt-2">
-                                        <p class="text-xs text-gray-600 mt-1 font-medium">{{ item.product.brand.name }}</p>
-                                        
-                                        <!-- Stars (static example) -->
-                                        <div class="flex text-yellow-400 ml-2">
-                                        {% for i in "12345" %}
-                                            {% if rating >= i|add:0 %}
-                                            <i class="fas fa-star text-xs"></i>
-                                            {% elif rating >= i|add:"-0.5" %}
-                                            <i class="fas fa-star-half-alt text-xs"></i>
-                                            {% else %}
-                                            <i class="far fa-star text-xs"></i>
-                                            {% endif %}
-                                        {% endfor %}
-                                        </div>
-                                        <span class="text-xs text-gray-500 ml-1">({{ rating }})</span>
-                                    </div>
-                                    <div class="mt-2">
-                                        <span class="font-bold">₹{{ item.variant.price }}</span>
-                                        <span class="text-xs text-gray-500 line-through ml-2">₹{{ item.variant.price|add:"1500" }}</span>
-                                    </div>
-                                    <!-- Color Variants -->
-          <div class="flex flex-wrap gap-2">
-    {% for variant in item.product.variants.all|slice:":6" %}
-        {% if variant.is_listed and variant.stock > 0 %}
-            <div class="group relative" title="{{ variant.color_name }}">
-                <div class="w-7 h-7 rounded-full border-2 border-gray-300 cursor-pointer transition-all hover:scale-110 hover:border-gray-600"
-                     style="background-color: {{ variant.color_code }};"></div>
-            </div>
-        {% endif %}
-    {% endfor %}
-    
-    {% if item.product.variants.count > 6 %}
-        <div class="w-7 h-7 rounded-full bg-gray-200 flex items-center justify-center text-xs font-medium text-gray-600 border-2 border-gray-300">
-            +{{ item.product.variants.count|add:"-6" }}
-        </div>
-    {% endif %}
-</div>
-          
-                                </div>
-                            </div>
-                        </a>
-                    {% endfor %}
-                </div>
-            {% else %}
-                <div class="text-center py-12">
-                    <div class="text-gray-400 mb-4">
-                        <i class="fas fa-search text-6xl"></i>
-                    </div>
-                    <h3 class="text-xl font-semibold text-gray-600 mb-2">No products found</h3>
-                    <p class="text-gray-500 mb-4">Try adjusting your search or filter criteria</p>
-                    <a href="{% url 'products' %}" 
-                       class="inline-block px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
-                        View All Products
-                    </a>
-                </div>
-            {% endif %}
+                                    <p class="text-xs text-gray-500 font-medium">
+                                        {{ item.product.brand.name }}
+                                    </p>
 
-            <!-- Pagination -->
-            {% if page_obj.has_other_pages %}
-                <div class="flex justify-center items-center space-x-2">
-                    {% if page_obj.has_previous %}
-                        <a href="?{% if search_query %}search={{ search_query }}&{% endif %}{% if selected_category %}category={{ selected_category }}&{% endif %}{% if selected_brand %}brand={{ selected_brand }}&{% endif %}{% if selected_price_range %}price_range={{ selected_price_range }}&{% endif %}{% if selected_sort %}sort={{ selected_sort }}&{% endif %}page={{ page_obj.previous_page_number }}" 
-                           class="px-3 py-2 text-gray-500 hover:text-gray-700">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-                            </svg>
-                        </a>
-                    {% else %}
-                        <span class="px-3 py-2 text-gray-300">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-                            </svg>
-                        </span>
-                    {% endif %}
-                    
-                    <div class="flex space-x-1">
-                        {% for num in page_obj.paginator.page_range %}
-                            {% if page_obj.number == num %}
-                                <span class="px-3 py-2 rounded-md bg-blue-500 text-white">{{ num }}</span>
-                            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-                                <a href="?{% if search_query %}search={{ search_query }}&{% endif %}{% if selected_category %}category={{ selected_category }}&{% endif %}{% if selected_brand %}brand={{ selected_brand }}&{% endif %}{% if selected_price_range %}price_range={{ selected_price_range }}&{% endif %}{% if selected_sort %}sort={{ selected_sort }}&{% endif %}page={{ num }}" 
-                                   class="px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100 transition-colors">{{ num }}</a>
-                            {% endif %}
+                                    <!-- Rating -->
+                                    <div class="flex items-center mb-1.5 text-xs">
+                                        <div class="flex text-yellow-400">
+                                            {% for i in "12345" %}
+                                                {% if forloop.counter <= item.rating %}
+                                                    <i class="fas fa-star"></i>
+                                                {% elif forloop.counter|add:"-0.5" <= item.rating %}
+                                                    <i class="fas fa-star-half-alt"></i>
+                                                {% else %}
+                                                    <i class="far fa-star"></i>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </div>
+                                        <span class="text-gray-500 ml-1.5">
+                                            ({{ item.rating|floatformat:1 }}) {{ item.review_count }}
+                                        </span>
+                                    </div>
+
+                                    <!-- Price -->
+                                    <div class="mb-1.5">
+                                        <div class="flex items-center gap-2">
+                                            <span class="text-xl font-bold text-gray-900">
+                                                ₹{{ item.final_price|floatformat:2 }}
+                                            </span>
+                                            {% if item.discount_percentage > 0 %}
+                                                <span class="text-sm text-gray-500 line-through">
+                                                    ₹{{ item.original_price|floatformat:2 }}
+                                                </span>
+                                            {% endif %}
+                                        </div>
+
+                                        {% if item.discount_percentage > 0 %}
+                                            <p class="text-xs text-green-600 font-medium mt-0.5">
+                                                Save ₹{{ item.original_price|add:"-"|add:item.final_price|floatformat:2 }}
+                                                ({{ item.discount_percentage|floatformat:0 }}%)
+                                            </p>
+                                        {% endif %}
+                                    </div>
+
+                                    <!-- Color Variants -->
+                                    <div class="pt-2 border-t border-gray-100">
+                                        <div class="flex flex-wrap gap-1.5">
+                                            {% for variant in item.product.variants.all|slice:":6" %}
+                                                {% if variant.is_listed and variant.stock > 0 %}
+                                                    <div class="group relative" title="{{ variant.color_name }}">
+                                                        <div class="w-5 h-5 rounded-full border-2 border-gray-300 hover:scale-110 hover:border-gray-600 transition-transform duration-150"
+                                                            style="background-color: {{ variant.color_code }};"></div>
+                                                        <span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-0.5 text-xs text-white bg-gray-900 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 whitespace-nowrap">
+                                                            {{ variant.color_name }}
+                                                        </span>
+                                                    </div>
+                                                {% endif %}
+                                            {% endfor %}
+
+                                            {% if item.product.variants.count > 6 %}
+                                                <div class="w-5 h-5 rounded-full bg-gray-200 flex items-center justify-center text-xs font-medium text-gray-600 border-2 border-gray-300">
+                                                    +{{ item.product.variants.count|add:"-6" }}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
                         {% endfor %}
                     </div>
-                    
-                    {% if page_obj.has_next %}
-                        <a href="?{% if search_query %}search={{ search_query }}&{% endif %}{% if selected_category %}category={{ selected_category }}&{% endif %}{% if selected_brand %}brand={{ selected_brand }}&{% endif %}{% if selected_price_range %}price_range={{ selected_price_range }}&{% endif %}{% if selected_sort %}sort={{ selected_sort }}&{% endif %}page={{ page_obj.next_page_number }}" 
-                           class="px-3 py-2 text-gray-500 hover:text-gray-700">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                            </svg>
-                        </a>
-                    {% else %}
-                        <span class="px-3 py-2 text-gray-300">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                            </svg>
-                        </span>
-                    {% endif %}
+
+
+                <!-- Pagination -->
+                {% if page_obj.has_other_pages %}
+                    <div class="flex justify-center items-center space-x-2 mt-8">
+                        {% if page_obj.has_previous %}
+                            <a href="?{% if search_query %}search={{ search_query }}&{% endif %}{% if selected_category %}category={{ selected_category }}&{% endif %}{% if selected_brand %}brand={{ selected_brand }}&{% endif %}{% if selected_price_range %}price_range={{ selected_price_range }}&{% endif %}{% if selected_sort %}sort={{ selected_sort }}&{% endif %}page={{ page_obj.previous_page_number }}" 
+                               class="px-3 py-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-md transition-colors">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                                </svg>
+                            </a>
+                        {% else %}
+                            <span class="px-3 py-2 text-gray-300 cursor-not-allowed">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                                </svg>
+                            </span>
+                        {% endif %}
+                        
+                        <div class="flex space-x-1">
+                            {% for num in page_obj.paginator.page_range %}
+                                {% if page_obj.number == num %}
+                                    <span class="px-4 py-2 rounded-md bg-blue-600 text-white font-semibold">{{ num }}</span>
+                                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                    <a href="?{% if search_query %}search={{ search_query }}&{% endif %}{% if selected_category %}category={{ selected_category }}&{% endif %}{% if selected_brand %}brand={{ selected_brand }}&{% endif %}{% if selected_price_range %}price_range={{ selected_price_range }}&{% endif %}{% if selected_sort %}sort={{ selected_sort }}&{% endif %}page={{ num }}" 
+                                       class="px-4 py-2 rounded-md text-gray-700 hover:bg-gray-100 transition-colors">{{ num }}</a>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                        
+                        {% if page_obj.has_next %}
+                            <a href="?{% if search_query %}search={{ search_query }}&{% endif %}{% if selected_category %}category={{ selected_category }}&{% endif %}{% if selected_brand %}brand={{ selected_brand }}&{% endif %}{% if selected_price_range %}price_range={{ selected_price_range }}&{% endif %}{% if selected_sort %}sort={{ selected_sort }}&{% endif %}page={{ page_obj.next_page_number }}" 
+                               class="px-3 py-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-md transition-colors">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                </svg>
+                            </a>
+                        {% else %}
+                            <span class="px-3 py-2 text-gray-300 cursor-not-allowed">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                </svg>
+                            </span>
+                        {% endif %}
+                    </div>
+                {% endif %}
+
+            {% else %}
+                <!-- No Products Found -->
+                <div class="text-center py-16">
+                    <div class="text-gray-400 mb-6">
+                        <i class="fas fa-search text-6xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-semibold text-gray-700 mb-3">No products found</h3>
+                    <p class="text-gray-500 mb-6">Try adjusting your search or filter criteria</p>
+                    <a href="{% url 'products' %}" 
+                       class="inline-block px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold">
+                        View All Products
+                    </a>
                 </div>
             {% endif %}
         </div>
