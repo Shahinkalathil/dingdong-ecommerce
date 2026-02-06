@@ -5,14 +5,58 @@ from django.views.decorators.http import require_POST
 from .models import Cart, CartItem
 from products.models import ProductVariant
 from django.contrib.auth.decorators import login_required
+from decimal import Decimal
+from offers.utils import get_offer_details
+
+@login_required
+def add_to_cart(request, product_variant_id):
+    try:
+        variant = get_object_or_404(ProductVariant, id=product_variant_id, is_listed=True)
+        
+        if not variant.product.is_listed or not variant.product.category.is_listed or not variant.product.brand.is_listed:
+            messages.error(request, 'Product not available.')
+            return redirect('products')
+        
+        if variant.stock < 1:
+            messages.error(request, 'Out of stock.')
+            return redirect('product_detail', variant_id=variant.id)
+        
+        cart, _ = Cart.objects.get_or_create(user=request.user)
+
+        cart_item = CartItem.objects.filter(cart=cart, variant=variant).first()
+        
+        if cart_item:
+            if cart_item.quantity < variant.stock:
+                cart_item.quantity += 1
+                cart_item.save()
+        else:
+            CartItem.objects.create(cart=cart, variant=variant, quantity=1)
+            messages.success(request, 'Added to cart.')
+        return redirect('product_detail', variant_id=variant.id)
+        
+    except ProductVariant.DoesNotExist:
+        messages.error(request, 'Product not found.')
+        return redirect('products')
+    except Exception as e:
+        messages.error(request, 'Something went wrong.')
+        return redirect('products')
+from decimal import Decimal
 
 def cart(request):
     cart, _ = Cart.objects.get_or_create(user=request.user)
-    cart_items = cart.items.select_related('variant__product__brand','variant__product__category').prefetch_related('variant__images').all()
-    subtotal = cart.get_total_price()
+    cart_items = cart.items.select_related(
+        'variant__product__brand',
+        'variant__product__category',
+        'variant__product__product_offer',
+        'variant__product__brand__brand_offer'
+    ).prefetch_related('variant__images').all()
+    
+    subtotal = Decimal('0.00')
+    total_discount = Decimal('0.00')
     total_items = cart.get_total_items()
     has_out_of_stock = False
     has_unlisted = False
+    
     for item in cart_items:
         item.stock_available = item.is_in_stock()
         item.first_image = item.variant.images.first()
@@ -22,73 +66,54 @@ def cart(request):
             item.variant.product.category.is_listed and
             item.variant.product.brand.is_listed
         )
+        
+        # Get original price
+        item.original_price = item.variant.price
+        
+        # Get best offer price, discount, and type
+        item.discounted_price, item.discount_percentage, item.offer_type = get_offer_details(
+            item.variant.product, 
+            item.original_price
+        )
+        
+        # Calculate item discount and subtotal
+        if item.discount_percentage > 0:
+            discount_amount = item.original_price - item.discounted_price
+            item.item_discount = discount_amount * item.quantity
+            total_discount += item.item_discount
+        else:
+            item.item_discount = Decimal('0.00')
+        
+        # Item subtotal (after discount)
+        item.item_subtotal = item.discounted_price * item.quantity
+        subtotal += item.item_subtotal
+        
         if not item.stock_available:
             has_out_of_stock = True
         if not item.is_available:
             has_unlisted = True
+    
+    # Delivery charge logic
+    delivery_charge = Decimal('50.00') if subtotal < Decimal('1000.00') else Decimal('0.00')
+    
+    # Final total = subtotal + delivery
+    total = subtotal + delivery_charge
+    
     can_checkout = not (has_out_of_stock or has_unlisted) and cart_items.exists()
+    
     context = {
         'cart': cart,
         'cart_items': cart_items,
         'subtotal': subtotal,
-        'total': subtotal,
+        'total_discount': total_discount,
+        'delivery_charge': delivery_charge,
+        'total': total,
         'total_items': total_items,
-        'delivery_charge': 0,
         'can_checkout': can_checkout,
         'has_out_of_stock': has_out_of_stock,
         'has_unlisted': has_unlisted,
     }
     return render(request, 'user_side/cart/cart.html', context)
-
-@login_required
-def add_to_cart(request, product_variant_id):
-    """
-    Add product variant to cart
-    Shows appropriate messages and redirects back to product detail page
-    """
-    try:
-        variant = get_object_or_404(ProductVariant, id=product_variant_id, is_listed=True)
-        
-        # Check if product, category, and brand are listed
-        if not variant.product.is_listed or not variant.product.category.is_listed or not variant.product.brand.is_listed:
-            messages.error(request, 'Product not available.')
-            return redirect('products')
-        
-        # Check stock
-        if variant.stock < 1:
-            messages.error(request, 'Out of stock.')
-            return redirect('product_detail', variant_id=variant.id)
-        
-        # Get or create cart
-        cart, created = Cart.objects.get_or_create(user=request.user)
-        
-        # Check if item already in cart
-        cart_item = CartItem.objects.filter(cart=cart, variant=variant).first()
-        
-        if cart_item:
-            # Item already in cart - check if we can increase quantity
-            if cart_item.quantity < variant.stock:
-                cart_item.quantity += 1
-                cart_item.save()
-                messages.success(request, 'Quantity updated.')
-            else:
-                messages.warning(request, f'Only {variant.stock} available.')
-        else:
-            # Add new item to cart
-            CartItem.objects.create(cart=cart, variant=variant, quantity=1)
-            messages.success(request, 'Added to cart.')
-        
-        # Redirect back to the same product variant page
-        return redirect('product_detail', variant_id=variant.id)
-        
-    except ProductVariant.DoesNotExist:
-        messages.error(request, 'Product not found.')
-        return redirect('products')
-    except Exception as e:
-        print(f"Error in add_to_cart: {e}")
-        messages.error(request, 'Something went wrong.')
-        return redirect('products')
-
 
 @require_POST
 def update_cart_quantity(request, item_id):
@@ -134,14 +159,35 @@ def update_cart_quantity(request, item_id):
                     'message_type': 'warning'
                 })
         
-        # Recalculate cart totals
+        # Calculate item price with offers
+        original_price = cart_item.variant.price
+        discounted_price, discount_percentage, offer_type = get_offer_details(
+            cart_item.variant.product,
+            original_price
+        )
+        
+        item_subtotal = discounted_price * cart_item.quantity
+        
+        # Recalculate cart totals with offers
         cart = cart_item.cart
-        subtotal = cart.get_total_price()
+        cart_items = cart.items.select_related(
+            'variant__product__brand',
+            'variant__product__category',
+            'variant__product__product_offer',
+            'variant__product__brand__brand_offer'
+        ).all()
+        
+        subtotal = Decimal('0.00')
+        for item in cart_items:
+            item_price, _, _ = get_offer_details(
+                item.variant.product,
+                item.variant.price
+            )
+            subtotal += item_price * item.quantity
+        
         total_items = cart.get_total_items()
-        item_subtotal = cart_item.get_subtotal()
         
         # Check if checkout is still possible
-        cart_items = cart.items.select_related('variant__product__brand','variant__product__category').all()
         has_out_of_stock = False
         has_unlisted = False
         for item in cart_items:
@@ -169,7 +215,10 @@ def update_cart_quantity(request, item_id):
                 'total_items': total_items,
                 'can_increment': cart_item.quantity < cart_item.variant.stock,
                 'can_decrement': cart_item.quantity > 1,
-                'can_checkout': can_checkout
+                'can_checkout': can_checkout,
+                'original_price': float(original_price),
+                'discounted_price': float(discounted_price),
+                'discount_percentage': float(discount_percentage)
             }
         })
         
@@ -179,6 +228,7 @@ def update_cart_quantity(request, item_id):
             'message': 'An error occurred. Please try again.'
         }, status=500)
 
+
 @require_POST
 def remove_from_cart(request, item_id):
     try:
@@ -187,12 +237,25 @@ def remove_from_cart(request, item_id):
         cart = cart_item.cart
         cart_item.delete()
         
-        # Recalculate cart totals
-        subtotal = cart.get_total_price()
+        # Recalculate cart totals with offers
+        cart_items = cart.items.select_related(
+            'variant__product__brand',
+            'variant__product__category',
+            'variant__product__product_offer',
+            'variant__product__brand__brand_offer'
+        ).all()
+        
+        subtotal = Decimal('0.00')
+        for item in cart_items:
+            item_price, _, _ = get_offer_details(
+                item.variant.product,
+                item.variant.price
+            )
+            subtotal += item_price * item.quantity
+        
         total_items = cart.get_total_items()
         
         # Check if cart is empty
-        cart_items = cart.items.all()
         is_empty = not cart_items.exists()
         
         # Check if checkout is still possible
@@ -200,7 +263,7 @@ def remove_from_cart(request, item_id):
         if not is_empty:
             has_out_of_stock = False
             has_unlisted = False
-            for item in cart_items.select_related('variant__product__brand','variant__product__category'):
+            for item in cart_items:
                 is_available = (
                     item.variant.is_listed and 
                     item.variant.product.is_listed and
@@ -231,4 +294,3 @@ def remove_from_cart(request, item_id):
             'success': False,
             'message': 'An error occurred. Please try again.'
         }, status=500)
-    
