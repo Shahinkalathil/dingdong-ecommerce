@@ -1,7 +1,7 @@
 {% extends 'user_side/base.html' %}
 {% load static %}
 
-{% block title %}Whishlist{% endblock %}
+{% block title %}Wishlist - DINGDONG{% endblock %}
 
 {% block content %}
 <div class="container mx-auto px-4 py-8">
@@ -26,18 +26,18 @@
 
       <!-- Remove Button -->
       <a href="javascript:void(0)"
-        onclick="openCancelItemModal('{{ item.variant.id }}', '{{ item.variant.product.name }}')"
+        onclick="openCancelItemModal('{{ item.variant.id }}', '{{ item.product.name }}')"
         class="absolute top-2 right-2 bg-white rounded-full p-2 shadow-md hover:bg-red-50 transition-colors z-10">
           <i class="fas fa-times text-red-500 text-sm"></i>
       </a>
 
       <!-- Product Image -->
-      <a href="{% url 'product_detail' item.product.id %}?variant={{ item.variant.id }}" class="block">
+      <a href="{% url 'product_detail' item.variant.id %}" class="block">
         <div class="relative">
           {% if item.image %}
           <img src="{{ item.image.image.url }}" alt="{{ item.product.name }}" class="w-full h-48 object-contain group-hover:scale-105 transition-transform duration-300">
           {% else %}
-          <img src="https://via.placeholder.com/200x200?text=No+Image" alt="{{ item.product.name }}" class="w-full h-48 object-contain">
+          <img src="{% static 'images/placeholder.jpg' %}" alt="{{ item.product.name }}" class="w-full h-48 object-contain">
           {% endif %}
           
           <!-- Stock Badge -->
@@ -45,6 +45,13 @@
           <span class="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded">Out of Stock</span>
           {% elif item.variant.stock < 10 %}
           <span class="absolute top-2 left-2 bg-yellow-500 text-white text-xs px-2 py-1 rounded">Low Stock</span>
+          {% endif %}
+          
+          <!-- Discount Badge -->
+          {% if item.discount_percentage > 0 %}
+          <span class="absolute top-2 right-2 bg-green-500 text-white text-xs px-2 py-1 rounded font-bold">
+            {{ item.discount_percentage|floatformat:0 }}% OFF
+          </span>
           {% endif %}
         </div>
         
@@ -73,7 +80,12 @@
               <div class="w-5 h-5 rounded-full border-2 border-gray-300" style="background-color: {{ item.variant.color_code }};"></div>
               <span class="text-xs text-gray-600">{{ item.variant.color_name }}</span>
             </div>
-            <span class="font-bold text-lg">₹{{ item.price }}</span>
+            <div class="flex flex-col items-end">
+              <span class="font-bold text-lg">₹{{ item.price|floatformat:2 }}</span>
+              {% if item.discount_percentage > 0 %}
+              <span class="text-xs text-gray-500 line-through">₹{{ item.original_price|floatformat:2 }}</span>
+              {% endif %}
+            </div>
           </div>
         </div>
       </a>
@@ -81,8 +93,8 @@
       <!-- Action Button -->
       <div class="mt-3 pt-3 border-t border-gray-100">
         {% if item.in_stock %}
-        <a href="{% url 'add_to_cart' item.variant.id %}" class="block w-full bg-gray-900  text-white py-2 rounded-lg text-sm font-semibold hover:bg-gray-800 transition-colors text-center">
-          <i class="fas fa-shopping-cart text-xs"></i>
+        <a href="{% url 'add_to_cart' item.variant.id %}" class="block w-full bg-gray-900 text-white py-2 rounded-lg text-sm font-semibold hover:bg-gray-800 transition-colors text-center">
+          <i class="fas fa-shopping-cart text-xs mr-1"></i>
           <span>Add to Cart</span>
         </a>
         {% else %}
@@ -109,31 +121,30 @@
   {% endif %}
 </div>
 
-    <!-- Cancel Item Modal -->
-    <div id="cancelItemModal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-        <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-            <h3 class="text-lg font-semibold text-gray-900 mb-4">Remove Item</h3>
-            <p class="text-gray-600 mb-4">
-                Are you sure you want to remove <strong id="itemName"></strong> from your wishlist?
-            </p>
-            <div class="flex gap-3">
-                <button type="button" onclick="closeCancelItemModal()"
-                    class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
-                    No, Keep Item
-                </button>
-                <a id="confirmRemoveBtn"
-                  class="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-center cursor-pointer">
-                    Yes, Remove
-                </a>
-            </div>
+<!-- Cancel Item Modal -->
+<div id="cancelItemModal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Remove Item</h3>
+        <p class="text-gray-600 mb-4">
+            Are you sure you want to remove <strong id="itemName"></strong> from your wishlist?
+        </p>
+        <div class="flex gap-3">
+            <button type="button" onclick="closeCancelItemModal()"
+                class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+                No, Keep Item
+            </button>
+            <a id="confirmRemoveBtn"
+              class="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-center cursor-pointer">
+                Yes, Remove
+            </a>
         </div>
     </div>
+</div>
 
 <script>
   function openCancelItemModal(variantId, productName) {
       document.getElementById("itemName").textContent = productName;
-      document.getElementById("confirmRemoveBtn").href =
-          `/wishlist/remove/${variantId}/`;
+      document.getElementById("confirmRemoveBtn").href = `/wishlist/remove/${variantId}/`;
       document.getElementById("cancelItemModal").classList.remove("hidden");
   }
 

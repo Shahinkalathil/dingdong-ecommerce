@@ -106,7 +106,6 @@ def products(request):
     return render(request,'user_side/product/product_listing.html', context)
 
 # Product Detail
-
 def product_detail(request, variant_id):
     """
     Product detail view that handles variant selection via URL parameter
@@ -134,11 +133,21 @@ def product_detail(request, variant_id):
         # Get wishlist variant IDs for authenticated users
         wishlist_variants = []
         is_in_wishlist = False
+        is_in_cart = False
+        
         if request.user.is_authenticated:
             wishlist_variants = list(WishlistItem.objects.filter(
                 user=request.user
             ).values_list("variant_id", flat=True))
             is_in_wishlist = default_variant.id in wishlist_variants
+            
+            # Check if variant is in cart
+            try:
+                from cart.models import Cart, CartItem
+                user_cart = Cart.objects.get(user=request.user)
+                is_in_cart = CartItem.objects.filter(cart=user_cart, variant=default_variant).exists()
+            except Cart.DoesNotExist:
+                is_in_cart = False
         
         # Calculate pricing with offers
         original_price = default_variant.price
@@ -221,6 +230,7 @@ def product_detail(request, variant_id):
             'default_variant': default_variant,
             'wishlist_variants': wishlist_variants,
             'is_in_wishlist': is_in_wishlist,
+            'is_in_cart': is_in_cart,
             'rating': rating,
             'review_count': review_count,
             'original_price': original_price,
@@ -264,7 +274,6 @@ def product_detail(request, variant_id):
         print(f"Error in product_detail: {e}")
         messages.error(request, "An error occurred while loading the product.")
         return redirect('products')
-
 
 # Adminside
 # -------------------------------------------
