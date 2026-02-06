@@ -3,6 +3,8 @@ from . import views
 
 urlpatterns = [
     path('', views.checkout, name='checkout'),
+    path('apply-coupon/', views.apply_coupon, name='apply_coupon'),
+    path('remove-coupon/', views.remove_coupon, name='remove_coupon'),
     path('place-order/', views.place_order, name='place_order'),
     path('razorpay-payment/<int:order_id>/', views.razorpay_payment, name='razorpay_payment'),
     path('payment-success/', views.payment_success, name='payment_success'),

@@ -40,7 +40,7 @@ def add_to_cart(request, product_variant_id):
     except Exception as e:
         messages.error(request, 'Something went wrong.')
         return redirect('products')
-from decimal import Decimal
+
 
 def cart(request):
     cart, _ = Cart.objects.get_or_create(user=request.user)
@@ -92,12 +92,9 @@ def cart(request):
             has_out_of_stock = True
         if not item.is_available:
             has_unlisted = True
-    
-    # Delivery charge logic
-    delivery_charge = Decimal('50.00') if subtotal < Decimal('1000.00') else Decimal('0.00')
-    
+
     # Final total = subtotal + delivery
-    total = subtotal + delivery_charge
+    total = subtotal 
     
     can_checkout = not (has_out_of_stock or has_unlisted) and cart_items.exists()
     
@@ -106,7 +103,6 @@ def cart(request):
         'cart_items': cart_items,
         'subtotal': subtotal,
         'total_discount': total_discount,
-        'delivery_charge': delivery_charge,
         'total': total,
         'total_items': total_items,
         'can_checkout': can_checkout,
@@ -114,6 +110,7 @@ def cart(request):
         'has_unlisted': has_unlisted,
     }
     return render(request, 'user_side/cart/cart.html', context)
+
 
 @require_POST
 def update_cart_quantity(request, item_id):
