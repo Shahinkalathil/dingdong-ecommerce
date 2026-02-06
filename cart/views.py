@@ -4,7 +4,7 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from .models import Cart, CartItem
 from products.models import ProductVariant
-
+from django.contrib.auth.decorators import login_required
 
 def cart(request):
     cart, _ = Cart.objects.get_or_create(user=request.user)
@@ -40,33 +40,55 @@ def cart(request):
     }
     return render(request, 'user_side/cart/cart.html', context)
 
+@login_required
 def add_to_cart(request, product_variant_id):
-    variant = get_object_or_404(ProductVariant, id=product_variant_id)  
-    if not variant.is_listed or not variant.product.is_listed:
-        messages.error(request, 'This product is not available.')
-        return redirect('product_detail', product_id=variant.product.id)
-    if not variant.product.category.is_listed or not variant.product.brand.is_listed:
-        messages.error(request, 'This product is currently unavailable.')
-        return redirect('product_detail', product_id=variant.product.id)
-    if variant.stock < 1:
-        messages.error(request, 'This product is out of stock.')
-        return redirect('product_detail', product_id=variant.product.id)
-    cart, created = Cart.objects.get_or_create(user=request.user)
-    cart_item, item_created = CartItem.objects.get_or_create(
-        cart=cart,
-        variant=variant,
-        defaults={'quantity': 1}
-    )
-    if not item_created:
-        if cart_item.quantity < variant.stock:
-            cart_item.quantity += 1
-            cart_item.save()
-            messages.success(request, f'{variant.product.name} quantity updated in cart.')
+    """
+    Add product variant to cart
+    Shows appropriate messages and redirects back to product detail page
+    """
+    try:
+        variant = get_object_or_404(ProductVariant, id=product_variant_id, is_listed=True)
+        
+        # Check if product, category, and brand are listed
+        if not variant.product.is_listed or not variant.product.category.is_listed or not variant.product.brand.is_listed:
+            messages.error(request, 'Product not available.')
+            return redirect('products')
+        
+        # Check stock
+        if variant.stock < 1:
+            messages.error(request, 'Out of stock.')
+            return redirect('product_detail', variant_id=variant.id)
+        
+        # Get or create cart
+        cart, created = Cart.objects.get_or_create(user=request.user)
+        
+        # Check if item already in cart
+        cart_item = CartItem.objects.filter(cart=cart, variant=variant).first()
+        
+        if cart_item:
+            # Item already in cart - check if we can increase quantity
+            if cart_item.quantity < variant.stock:
+                cart_item.quantity += 1
+                cart_item.save()
+                messages.success(request, 'Quantity updated.')
+            else:
+                messages.warning(request, f'Only {variant.stock} available.')
         else:
-            messages.warning(request, f'Cannot add more. Only {variant.stock} items available in stock.')
-    else:
-        messages.success(request, f'{variant.product.name} added to cart successfully.')
-    return redirect('cart')
+            # Add new item to cart
+            CartItem.objects.create(cart=cart, variant=variant, quantity=1)
+            messages.success(request, 'Added to cart.')
+        
+        # Redirect back to the same product variant page
+        return redirect('product_detail', variant_id=variant.id)
+        
+    except ProductVariant.DoesNotExist:
+        messages.error(request, 'Product not found.')
+        return redirect('products')
+    except Exception as e:
+        print(f"Error in add_to_cart: {e}")
+        messages.error(request, 'Something went wrong.')
+        return redirect('products')
+
 
 @require_POST
 def update_cart_quantity(request, item_id):
