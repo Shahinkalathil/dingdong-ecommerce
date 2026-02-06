@@ -94,6 +94,8 @@
                                 </div>
                             {% endif %}
 
+                            
+
                             <div class="flex items-start space-x-4">
                                 <!-- Product Image -->
                                 <div class="flex-shrink-0 relative">
@@ -137,16 +139,40 @@
                                     </div>
                                     
                                     <!-- Price Details -->
-                                    <div class="space-y-1 mb-4">
-                                        <!-- Unit Price -->
-                                        <p class="text-lg text-gray-800">
-                                            <span class="font-semibold">Price:</span>
-                                            ₹{{ item.variant.price|floatformat:2 }}
-                                        </p>
+                                    <div class="mb-4">
+                                        <div class="flex items-center gap-3 flex-wrap">
+                                            <!-- Main Price -->
+                                            <span class="text-xl font-bold text-gray-900">
+                                                {% if item.discount_percentage > 0 %}
+                                                    ₹{{ item.discounted_price|floatformat:2 }}
+                                                {% else %}
+                                                    ₹{{ item.original_price|floatformat:2 }}
+                                                {% endif %}
+                                            </span>
+
+                                            <!-- Strikethrough (if discounted) -->
+                                            {% if item.discount_percentage > 0 %}
+                                                <span class="text-sm text-gray-500 line-through">
+                                                    ₹{{ item.original_price|floatformat:2 }}
+                                                </span>
+                                            {% endif %}
+
+                                            <!-- Offer Badge -->
+                                            {% if item.discount_percentage > 0 %}
+                                                <span class="bg-green-600 text-white px-3 py-1 rounded-full text-xs font-semibold">
+                                                    {{ item.discount_percentage }}% OFF
+                                                    {% if item.offer_type == 'product' %}Product{% else %}Brand{% endif %}
+                                                </span>
+                                            {% endif %}
+                                        </div>
+                                       
                                         <!-- Total Calculation -->
                                         <p class="text-lg text-gray-800">
                                             <span class="font-semibold">Total:</span>
-                                            <span class="font-bold text-gray-900 item-subtotal">₹{{ item.get_subtotal|floatformat:2 }}</span>
+                                            <span class="font-bold text-gray-900 item-subtotal">₹{{ item.item_subtotal|floatformat:2 }}</span>
+                                            {% if item.discount_percentage > 0 %}
+                                                <span class="text-green-600 text-sm ml-2">(You save ₹{{ item.item_discount|floatformat:2 }})</span>
+                                            {% endif %}
                                         </p>
                                     </div>
                                     
@@ -204,9 +230,6 @@
                                                 <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">In Stock</span>
                                             {% endif %}
                                         </div>
-                                        {% if item.is_available and item.stock_available %}
-                                            <span class="font-medium text-green-600">Free Delivery</span>
-                                        {% endif %}
                                     </div>
                                 </div>
 
@@ -227,50 +250,70 @@
                     </div>
 
                     <!-- Order Summary -->
-                    <div class="lg:col-span-1">
-                        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 sticky top-8">
-                            <h2 class="text-xl font-bold text-gray-900 mb-6">Order Summary</h2>
-                            
-                            <!-- Order Details -->
-                            <div class="space-y-4 mb-6">
-                                <div class="flex justify-between">
-                                    <span class="text-gray-600">Subtotal (<span id="summaryItemCount">{{ total_items }}</span> items)</span>
-                                    <span class="font-semibold" id="subtotal">₹{{ subtotal|floatformat:2 }}</span>
-                                </div>
-                                <div class="flex justify-between">
-                                    <span class="text-gray-600">Delivery Charge</span>
-                                    <span class="font-semibold text-green-600">Free</span>
-                                </div>
-                                <hr class="border-gray-200">
-                                <div class="flex justify-between text-lg font-bold">
-                                    <span>Total</span>
-                                    <span id="total">₹{{ total|floatformat:2 }}</span>
-                                </div>
-                            </div>
-                            
-                            <!-- Checkout Button -->
-                            <div id="checkoutButtonContainer">
-                                {% if can_checkout %}
-                                    <a href="{% url 'checkout' %}" 
-                                        class="block w-full text-center bg-black text-white py-3 px-4 rounded-lg font-semibold hover:bg-gray-800 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2">
-                                        Proceed to Checkout
-                                    </a>
-                                {% else %}
-                                    <button disabled
-                                        class="block w-full text-center bg-gray-400 text-white py-3 px-4 rounded-lg font-semibold cursor-not-allowed">
-                                        Cannot Checkout
-                                    </button>
-                                    <p class="text-xs text-red-600 mt-2 text-center">Remove unavailable items to continue</p>
-                                {% endif %}
-                            </div>
-                            
-                            <!-- Continue Shopping -->
-                            <a href="{% url 'home' %}" 
-                                class="block w-full text-center mt-3 bg-gray-100 text-gray-700 py-3 px-4 rounded-lg font-semibold hover:bg-gray-200 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2">
-                                Continue Shopping
-                            </a>
-                        </div>
-                    </div>
+<div class="lg:col-span-1">
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 sticky top-8">
+        <h2 class="text-xl font-bold text-gray-900 mb-6">Order Summary</h2>
+        
+        <!-- Order Details -->
+        <div class="space-y-4 mb-6">
+            <div class="flex justify-between">
+                <span class="text-gray-600">Subtotal (<span id="summaryItemCount">{{ total_items }}</span> items)</span>
+                <span class="font-semibold" id="subtotal">₹{{ subtotal|floatformat:2 }}</span>
+            </div>
+
+            {% if total_discount > 0 %}
+            <div class="flex justify-between text-green-600">
+                <span>Total Discount</span>
+                <span class="font-semibold">- ₹{{ total_discount|floatformat:2 }}</span>
+            </div>
+            {% endif %}
+
+            <hr class="border-gray-200">
+
+            <div class="flex justify-between text-lg font-bold">
+                <span>Total</span>
+                <span id="total">₹{{ total|floatformat:2 }}</span>
+            </div>
+
+            <!-- Free delivery note (optional second placement) -->
+            {% if item.is_available and item.stock_available %}
+                <p class="text-sm text-green-600 mt-2 text-center font-medium">
+                    ✓ Free delivery on this order
+                </p>
+            {% endif %}
+
+            {% if total_discount > 0 %}
+            <div class="bg-green-50 border border-green-200 rounded-lg p-3">
+                <p class="text-green-800 text-sm font-medium text-center">
+                    🎉 You're saving ₹{{ total_discount|floatformat:2 }} on this order!
+                </p>
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- Checkout Button -->
+        <div id="checkoutButtonContainer">
+            {% if can_checkout %}
+                <a href="{% url 'checkout' %}" 
+                   class="block w-full text-center bg-black text-white py-3 px-4 rounded-lg font-semibold hover:bg-gray-800 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2">
+                    Proceed to Checkout
+                </a>
+            {% else %}
+                <button disabled
+                        class="block w-full text-center bg-gray-400 text-white py-3 px-4 rounded-lg font-semibold cursor-not-allowed">
+                    Cannot Checkout
+                </button>
+                <p class="text-xs text-red-600 mt-2 text-center">Remove unavailable items to continue</p>
+            {% endif %}
+        </div>
+        
+        <!-- Continue Shopping -->
+        <a href="{% url 'home' %}" 
+           class="block w-full text-center mt-3 bg-gray-100 text-gray-700 py-3 px-4 rounded-lg font-semibold hover:bg-gray-200 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2">
+            Continue Shopping
+        </a>
+    </div>
+</div>
                 </div>
             
             {% else %}
