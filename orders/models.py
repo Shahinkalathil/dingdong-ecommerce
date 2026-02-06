@@ -10,10 +10,8 @@ User = get_user_model()
 class Order(models.Model):
     PAYMENT_CHOICES = [
         ('cod', 'Cash on Delivery'),
-        ('card', 'Card'),
-        ('netbanking', 'Net Banking'),
-        ('upi', 'UPI'),
-        ('emi', 'EMI'),
+        ('online', 'Online Payment'),
+        ('wallet', 'Wallet'),
     ]
     STATUS_CHOICES = [
         ('pending', 'Pending'),
@@ -30,9 +28,13 @@ class Order(models.Model):
         ('refunded', 'Refunded'),
     ]
     
-    
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='orders')
+    address = models.ForeignKey(Address, on_delete=models.SET_NULL, null=True)
     subtotal = models.DecimalField(max_digits=10, decimal_places=2)
     delivery_charge = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    discount_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)  # New field
+    coupon_code = models.CharField(max_length=20, blank=True, null=True)  # New field
+    coupon_discount = models.DecimalField(max_digits=10, decimal_places=2, default=0)  # New field
     total_amount = models.DecimalField(max_digits=10, decimal_places=2)
     payment_method = models.CharField(max_length=20, choices=PAYMENT_CHOICES, default='cod')
     order_status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='confirmed')
@@ -41,10 +43,8 @@ class Order(models.Model):
     order_number = models.CharField(max_length=50, unique=True, editable=False)
     razorpay_order_id = models.CharField(max_length=100, blank=True, null=True)
     razorpay_payment_id = models.CharField(max_length=100, blank=True, null=True)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='orders')
-    address = models.ForeignKey(Address, on_delete=models.SET_NULL, null=True)
     payment_id = models.CharField(max_length=100, blank=True, null=True)  
-    payment_status = models.CharField(max_length=20,choices=PAYSTATUS_CHOICES,default='pending')
+    payment_status = models.CharField(max_length=20, choices=PAYSTATUS_CHOICES, default='pending')
     is_paid = models.BooleanField(default=False) 
     cancellation_reason = models.CharField(max_length=255, blank=True, null=True)
     cancelled_at = models.DateTimeField(blank=True, null=True)
@@ -73,14 +73,14 @@ class Order(models.Model):
 
 
 class OrderItem(models.Model):
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items')
+    variant = models.ForeignKey(ProductVariant, on_delete=models.SET_NULL, null=True)
     product_name = models.CharField(max_length=255)
     color_name = models.CharField(max_length=100)
     color_code = models.CharField(max_length=20)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     quantity = models.PositiveIntegerField(default=1)
     subtotal = models.DecimalField(max_digits=10, decimal_places=2)
-    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items')
-    variant = models.ForeignKey(ProductVariant, on_delete=models.SET_NULL, null=True)
     is_cancelled = models.BooleanField(default=False)
     cancelled_at = models.DateTimeField(blank=True, null=True)
 
@@ -93,6 +93,7 @@ class OrderItem(models.Model):
 
 
 class OrderAddress(models.Model):
+    order = models.OneToOneField(Order, on_delete=models.CASCADE, related_name='delivery_address')
     full_name = models.CharField(max_length=100)
     phone_number = models.CharField(max_length=15)
     flat_house = models.CharField(max_length=255)
@@ -101,7 +102,6 @@ class OrderAddress(models.Model):
     town_city = models.CharField(max_length=100)
     state = models.CharField(max_length=100)
     pincode = models.CharField(max_length=10)
-    order = models.OneToOneField(Order, on_delete=models.CASCADE, related_name='delivery_address')
 
     def __str__(self):
         return f"{self.order.order_number} - {self.full_name}"
@@ -118,8 +118,6 @@ class OrderReturn(models.Model):
         ('better_price', 'Found Better Price'),
         ('other', 'Other'),
     ]
-    
-    
     
     order = models.OneToOneField(Order, on_delete=models.CASCADE, related_name='return_request')
     return_reason = models.CharField(max_length=50, choices=RETURN_REASON_CHOICES)

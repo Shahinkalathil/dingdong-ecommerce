@@ -1,3 +1,4 @@
+# checkout/utils.py
 from cart.models import Cart
 
 def get_user_cart_items(user):
