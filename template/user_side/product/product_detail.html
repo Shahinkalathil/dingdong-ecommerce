@@ -7,12 +7,29 @@
     <!-- Toast Notification Container -->
     <div id="toastContainer" class="fixed top-20 right-4 z-50 space-y-2"></div>
 
-    <!-- Display all messages as toasts -->
+    <!-- Display ONLY relevant messages as toasts (filter out order/payment messages) -->
     {% if messages %}
         <script>
             document.addEventListener('DOMContentLoaded', function() {
                 {% for message in messages %}
-                    showToast("{{ message }}", "{% if message.tags == 'success' %}success{% elif message.tags == 'error' %}error{% elif message.tags == 'warning' %}warning{% else %}info{% endif %}");
+                    // Only show messages that are relevant to product detail page
+                    const messageText = "{{ message|escapejs }}";
+                    const messageType = "{% if message.tags == 'success' %}success{% elif message.tags == 'error' %}error{% elif message.tags == 'warning' %}warning{% else %}info{% endif %}";
+                    
+                    // Filter out order/payment/checkout related messages
+                    const irrelevantKeywords = [
+                        'order', 'payment', 'placed', 'successful', 'confirmed', 
+                        'wallet', 'coupon', 'checkout', 'delivered', 'shipped'
+                    ];
+                    
+                    const isIrrelevant = irrelevantKeywords.some(keyword => 
+                        messageText.toLowerCase().includes(keyword)
+                    );
+                    
+                    // Only show cart/wishlist/product related messages
+                    if (!isIrrelevant) {
+                        showToast(messageText, messageType);
+                    }
                 {% endfor %}
             });
         </script>
@@ -266,6 +283,7 @@
             </div>
         </div>
 
+        <!-- Rest of the template remains the same (Features, Tabs, Related Products, Reviews, FAQ) -->
         <!-- Features -->
         <div class="bg-blue-50 p-4 rounded-lg mt-6">
             <h3 class="font-medium text-gray-900 mb-2">Key Features</h3>
@@ -556,7 +574,7 @@
             }, 4000);
         }
 
-        // Product Detail Functionality (NO AJAX - Pure Jinja2)
+        // Product Detail Functionality
         class ProductDetail {
             constructor() {
                 this.initializeAll();
