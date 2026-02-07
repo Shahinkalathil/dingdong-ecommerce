@@ -80,16 +80,6 @@ class Order(models.Model):
         return self.items.filter(
             item_status__in=['cancelled', 'returned']
         ).exists()
-    
-    @property
-    def has_active_items(self):
-        """Check if order has any active items (not cancelled, not returned)"""
-        return self.items.filter(is_cancelled=False, is_returned=False).exists()
-    
-    @property
-    def active_items_count(self):
-        """Get count of active items"""
-        return self.items.filter(is_cancelled=False, is_returned=False).count()
 
 
 class OrderItem(models.Model):
