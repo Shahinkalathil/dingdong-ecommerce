@@ -21,6 +21,8 @@ class Order(models.Model):
         ('delivered', 'Delivered'),
         ('cancelled', 'Cancelled'),
         ('returned', 'Returned'),
+        ('returned_checking', 'Returned_Checking'),
+
     ]
     PAYSTATUS_CHOICES = [
         ('pending', 'Pending'),
@@ -71,12 +73,23 @@ class Order(models.Model):
             self.is_paid = True
         
         super().save(*args, **kwargs)
-        
+
     @property
     def has_cancelled_or_returned_items(self):
+        """Check if order has ANY cancelled or returned items"""
         return self.items.filter(
             item_status__in=['cancelled', 'returned']
         ).exists()
+    
+    @property
+    def has_active_items(self):
+        """Check if order has any active items (not cancelled, not returned)"""
+        return self.items.filter(is_cancelled=False, is_returned=False).exists()
+    
+    @property
+    def active_items_count(self):
+        """Get count of active items"""
+        return self.items.filter(is_cancelled=False, is_returned=False).count()
 
 
 class OrderItem(models.Model):
@@ -148,7 +161,6 @@ class OrderReturn(models.Model):
         ('pending', 'Pending'),
         ('approved', 'Approved'),
         ('rejected', 'Rejected'),
-        ('completed', 'Completed'),
     ]
     
     order = models.OneToOneField(Order, on_delete=models.CASCADE, related_name='return_request')
@@ -188,7 +200,6 @@ class OrderItemReturn(models.Model):
         ('pending', 'Pending'),
         ('approved', 'Approved'),
         ('rejected', 'Rejected'),
-        ('completed', 'Completed'),
     ]
     
     order_item = models.OneToOneField(OrderItem, on_delete=models.CASCADE, related_name='return_request')

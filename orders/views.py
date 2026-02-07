@@ -77,8 +77,9 @@ def order_detail(request, order_number):
     order = get_object_or_404(
         Order.objects.prefetch_related(
             'items__variant__images',
-            'items__variant__product'
-        ).select_related('delivery_address', 'user'),
+            'items__variant__product',
+            'items__return_request'
+        ).select_related('delivery_address', 'user', 'return_request'),
         order_number=order_number,
         user=request.user
     )
@@ -104,6 +105,9 @@ def order_detail(request, order_number):
         if return_days_left > 0 and not hasattr(order, 'return_request'):
             can_return = True
 
+    # Count active items (not cancelled, not returned)
+    active_items_count = order.items.filter(is_cancelled=False, is_returned=False).count()
+
     status_steps = {
         'confirmed': order.order_status in ['confirmed', 'shipped', 'out_for_delivery', 'delivered'],
         'shipped': order.order_status in ['shipped', 'out_for_delivery', 'delivered'],
@@ -120,6 +124,7 @@ def order_detail(request, order_number):
         'discount': discount,
         'order_savings': order_savings,
         'return_days_left': return_days_left if return_days_left > 0 else 0,
+        'active_items_count': active_items_count,
     }
     
     return render(request, 'user_side/profile/order_detail.html', context)
@@ -240,20 +245,30 @@ def cancel_order_item(request, order_number, item_id):
             # Mark item as cancelled
             item.is_cancelled = True
             item.cancelled_at = timezone.now()
-            item.item_status = 'cancelled'
+            item.item_status = 'pending'
             item.save()
     
             # Recalculate order totals
             order.subtotal -= item.subtotal
-            order.total_amount = order.subtotal + order.delivery_charge - order.coupon_discount
             
             # Check if all items are cancelled
             active_items_count = order.items.filter(is_cancelled=False, is_returned=False).count()
             
+            # If this is the last item, remove delivery charge
+            if active_items_count == 0:
+                order.delivery_charge = Decimal('0.00')
+            
+            # Recalculate total
+            order.total_amount = order.subtotal + order.delivery_charge - order.coupon_discount
+            
             # Handle refund for cancelled item
             refund_amount = Decimal('0.00')
             if order.is_paid or order.payment_status == 'paid':
-                refund_amount = item.subtotal
+                # If only one item left, refund includes delivery charge
+                if active_items_count == 0:
+                    refund_amount = item.subtotal + order.delivery_charge
+                else:
+                    refund_amount = item.subtotal
                 
                 # Add refund to wallet
                 wallet, created = Wallet.objects.get_or_create(user=request.user)
@@ -308,7 +323,7 @@ def cancel_order_item(request, order_number, item_id):
 @login_required
 @require_http_methods(["POST"])
 def request_return(request, order_number):
-    """Request return for entire order"""
+    """Request return for entire order - NO wallet refund until admin approves"""
     try:
         order = get_object_or_404(Order, order_number=order_number, user=request.user)
         
@@ -344,7 +359,7 @@ def request_return(request, order_number):
             })
         
         with transaction.atomic():
-            # Create return request
+            # Create return request with pending status - NO wallet refund
             order_return = OrderReturn.objects.create(
                 order=order,
                 return_reason=return_reason,
@@ -353,39 +368,14 @@ def request_return(request, order_number):
                 return_status='pending'
             )
             
-            # Mark all items as returned
-            for item in order.items.filter(is_cancelled=False):
-                item.is_returned = True
-                item.returned_at = timezone.now()
-                item.item_status = 'returned'
-                item.save()
-                
-                # Restore stock
-                if item.variant:
-                    item.variant.stock += item.quantity
-                    item.variant.save()
-            
-            # Update order status
-            order.order_status = 'returned'
+            # Update order status to show return is being checked
+            order.order_status = 'returned_checking'
             order.save()
-            
-            # Add refund to wallet
-            wallet, created = Wallet.objects.get_or_create(user=request.user)
-            wallet.balance += order.total_amount
-            wallet.save()
-            
-            # Create wallet transaction
-            WalletTransaction.objects.create(
-                wallet=wallet,
-                order=order,
-                amount=order.total_amount,
-                transaction_type='credit'
-            )
         
         return JsonResponse({
             'success': True,
-            'message': f'Return request submitted successfully! ₹{order.total_amount} has been refunded to your wallet.',
-            'redirect_url': f'/orders/list/'
+            'message': 'Return request submitted successfully! Admin is reviewing your request.',
+            'redirect_url': f'/orders/detail/{order_number}/'
         })
         
     except Exception as e:
@@ -398,7 +388,7 @@ def request_return(request, order_number):
 @login_required
 @require_http_methods(["POST"])
 def request_item_return(request, order_number, item_id):
-    """Request return for individual item"""
+    """Request return for individual item - Immediate stock restore and wallet refund"""
     try:
         order = get_object_or_404(Order, order_number=order_number, user=request.user)
         
@@ -448,7 +438,7 @@ def request_item_return(request, order_number, item_id):
             })
         
         with transaction.atomic():
-            # Create item return request
+            # Create item return request with pending status
             item_return = OrderItemReturn.objects.create(
                 order_item=item,
                 order=order,
@@ -461,15 +451,14 @@ def request_item_return(request, order_number, item_id):
             # Mark item as returned
             item.is_returned = True
             item.returned_at = timezone.now()
-            item.item_status = 'returned'
             item.save()
             
-            # Restore stock
+            # Restore stock immediately
             if item.variant:
                 item.variant.stock += item.quantity
                 item.variant.save()
             
-            # Add refund to wallet
+            # Add refund to wallet immediately
             wallet, created = Wallet.objects.get_or_create(user=request.user)
             wallet.balance += item.subtotal
             wallet.save()
@@ -485,14 +474,30 @@ def request_item_return(request, order_number, item_id):
             # Recalculate order totals
             order.subtotal -= item.subtotal
             order.total_amount = order.subtotal + order.delivery_charge - order.coupon_discount
+            
+            # Check if this is the last active item
+            active_items_count = order.items.filter(is_cancelled=False, is_returned=False).count()
+            
+            # If this was the last item, create OrderReturn and set order status
+            if active_items_count == 0:
+                # Create order-level return request with pending status
+                OrderReturn.objects.create(
+                    order=order,
+                    return_reason=return_reason,
+                    description=f"Last item returned: {description[:450]}" if description else "All items returned",
+                    refund_amount=Decimal('0.00'),  # Already refunded through items
+                    return_status='pending'
+                )
+                
+                # Set order status to returned_checking
+                order.order_status = 'returned_checking'
+            
             order.save()
         
         return JsonResponse({
             'success': True,
-            'message': f'Item return request submitted successfully! ₹{item.subtotal} has been refunded to your wallet.',
-            'refund_amount': float(item.subtotal),
-            'new_subtotal': float(order.subtotal),
-            'new_total': float(order.total_amount)
+            'message': f'Item returned successfully! ₹{item.subtotal} has been refunded to your wallet.',
+            'redirect_url': f'/orders/detail/{order_number}/'
         })
         
     except Exception as e:
@@ -536,7 +541,7 @@ def generate_pdf(request, order_number):
     
     return response
 
-
+    
 # Admin
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 @user_passes_test(lambda u: u.is_superuser, login_url="admin_login")
