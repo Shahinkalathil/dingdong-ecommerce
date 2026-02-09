@@ -42,7 +42,7 @@
             background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
         }
     </style>
-    {% endblock %}
+{% endblock %}
 
 
 {% block content %}
@@ -58,9 +58,8 @@
                     <div class="flex items-center justify-between">
                         <div>
                             <p class="text-sm font-medium text-gray-500 mb-1">Available Balance</p>
-                            <p class="text-4xl font-semibold text-gray-900">₹ 2,040.00</p>
+                            <p class="text-4xl font-semibold text-gray-900">₹ {{ wallet.balance|floatformat:2 }}</p>
                         </div>
-                        
                     </div>
                 </div>
             </div>
@@ -71,10 +70,10 @@
                     <div class="flex items-center justify-between">
                         <h2 class="text-lg font-medium text-gray-900">Wallet History</h2>
                         <div class="flex items-center gap-3">
-                            <select class="text-sm border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                <option>All Transactions</option>
-                                <option>Credits</option>
-                                <option>Debits</option>
+                            <select class="text-sm border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" onchange="window.location.href='?filter=' + this.value">
+                                <option value="all" {% if transaction_filter == 'all' %}selected{% endif %}>All Transactions</option>
+                                <option value="credit" {% if transaction_filter == 'credit' %}selected{% endif %}>Credits</option>
+                                <option value="debit" {% if transaction_filter == 'debit' %}selected{% endif %}>Debits</option>
                             </select>
                         </div>
                     </div>
@@ -102,136 +101,98 @@
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
-                            <!-- Transaction 1 -->
-                            <tr class="hover:bg-gray-50">
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="flex items-center">
-                                        
-                                        <div class="ml-4">
-                                            <div class="text-sm font-medium text-gray-900">Order Refund</div>
-                                            <div class="text-sm text-gray-500">Refund processed</div>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm text-gray-900">#ORD-12345</div>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm text-gray-900">Feb 02, 2026</div>
-                                    <div class="text-sm text-gray-500">10:30 AM</div>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                        Credit
-                                    </span>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-right">
-                                    <div class="text-sm font-semibold text-green-600">+ ₹610.00</div>
-                                </td>
-                            </tr>
-
-                            <!-- Transaction 2 -->
-                            <tr class="hover:bg-gray-50">
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="flex items-center">
-                                        
-                                        <div class="ml-4">
-                                            <div class="text-sm font-medium text-gray-900">Order Payment</div>
-                                            <div class="text-sm text-gray-500">Payment deducted</div>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm text-gray-900">#ORD-12344</div>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm text-gray-900">Feb 01, 2026</div>
-                                    <div class="text-sm text-gray-500">03:15 PM</div>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
-                                        Debit
-                                    </span>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-right">
-                                    <div class="text-sm font-semibold text-red-600">- ₹70.00</div>
-                                </td>
-                            </tr>
-
-                            <!-- Transaction 3 -->
-                            <tr class="hover:bg-gray-50">
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="flex items-center">
-                                        
-                                        <div class="ml-4">
-                                            <div class="text-sm font-medium text-gray-900">Cashback Reward</div>
-                                            <div class="text-sm text-gray-500">Promotional credit</div>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm text-gray-500">—</div>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm text-gray-900">Jan 31, 2026</div>
-                                    <div class="text-sm text-gray-500">09:00 AM</div>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                        Credit
-                                    </span>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-right">
-                                    <div class="text-sm font-semibold text-green-600">+ ₹150.00</div>
-                                </td>
-                            </tr>
-
-                            <!-- Transaction 4 -->
+                            {% for transaction in transactions %}
                             <tr class="hover:bg-gray-50">
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="flex items-center">
                                         <div class="ml-4">
-                                            <div class="text-sm font-medium text-gray-900">Order Payment</div>
-                                            <div class="text-sm text-gray-500">Payment deducted</div>
+                                            <div class="text-sm font-medium text-gray-900">
+                                                {% if transaction.transaction_type == 'credit' %}
+                                                    {% if transaction.order %}Order Refund{% else %}Cashback Reward{% endif %}
+                                                {% else %}
+                                                    Order Payment
+                                                {% endif %}
+                                            </div>
+                                            <div class="text-sm text-gray-500">
+                                                {% if transaction.transaction_type == 'credit' %}
+                                                    {% if transaction.order %}Refund processed{% else %}Promotional credit{% endif %}
+                                                {% else %}
+                                                    Payment deducted
+                                                {% endif %}
+                                            </div>
                                         </div>
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm text-gray-900">#ORD-12343</div>
+                                    <div class="text-sm {% if transaction.order %}text-gray-900{% else %}text-gray-500{% endif %}">
+                                        {% if transaction.order %}#{{ transaction.order.order_number }}{% else %}—{% endif %}
+                                    </div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm text-gray-900">Jan 30, 2026</div>
-                                    <div class="text-sm text-gray-500">06:45 PM</div>
+                                    <div class="text-sm text-gray-900">{{ transaction.created_at|date:"M d, Y" }}</div>
+                                    <div class="text-sm text-gray-500">{{ transaction.created_at|date:"h:i A" }}</div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
-                                        Debit
+                                    <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full {% if transaction.transaction_type == 'credit' %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">
+                                        {{ transaction.get_transaction_type_display }}
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-right">
-                                    <div class="text-sm font-semibold text-red-600">- ₹250.00</div>
+                                    <div class="text-sm font-semibold {% if transaction.transaction_type == 'credit' %}text-green-600{% else %}text-red-600{% endif %}">
+                                        {% if transaction.transaction_type == 'credit' %}+{% else %}-{% endif %} ₹{{ transaction.amount|floatformat:2 }}
+                                    </div>
                                 </td>
                             </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="px-6 py-12 text-center">
+                                    <div class="flex flex-col items-center justify-center">
+                                        <svg class="w-16 h-16 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                        <p class="text-gray-500 text-lg font-medium">No transactions found</p>
+                                        <p class="text-gray-400 text-sm mt-1">Your wallet transaction history will appear here</p>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
                         </tbody>
                     </table>
                 </div>
 
                 <!-- Pagination -->
+                {% if transactions %}
                 <div class="bg-white px-6 py-4 border-t border-gray-200">
                     <div class="flex items-center justify-between">
                         <div class="text-sm text-gray-700">
-                            Showing <span class="font-medium">1</span> to <span class="font-medium">7</span> of <span class="font-medium">47</span> transactions
+                            Showing <span class="font-medium">{{ transactions.start_index }}</span> to <span class="font-medium">{{ transactions.end_index }}</span> of <span class="font-medium">{{ total_transactions }}</span> transactions
                         </div>
                         <div class="flex gap-2">
-                            <button class="px-3 py-2 text-sm border border-gray-300 rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
-                                Previous
-                            </button>
-                            <button class="px-3 py-2 text-sm border border-gray-300 rounded-md text-gray-700 bg-white hover:bg-gray-50">
-                                Next
-                            </button>
+                            {% if transactions.has_previous %}
+                                <a href="?page={{ transactions.previous_page_number }}{% if transaction_filter != 'all' %}&filter={{ transaction_filter }}{% endif %}" 
+                                   class="px-3 py-2 text-sm border border-gray-300 rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                                    Previous
+                                </a>
+                            {% else %}
+                                <button class="px-3 py-2 text-sm border border-gray-300 rounded-md text-gray-700 bg-white opacity-50 cursor-not-allowed" disabled>
+                                    Previous
+                                </button>
+                            {% endif %}
+
+                            {% if transactions.has_next %}
+                                <a href="?page={{ transactions.next_page_number }}{% if transaction_filter != 'all' %}&filter={{ transaction_filter }}{% endif %}" 
+                                   class="px-3 py-2 text-sm border border-gray-300 rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                                    Next
+                                </a>
+                            {% else %}
+                                <button class="px-3 py-2 text-sm border border-gray-300 rounded-md text-gray-700 bg-white opacity-50 cursor-not-allowed" disabled>
+                                    Next
+                                </button>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
+                {% endif %}
             </div>
         </div>
     </div>
