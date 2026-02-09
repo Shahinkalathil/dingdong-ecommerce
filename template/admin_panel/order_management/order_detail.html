@@ -20,70 +20,179 @@
                     <h1 class="text-2xl font-bold text-gray-900 mb-2">Order #{{ order.order_number }}</h1>
                     <p class="text-gray-600">Placed on {{ order.created_at|date:"d M Y" }}</p>
                 </div>
+                
+                <!-- Order Status Badge -->
+                <div class="mt-4 md:mt-0">
+                    {% if order.order_status == 'cancelled' %}
+                        <span class="inline-block text-red-600 bg-red-50 px-4 py-2 rounded-full text-sm font-semibold">Cancelled</span>
+                    {% elif order.order_status == 'returned' %}
+                        <span class="inline-block text-purple-600 bg-purple-50 px-4 py-2 rounded-full text-sm font-semibold">Returned</span>
+                    {% elif order.order_status == 'returned_checking' %}
+                        <span class="inline-block text-orange-600 bg-orange-50 px-4 py-2 rounded-full text-sm font-semibold">Return Checking</span>
+                    {% elif order.order_status == 'delivered' %}
+                        <span class="inline-block text-green-600 bg-green-50 px-4 py-2 rounded-full text-sm font-semibold">Delivered</span>
+                    {% else %}
+                        <span class="inline-block text-blue-600 bg-blue-50 px-4 py-2 rounded-full text-sm font-semibold">{{ order.get_order_status_display }}</span>
+                    {% endif %}
+                </div>
             </div>
         </div>
+
+        <!-- Return Request Alert (if exists and pending) -->
+        {% if return_request and order.order_status == 'returned_checking' %}
+        <div class="bg-orange-50 border-l-4 border-orange-400 p-6 mb-6 rounded-lg">
+            <div class="flex items-start">
+                <div class="flex-shrink-0">
+                    <svg class="h-6 w-6 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                    </svg>
+                </div>
+                <div class="ml-3 flex-1">
+                    <h3 class="text-lg font-semibold text-orange-800 mb-2">Return Request Pending</h3>
+                    <div class="space-y-2 text-sm text-orange-700">
+                        <p><span class="font-medium">Reason:</span> {{ return_request.get_return_reason_display }}</p>
+                        {% if return_request.description %}
+                        <p><span class="font-medium">Description:</span> {{ return_request.description }}</p>
+                        {% endif %}
+                        <p><span class="font-medium">Refund Amount:</span> ₹{{ return_request.refund_amount|floatformat:2 }}</p>
+                        <p><span class="font-medium">Requested:</span> {{ return_request.requested_at|date:"d M Y, h:i A" }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Returned Order Info (if approved) -->
+        {% if return_request and order.order_status == 'returned' %}
+        <div class="bg-purple-50 border-l-4 border-purple-400 p-6 mb-6 rounded-lg">
+            <div class="flex items-start">
+                <div class="flex-shrink-0">
+                    <svg class="h-6 w-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </div>
+                <div class="ml-3 flex-1">
+                    <h3 class="text-lg font-semibold text-purple-800 mb-2">Return Approved</h3>
+                    <div class="space-y-2 text-sm text-purple-700">
+                        <p><span class="font-medium">Reason:</span> {{ return_request.get_return_reason_display }}</p>
+                        <p><span class="font-medium">Refund Amount:</span> ₹{{ return_request.refund_amount|floatformat:2 }}</p>
+                        <p><span class="font-medium">Processed:</span> {{ return_request.processed_at|date:"d M Y, h:i A" }}</p>
+                        <p class="text-purple-900 font-medium">Refund has been added to customer's wallet.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <!-- Main Content -->
             <div class="lg:col-span-2 space-y-6">
-                <!-- Order Status -->
+                <!-- Order Status Timeline -->
                 <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                     <h2 class="text-lg font-semibold text-gray-900 mb-6">Order Status</h2>
-                    <div class="flex items-center justify-between">
-                        <!-- Order Confirmed -->
-                        <div class="flex flex-col items-center text-center">
-                            <div class="w-10 h-10 {% if order.order_status == 'confirmed' or order.order_status == 'shipped' or order.order_status == 'out_for_delivery' or order.order_status == 'delivered' %}bg-blue-600{% else %}bg-gray-200{% endif %} rounded-full flex items-center justify-center mb-2">
-                                <svg class="w-5 h-5 {% if order.order_status == 'confirmed' or order.order_status == 'shipped' or order.order_status == 'out_for_delivery' or order.order_status == 'delivered' %}text-white{% else %}text-gray-400{% endif %}" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                                </svg>
+                    
+                    {% if order.order_status == 'returned' or order.order_status == 'returned_checking' %}
+                        <!-- Return Status Timeline -->
+                        <div class="flex items-center justify-between">
+                            <div class="flex flex-col items-center text-center">
+                                <div class="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center mb-2">
+                                    <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                    </svg>
+                                </div>
+                                <span class="text-sm font-medium text-gray-900">Return Requested</span>
+                                <span class="text-xs text-gray-500">{{ return_request.requested_at|date:"d M Y" }}</span>
                             </div>
-                            <span class="text-sm font-medium {% if order.order_status == 'confirmed' or order.order_status == 'shipped' or order.order_status == 'out_for_delivery' or order.order_status == 'delivered' %}text-gray-900{% else %}text-gray-500{% endif %}">Order Confirmed</span>
-                            <span class="text-xs text-gray-500">{{ order.created_at|date:"d M Y" }}</span>
-                        </div>
-                        
-                        <!-- Progress Line -->
-                        <div class="flex-1 h-0.5 {% if order.order_status == 'shipped' or order.order_status == 'out_for_delivery' or order.order_status == 'delivered' %}bg-blue-600{% else %}bg-gray-200{% endif %} mx-4"></div>
-                        
-                        <!-- Shipped -->
-                        <div class="flex flex-col items-center text-center">
-                            <div class="w-10 h-10 {% if order.order_status == 'shipped' or order.order_status == 'out_for_delivery' or order.order_status == 'delivered' %}bg-blue-600{% else %}bg-gray-200{% endif %} rounded-full flex items-center justify-center mb-2">
-                                <svg class="w-5 h-5 {% if order.order_status == 'shipped' or order.order_status == 'out_for_delivery' or order.order_status == 'delivered' %}text-white{% else %}text-gray-400{% endif %}" fill="currentColor" viewBox="0 0 20 20">
-                                    <path d="M8 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"/>
-                                    <path d="M3 4a1 1 0 00-1 1v10a1 1 0 001 1h1.05a2.5 2.5 0 014.9 0H10a1 1 0 001-1V5a1 1 0 00-1-1H3zM14 7a1 1 0 00-1 1v6.05A2.5 2.5 0 0115.95 16H17a1 1 0 001-1v-5a1 1 0 00-.293-.707L16 7.586V7a1 1 0 00-1-1h-1z"/>
-                                </svg>
+                            
+                            <div class="flex-1 h-0.5 {% if order.order_status == 'returned' %}bg-purple-600{% else %}bg-gray-200{% endif %} mx-4"></div>
+                            
+                            <div class="flex flex-col items-center text-center">
+                                <div class="w-10 h-10 {% if order.order_status == 'returned' %}bg-purple-600{% else %}bg-orange-400{% endif %} rounded-full flex items-center justify-center mb-2">
+                                    <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/>
+                                    </svg>
+                                </div>
+                                <span class="text-sm font-medium {% if order.order_status == 'returned' %}text-gray-900{% else %}text-orange-600{% endif %}">
+                                    {% if order.order_status == 'returned' %}Approved{% else %}Checking{% endif %}
+                                </span>
+                                <span class="text-xs text-gray-500">
+                                    {% if order.order_status == 'returned' %}{{ return_request.processed_at|date:"d M Y" }}{% else %}In Progress{% endif %}
+                                </span>
                             </div>
-                            <span class="text-sm font-medium {% if order.order_status == 'shipped' or order.order_status == 'out_for_delivery' or order.order_status == 'delivered' %}text-gray-900{% else %}text-gray-500{% endif %}">Shipped</span>
-                            <span class="text-xs text-gray-500">{% if order.order_status == 'shipped' or order.order_status == 'out_for_delivery' or order.order_status == 'delivered' %}{{ order.updated_at|date:"d M Y" }}{% else %}Pending{% endif %}</span>
-                        </div>
-                        
-                        <!-- Progress Line -->
-                        <div class="flex-1 h-0.5 {% if order.order_status == 'out_for_delivery' or order.order_status == 'delivered' %}bg-yellow-400{% else %}bg-gray-200{% endif %} mx-4"></div>
-                        
-                        <!-- Out for Delivery -->
-                        <div class="flex flex-col items-center text-center">
-                            <div class="w-10 h-10 {% if order.order_status == 'out_for_delivery' or order.order_status == 'delivered' %}bg-yellow-400{% else %}bg-gray-200{% endif %} rounded-full flex items-center justify-center mb-2">
-                                <svg class="w-5 h-5 {% if order.order_status == 'out_for_delivery' or order.order_status == 'delivered' %}text-white{% else %}text-gray-400{% endif %}" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                                </svg>
+                            
+                            <div class="flex-1 h-0.5 {% if order.order_status == 'returned' %}bg-purple-600{% else %}bg-gray-200{% endif %} mx-4"></div>
+                            
+                            <div class="flex flex-col items-center text-center">
+                                <div class="w-10 h-10 {% if order.order_status == 'returned' %}bg-purple-600{% else %}bg-gray-200{% endif %} rounded-full flex items-center justify-center mb-2">
+                                    <svg class="w-5 h-5 {% if order.order_status == 'returned' %}text-white{% else %}text-gray-400{% endif %}" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z"/>
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clip-rule="evenodd"/>
+                                    </svg>
+                                </div>
+                                <span class="text-sm font-medium {% if order.order_status == 'returned' %}text-gray-900{% else %}text-gray-500{% endif %}">Refunded</span>
+                                <span class="text-xs text-gray-500">
+                                    {% if order.order_status == 'returned' %}Completed{% else %}Pending{% endif %}
+                                </span>
                             </div>
-                            <span class="text-sm font-medium {% if order.order_status == 'out_for_delivery' or order.order_status == 'delivered' %}text-gray-900{% else %}text-gray-500{% endif %}">Out for Delivery</span>
-                            <span class="text-xs text-gray-500">{% if order.order_status == 'out_for_delivery' or order.order_status == 'delivered' %}In Progress{% else %}Pending{% endif %}</span>
                         </div>
-                        
-                        <!-- Progress Line -->
-                        <div class="flex-1 h-0.5 {% if order.order_status == 'delivered' %}bg-green-600{% else %}bg-gray-200{% endif %} mx-4"></div>
-                        
-                        <!-- Delivered -->
-                        <div class="flex flex-col items-center text-center">
-                            <div class="w-10 h-10 {% if order.order_status == 'delivered' %}bg-green-600{% else %}bg-gray-200{% endif %} rounded-full flex items-center justify-center mb-2">
-                                <svg class="w-5 h-5 {% if order.order_status == 'delivered' %}text-white{% else %}text-gray-400{% endif %}" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                                </svg>
+                    {% else %}
+                        <!-- Regular Order Timeline -->
+                        <div class="flex items-center justify-between">
+                            <!-- Order Confirmed -->
+                            <div class="flex flex-col items-center text-center">
+                                <div class="w-10 h-10 {% if order.order_status == 'confirmed' or order.order_status == 'shipped' or order.order_status == 'out_for_delivery' or order.order_status == 'delivered' %}bg-blue-600{% else %}bg-gray-200{% endif %} rounded-full flex items-center justify-center mb-2">
+                                    <svg class="w-5 h-5 {% if order.order_status == 'confirmed' or order.order_status == 'shipped' or order.order_status == 'out_for_delivery' or order.order_status == 'delivered' %}text-white{% else %}text-gray-400{% endif %}" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                                    </svg>
+                                </div>
+                                <span class="text-sm font-medium {% if order.order_status == 'confirmed' or order.order_status == 'shipped' or order.order_status == 'out_for_delivery' or order.order_status == 'delivered' %}text-gray-900{% else %}text-gray-500{% endif %}">Order Confirmed</span>
+                                <span class="text-xs text-gray-500">{{ order.created_at|date:"d M Y" }}</span>
                             </div>
-                            <span class="text-sm font-medium {% if order.order_status == 'delivered' %}text-gray-900{% else %}text-gray-500{% endif %}">Delivered</span>
-                            <span class="text-xs text-gray-500">{% if order.order_status == 'delivered' %}{{ order.updated_at|date:"d M Y" }}{% else %}Pending{% endif %}</span>
+                            
+                            <!-- Progress Line -->
+                            <div class="flex-1 h-0.5 {% if order.order_status == 'shipped' or order.order_status == 'out_for_delivery' or order.order_status == 'delivered' %}bg-blue-600{% else %}bg-gray-200{% endif %} mx-4"></div>
+                            
+                            <!-- Shipped -->
+                            <div class="flex flex-col items-center text-center">
+                                <div class="w-10 h-10 {% if order.order_status == 'shipped' or order.order_status == 'out_for_delivery' or order.order_status == 'delivered' %}bg-blue-600{% else %}bg-gray-200{% endif %} rounded-full flex items-center justify-center mb-2">
+                                    <svg class="w-5 h-5 {% if order.order_status == 'shipped' or order.order_status == 'out_for_delivery' or order.order_status == 'delivered' %}text-white{% else %}text-gray-400{% endif %}" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M8 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"/>
+                                        <path d="M3 4a1 1 0 00-1 1v10a1 1 0 001 1h1.05a2.5 2.5 0 014.9 0H10a1 1 0 001-1V5a1 1 0 00-1-1H3zM14 7a1 1 0 00-1 1v6.05A2.5 2.5 0 0115.95 16H17a1 1 0 001-1v-5a1 1 0 00-.293-.707L16 7.586V7a1 1 0 00-1-1h-1z"/>
+                                    </svg>
+                                </div>
+                                <span class="text-sm font-medium {% if order.order_status == 'shipped' or order.order_status == 'out_for_delivery' or order.order_status == 'delivered' %}text-gray-900{% else %}text-gray-500{% endif %}">Shipped</span>
+                                <span class="text-xs text-gray-500">{% if order.order_status == 'shipped' or order.order_status == 'out_for_delivery' or order.order_status == 'delivered' %}{{ order.updated_at|date:"d M Y" }}{% else %}Pending{% endif %}</span>
+                            </div>
+                            
+                            <!-- Progress Line -->
+                            <div class="flex-1 h-0.5 {% if order.order_status == 'out_for_delivery' or order.order_status == 'delivered' %}bg-yellow-400{% else %}bg-gray-200{% endif %} mx-4"></div>
+                            
+                            <!-- Out for Delivery -->
+                            <div class="flex flex-col items-center text-center">
+                                <div class="w-10 h-10 {% if order.order_status == 'out_for_delivery' or order.order_status == 'delivered' %}bg-yellow-400{% else %}bg-gray-200{% endif %} rounded-full flex items-center justify-center mb-2">
+                                    <svg class="w-5 h-5 {% if order.order_status == 'out_for_delivery' or order.order_status == 'delivered' %}text-white{% else %}text-gray-400{% endif %}" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                    </svg>
+                                </div>
+                                <span class="text-sm font-medium {% if order.order_status == 'out_for_delivery' or order.order_status == 'delivered' %}text-gray-900{% else %}text-gray-500{% endif %}">Out for Delivery</span>
+                                <span class="text-xs text-gray-500">{% if order.order_status == 'out_for_delivery' or order.order_status == 'delivered' %}In Progress{% else %}Pending{% endif %}</span>
+                            </div>
+                            
+                            <!-- Progress Line -->
+                            <div class="flex-1 h-0.5 {% if order.order_status == 'delivered' %}bg-green-600{% else %}bg-gray-200{% endif %} mx-4"></div>
+                            
+                            <!-- Delivered -->
+                            <div class="flex flex-col items-center text-center">
+                                <div class="w-10 h-10 {% if order.order_status == 'delivered' %}bg-green-600{% else %}bg-gray-200{% endif %} rounded-full flex items-center justify-center mb-2">
+                                    <svg class="w-5 h-5 {% if order.order_status == 'delivered' %}text-white{% else %}text-gray-400{% endif %}" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                    </svg>
+                                </div>
+                                <span class="text-sm font-medium {% if order.order_status == 'delivered' %}text-gray-900{% else %}text-gray-500{% endif %}">Delivered</span>
+                                <span class="text-xs text-gray-500">{% if order.order_status == 'delivered' %}{{ order.updated_at|date:"d M Y" }}{% else %}Pending{% endif %}</span>
+                            </div>
                         </div>
-                    </div>
+                    {% endif %}
                 </div>
 
                 <!-- Order Items -->
@@ -204,6 +313,15 @@
                     <div class="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
                         <p class="text-blue-700 text-sm font-semibold mb-1">Amount to Collect</p>
                         <p class="text-blue-900 font-bold text-3xl">₹{{ order.total_amount|floatformat:0 }}</p>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Refund Info (if returned) -->
+                    {% if order.payment_status == 'refunded' and return_request %}
+                    <div class="mt-6 p-4 bg-purple-50 rounded-lg border border-purple-200">
+                        <p class="text-purple-700 text-sm font-semibold mb-1">Refunded Amount</p>
+                        <p class="text-purple-900 font-bold text-3xl">₹{{ return_request.refund_amount|floatformat:0 }}</p>
+                        <p class="text-purple-600 text-xs mt-2">Added to customer wallet</p>
                     </div>
                     {% endif %}
                 </div>

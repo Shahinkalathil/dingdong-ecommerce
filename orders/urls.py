@@ -5,7 +5,9 @@ urlpatterns = [
     # order admin
     path('admin-management/', views.AdminOrderListView, name='admin_order'),
     path('admin-management/update-status/<int:order_id>/', views.AdminOrderUpdateStatusView, name='update_order_status'),
+    path('admin-management/handle-return/<int:order_id>/', views.AdminHandleReturnView, name='handle_return'),
     path('admin-management/order-details/<int:order_id>/', views.AdminOrderDetailView, name='admin_order_details'),
+    
     # Order user
     path("list/", views.order, name="order"),
     path("detail/<str:order_number>/", views.order_detail, name='order_detail'),

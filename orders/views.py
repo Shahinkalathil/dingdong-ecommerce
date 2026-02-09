@@ -5,7 +5,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db import transaction
-from django.db.models import Q, Sum, Count
+from django.db.models import Q, Sum, Count, F
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django.template.loader import render_to_string
@@ -13,7 +13,7 @@ from django.utils import timezone
 from django.views.decorators.cache import cache_control
 from django.views.decorators.http import require_POST, require_http_methods
 from decimal import Decimal
-
+from wallet.models import Wallet, WalletTransaction
 from weasyprint import HTML
 from .models import Order, OrderItem, OrderReturn, OrderItemReturn
 from wallet.models import Wallet, WalletTransaction
@@ -543,18 +543,21 @@ def generate_pdf(request, order_number):
 
     
 # Admin
+
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 @user_passes_test(lambda u: u.is_superuser, login_url="admin_login")
 def AdminOrderListView(request):
     search_query = request.GET.get('search', '')
     status_filter = request.GET.get('status', '')
     orders = Order.objects.select_related('user', 'address').prefetch_related('items').all()
+    
     if search_query:
         orders = orders.filter(
             Q(order_number__icontains=search_query) |
             Q(user__username__icontains=search_query) |
             Q(user__email__icontains=search_query)
         )
+    
     if status_filter:
         orders = orders.filter(order_status=status_filter)
     
@@ -589,6 +592,8 @@ def AdminOrderListView(request):
         ('out_for_delivery', 'Out for Delivery'),
         ('delivered', 'Delivered'),
         ('cancelled', 'Cancelled'),
+        ('returned', 'Returned'),
+        ('returned_checking', 'Return Checking'),
     ]
     
     context = {
@@ -616,6 +621,7 @@ def AdminOrderUpdateStatusView(request, order_id):
             order = get_object_or_404(Order, id=order_id)
             new_status = request.POST.get('status')
             current_status = order.order_status
+            
             if current_status == 'cancelled':
                 return JsonResponse({
                     'success': False,
@@ -632,6 +638,12 @@ def AdminOrderUpdateStatusView(request, order_id):
                 return JsonResponse({
                     'success': False,
                     'message': 'Cannot modify delivered orders.'
+                }, status=400)
+            
+            if current_status in ['returned', 'returned_checking']:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Cannot modify orders with return status.'
                 }, status=400)
 
             valid_transitions = {
@@ -680,6 +692,145 @@ def AdminOrderUpdateStatusView(request, order_id):
 
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 @user_passes_test(lambda u: u.is_superuser, login_url="admin_login")
+def AdminHandleReturnView(request, order_id):
+    """Handle approve/reject return requests"""
+    if request.method == 'POST':
+        try:
+            order = get_object_or_404(Order, id=order_id)
+            action = request.POST.get('action')  # 'approved' or 'rejected'
+            
+            if order.order_status != 'returned_checking':
+                return JsonResponse({
+                    'success': False,
+                    'message': 'This order is not pending return approval.'
+                }, status=400)
+            
+            # Get the return request
+            try:
+                return_request = order.return_request
+            except OrderReturn.DoesNotExist:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'No return request found for this order.'
+                }, status=400)
+            
+            if action == 'approved':
+                # Use atomic transaction to ensure all operations succeed or rollback
+                try:
+                    with transaction.atomic():
+                        # 1. Approve the return request
+                        return_request.return_status = 'approved'
+                        return_request.processed_at = timezone.now()
+                        return_request.save()
+                        
+                        # 2. Update order status and payment status
+                        order.order_status = 'returned'
+                        order.payment_status = 'refunded'
+                        order.save(update_fields=['order_status', 'payment_status', 'updated_at'])
+                        
+                        # 3. Restore stock for all order items
+                        from products.models import ProductVariant
+                        for order_item in order.items.all():
+                            if order_item.variant:  # Check if variant exists
+                                # Use F() expression to avoid race conditions
+                                ProductVariant.objects.filter(id=order_item.variant.id).update(
+                                    stock=F('stock') + order_item.quantity
+                                )
+                        
+                        # 4. Add refund to wallet
+                        wallet, created = Wallet.objects.get_or_create(user=order.user)
+                        
+                        # Calculate refund amount
+                        refund_amount = return_request.refund_amount
+                        
+                        # Add to wallet balance
+                        wallet.balance += refund_amount
+                        wallet.save()
+                        
+                        # 5. Create wallet transaction
+                        # Check if WalletTransaction model has description field
+                        transaction_data = {
+                            'wallet': wallet,
+                            'transaction_type': 'credit',
+                            'amount': refund_amount,
+                            'order': order,
+                        }
+                        
+                        # Try to add description if the field exists
+                        try:
+                            WalletTransaction.objects.create(
+                                **transaction_data,
+                                description=f'Refund for returned order {order.order_number}'
+                            )
+                        except TypeError:
+                            # If description field doesn't exist, create without it
+                            WalletTransaction.objects.create(**transaction_data)
+                        
+                        return JsonResponse({
+                            'success': True,
+                            'message': f'Return approved. ₹{refund_amount} refunded to customer wallet and stock restored.'
+                        })
+                        
+                except Exception as e:
+                    # Transaction will automatically rollback on exception
+                    import traceback
+                    error_details = traceback.format_exc()
+                    print(f"Return approval error: {error_details}")  # For debugging
+                    
+                    return JsonResponse({
+                        'success': False,
+                        'message': f'Failed to process return approval: {str(e)}'
+                    }, status=500)
+                    
+            elif action == 'rejected':
+                # Reject the return
+                return_request.return_status = 'rejected'
+                return_request.processed_at = timezone.now()
+                return_request.save()
+                
+                # Restore order to delivered status
+                order.order_status = 'delivered'
+                order.save(update_fields=['order_status', 'updated_at'])
+                
+                return JsonResponse({
+                    'success': True,
+                    'message': 'Return request rejected. Order status restored to Delivered.'
+                })
+                
+            else:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Invalid action. Must be "approved" or "rejected".'
+                }, status=400)
+                
+        except Exception as e:
+            import traceback
+            error_details = traceback.format_exc()
+            print(f"Return handling error: {error_details}")  # For debugging
+            
+            return JsonResponse({
+                'success': False,
+                'message': f'An error occurred: {str(e)}'
+            }, status=500)
+    
+    return JsonResponse({'success': False, 'message': 'Invalid request'}, status=400)
+
+
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
+@user_passes_test(lambda u: u.is_superuser, login_url="admin_login")
 def AdminOrderDetailView(request, order_id):
     order = get_object_or_404(Order, id=order_id)
-    return render(request, 'admin_panel/order_management/order_detail.html', {'order': order})
+    
+    # Get return request if exists
+    return_request = None
+    try:
+        return_request = order.return_request
+    except OrderReturn.DoesNotExist:
+        pass
+    
+    context = {
+        'order': order,
+        'return_request': return_request
+    }
+    
+    return render(request, 'admin_panel/order_management/order_detail.html', context)
