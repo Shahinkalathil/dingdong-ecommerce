@@ -10,6 +10,7 @@ from django.urls import reverse
 import re
 import logging
 from django.views.decorators.http import require_http_methods
+from wallet.models import Wallet
 
 @login_required
 def OverView(request):
@@ -19,6 +20,7 @@ def OverView(request):
     recent_orders = Order.objects.filter(user=user).prefetch_related(
         'items__variant__images'
     ).select_related('delivery_address')[:4]
+    wallet, _ = Wallet.objects.get_or_create(user=request.user)
     
     context = {
         "show_sidebar": True,
@@ -27,6 +29,7 @@ def OverView(request):
         "addresses": addresses,
         "total_orders": total_orders,
         "recent_orders": recent_orders,
+        'wallet' : wallet,
     }
     return render(request, 'user_side/profile/overview.html', context)
 
