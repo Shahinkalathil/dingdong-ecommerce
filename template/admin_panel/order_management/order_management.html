@@ -95,6 +95,8 @@
                                     <span class="text-yellow-600 bg-yellow-50 px-3 py-1 rounded-full text-sm font-medium">Pending</span>
                                     {% elif order.payment_status == 'failed' %}
                                     <span class="text-red-600 bg-red-50 px-3 py-1 rounded-full text-sm font-medium">Failed</span>
+                                    {% elif order.payment_status == 'refunded' %}
+                                    <span class="text-purple-600 bg-purple-50 px-3 py-1 rounded-full text-sm font-medium">Refunded</span>
                                     {% else %}
                                     <span class="text-gray-600 bg-gray-50 px-3 py-1 rounded-full text-sm font-medium">{{ order.payment_status|title }}</span>
                                     {% endif %}
@@ -102,6 +104,8 @@
                                 <td class="px-4 md:px-6 py-4" data-order-status="{{ order.id }}">
                                     {% if order.order_status == 'cancelled' %}
                                         <span class="text-red-600 bg-red-50 px-3 py-1 rounded-full text-sm font-medium">Cancelled</span>
+                                    {% elif order.order_status == 'returned' %}
+                                        <span class="text-purple-600 bg-purple-50 px-3 py-1 rounded-full text-sm font-medium">Returned</span>
                                     {% elif order.order_status == 'delivered' %}
                                         <span class="text-green-600 bg-green-50 px-3 py-1 rounded-full text-sm font-medium">Delivered</span>
                                     {% elif order.order_status == 'confirmed' %}
@@ -121,6 +125,13 @@
                                                 data-order-id="{{ order.id }}" data-current-status="{{ order.order_status }}">
                                             <option value="out_for_delivery" selected>Out for Delivery</option>
                                             <option value="delivered">Delivered</option>
+                                        </select>
+                                    {% elif order.order_status == 'returned_checking' %}
+                                        <select class="return-status-select px-2 py-1 border border-orange-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 bg-orange-50"
+                                                data-order-id="{{ order.id }}" data-current-status="{{ order.order_status }}">
+                                            <option value="returned_checking" selected>Return Checking</option>
+                                            <option value="approved">Approve Return</option>
+                                            <option value="rejected">Reject Return</option>
                                         </select>
                                     {% else %}
                                         <span class="text-gray-600 bg-gray-50 px-3 py-1 rounded-full text-sm font-medium">{{ order.order_status|title }}</span>
@@ -218,6 +229,7 @@
     let currentOrderId = null;
     let currentNewStatus = null;
     let currentOldStatus = null;
+    let isReturnAction = false;
 
     document.addEventListener('DOMContentLoaded', function() {
         const modal = document.getElementById('statusModal');
@@ -226,6 +238,7 @@
         const confirmBtn = document.getElementById('confirmBtn');
         const cancelBtn = document.getElementById('cancelBtn');
 
+        // Handle regular order status changes
         document.querySelectorAll('.order-status-select').forEach(select => {
             select.addEventListener('change', function() {
                 const orderId = this.dataset.orderId;
@@ -234,19 +247,16 @@
                 
                 if (newStatus === currentStatus) return;
                 
-                // Store current selection
                 currentSelect = this;
                 currentOrderId = orderId;
                 currentNewStatus = newStatus;
                 currentOldStatus = currentStatus;
+                isReturnAction = false;
                 
-                // Format status display
                 const formatStatus = (status) => status.replace(/_/g, ' ').split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
                 
-                // Show modal
                 modalMessage.textContent = `Are you sure you want to change the order status from "${formatStatus(currentStatus)}" to "${formatStatus(newStatus)}"?`;
                 
-                // Show note about payment status if changing to delivered
                 if (newStatus === 'delivered') {
                     modalNote.style.display = 'block';
                 } else {
@@ -257,7 +267,35 @@
             });
         });
 
-        // Cancel button
+        // Handle return status changes
+        document.querySelectorAll('.return-status-select').forEach(select => {
+            select.addEventListener('change', function() {
+                const orderId = this.dataset.orderId;
+                const currentStatus = this.dataset.currentStatus;
+                const newStatus = this.value;
+                
+                if (newStatus === currentStatus) return;
+                
+                currentSelect = this;
+                currentOrderId = orderId;
+                currentNewStatus = newStatus;
+                currentOldStatus = currentStatus;
+                isReturnAction = true;
+                
+                if (newStatus === 'approved') {
+                    modalMessage.textContent = 'Are you sure you want to approve this return? The refund amount will be added to the customer\'s wallet.';
+                    modalNote.textContent = 'Order status will be set to "Returned" and payment status to "Refunded".';
+                    modalNote.style.display = 'block';
+                } else if (newStatus === 'rejected') {
+                    modalMessage.textContent = 'Are you sure you want to reject this return request?';
+                    modalNote.textContent = 'The order will remain in its current state.';
+                    modalNote.style.display = 'block';
+                }
+                
+                modal.classList.remove('hidden');
+            });
+        });
+
         cancelBtn.addEventListener('click', function() {
             if (currentSelect && currentOldStatus) {
                 currentSelect.value = currentOldStatus;
@@ -267,14 +305,17 @@
             resetModalState();
         });
 
-        // Confirm button
         confirmBtn.addEventListener('click', function() {
             modal.classList.add('hidden');
             modalNote.style.display = 'none';
-            updateOrderStatus();
+            
+            if (isReturnAction) {
+                handleReturnAction();
+            } else {
+                updateOrderStatus();
+            }
         });
 
-        // Close modal on outside click
         modal.addEventListener('click', function(e) {
             if (e.target === modal) {
                 if (currentSelect && currentOldStatus) {
@@ -287,13 +328,70 @@
         });
     });
 
+    function handleReturnAction() {
+        if (!currentOrderId || !currentNewStatus) {
+            showToast('Error', 'Invalid order data', 'error');
+            return;
+        }
+
+        const confirmBtn = document.getElementById('confirmBtn');
+        const originalText = confirmBtn.textContent;
+        confirmBtn.textContent = 'Processing...';
+        confirmBtn.disabled = true;
+
+        fetch(`/orders/admin-management/handle-return/${currentOrderId}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: `action=${currentNewStatus}`
+        })
+        .then(response => {
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                throw new Error('Server returned non-JSON response. Please check the URL configuration.');
+            }
+            
+            return response.json().then(data => {
+                if (!response.ok) {
+                    throw new Error(data.message || 'Failed to process return');
+                }
+                return data;
+            });
+        })
+        .then(data => {
+            if (data.success) {
+                showToast('Success', data.message, 'success');
+                setTimeout(() => location.reload(), 1500);
+            } else {
+                showToast('Error', data.message, 'error');
+                if (currentSelect && currentOldStatus) {
+                    currentSelect.value = currentOldStatus;
+                }
+            }
+            confirmBtn.textContent = originalText;
+            confirmBtn.disabled = false;
+            resetModalState();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast('Error', error.message || 'An error occurred while processing the return.', 'error');
+            if (currentSelect && currentOldStatus) {
+                currentSelect.value = currentOldStatus;
+            }
+            confirmBtn.textContent = originalText;
+            confirmBtn.disabled = false;
+            resetModalState();
+        });
+    }
+
     function updateOrderStatus() {
         if (!currentOrderId || !currentNewStatus) {
             showToast('Error', 'Invalid order data', 'error');
             return;
         }
 
-        // Show loading state
         const confirmBtn = document.getElementById('confirmBtn');
         const originalText = confirmBtn.textContent;
         confirmBtn.textContent = 'Updating...';
@@ -308,7 +406,6 @@
             body: `status=${currentNewStatus}`
         })
         .then(response => {
-            // Check content type to ensure it's JSON
             const contentType = response.headers.get('content-type');
             if (!contentType || !contentType.includes('application/json')) {
                 throw new Error('Server returned non-JSON response. Please check the URL configuration.');
@@ -323,24 +420,20 @@
         })
         .then(data => {
             if (data.success) {
-                // Show success message with payment info if delivered
                 let message = data.message;
                 if (currentNewStatus === 'delivered' && data.payment_updated) {
                     message += ' and payment marked as Paid';
                 }
                 showToast('Success', message, 'success');
                 
-                // Update the UI immediately without reload for better UX
                 if (currentSelect) {
                     currentSelect.dataset.currentStatus = currentNewStatus;
                     
-                    // Update order status display
                     const statusCell = document.querySelector(`[data-order-status="${currentOrderId}"]`);
                     if (statusCell && currentNewStatus === 'delivered') {
                         statusCell.innerHTML = '<span class="text-green-600 bg-green-50 px-3 py-1 rounded-full text-sm font-medium">Delivered</span>';
                     }
                     
-                    // Update payment status display if delivered
                     if (currentNewStatus === 'delivered') {
                         const paymentCell = document.querySelector(`[data-payment-status="${currentOrderId}"]`);
                         if (paymentCell) {
@@ -377,6 +470,7 @@
         currentOrderId = null;
         currentNewStatus = null;
         currentOldStatus = null;
+        isReturnAction = false;
     }
 
     function showToast(title, message, type) {
