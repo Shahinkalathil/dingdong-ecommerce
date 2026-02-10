@@ -105,7 +105,6 @@ def order_detail(request, order_number):
         if return_days_left > 0 and not hasattr(order, 'return_request'):
             can_return = True
 
-    # Count active items (not cancelled, not returned)
     active_items_count = order.items.filter(is_cancelled=False, is_returned=False).count()
 
     status_steps = {
@@ -151,7 +150,6 @@ def cancel_order(request, order_number):
         cancel_reason = data.get('reason', 'No reason provided')
         
         with transaction.atomic():
-            # Restore stock for all items
             for item in order.items.all():
                 if item.variant and not item.is_cancelled:
                     item.variant.stock += item.quantity
@@ -161,25 +159,18 @@ def cancel_order(request, order_number):
                 item.cancelled_at = timezone.now()
                 item.item_status = 'cancelled'
                 item.save()
-            
-            # Update order status
             order.order_status = 'cancelled'
             order.cancellation_reason = cancel_reason
             order.cancelled_at = timezone.now()
-
-            # Handle refund if order was paid
             refund_amount = Decimal('0.00')
             if order.is_paid or order.payment_status == 'paid':
                 refund_amount = order.total_amount
                 order.payment_status = 'refunded'
                 order.is_paid = False
                 
-                # Add refund to wallet
                 wallet, created = Wallet.objects.get_or_create(user=request.user)
                 wallet.balance += refund_amount
                 wallet.save()
-                
-                # Create wallet transaction
                 WalletTransaction.objects.create(
                     wallet=wallet,
                     order=order,
@@ -237,53 +228,42 @@ def cancel_order_item(request, order_number, item_id):
             }, status=400)
         
         with transaction.atomic():
-            # Restore stock
             if item.variant:
                 item.variant.stock += item.quantity
                 item.variant.save()
 
-            # Mark item as cancelled
             item.is_cancelled = True
             item.cancelled_at = timezone.now()
             item.item_status = 'pending'
             item.save()
-    
-            # Recalculate order totals
+
             order.subtotal -= item.subtotal
-            
-            # Check if all items are cancelled
+  
             active_items_count = order.items.filter(is_cancelled=False, is_returned=False).count()
-            
-            # If this is the last item, remove delivery charge
+
             if active_items_count == 0:
                 order.delivery_charge = Decimal('0.00')
-            
-            # Recalculate total
+
             order.total_amount = order.subtotal + order.delivery_charge - order.coupon_discount
-            
-            # Handle refund for cancelled item
+
             refund_amount = Decimal('0.00')
             if order.is_paid or order.payment_status == 'paid':
-                # If only one item left, refund includes delivery charge
                 if active_items_count == 0:
                     refund_amount = item.subtotal + order.delivery_charge
                 else:
                     refund_amount = item.subtotal
-                
-                # Add refund to wallet
+
                 wallet, created = Wallet.objects.get_or_create(user=request.user)
                 wallet.balance += refund_amount
                 wallet.save()
                 
-                # Create wallet transaction
                 WalletTransaction.objects.create(
                     wallet=wallet,
                     order=order,
                     amount=refund_amount,
                     transaction_type='credit'
                 )
-            
-            # If all items cancelled, cancel the entire order
+
             if active_items_count == 0:
                 order.order_status = 'cancelled'
                 order.cancellation_reason = 'All items cancelled'
@@ -359,7 +339,6 @@ def request_return(request, order_number):
             })
         
         with transaction.atomic():
-            # Create return request with pending status - NO wallet refund
             order_return = OrderReturn.objects.create(
                 order=order,
                 return_reason=return_reason,
@@ -368,7 +347,6 @@ def request_return(request, order_number):
                 return_status='pending'
             )
             
-            # Update order status to show return is being checked
             order.order_status = 'returned_checking'
             order.save()
         
@@ -438,7 +416,6 @@ def request_item_return(request, order_number, item_id):
             })
         
         with transaction.atomic():
-            # Create item return request with pending status
             item_return = OrderItemReturn.objects.create(
                 order_item=item,
                 order=order,
@@ -448,48 +425,37 @@ def request_item_return(request, order_number, item_id):
                 return_status='pending'
             )
             
-            # Mark item as returned
             item.is_returned = True
             item.returned_at = timezone.now()
             item.save()
             
-            # Restore stock immediately
             if item.variant:
                 item.variant.stock += item.quantity
                 item.variant.save()
-            
-            # Add refund to wallet immediately
             wallet, created = Wallet.objects.get_or_create(user=request.user)
             wallet.balance += item.subtotal
             wallet.save()
-            
-            # Create wallet transaction
+
             WalletTransaction.objects.create(
                 wallet=wallet,
                 order=order,
                 amount=item.subtotal,
                 transaction_type='credit'
             )
-            
-            # Recalculate order totals
+
             order.subtotal -= item.subtotal
             order.total_amount = order.subtotal + order.delivery_charge - order.coupon_discount
             
-            # Check if this is the last active item
             active_items_count = order.items.filter(is_cancelled=False, is_returned=False).count()
             
-            # If this was the last item, create OrderReturn and set order status
             if active_items_count == 0:
-                # Create order-level return request with pending status
                 OrderReturn.objects.create(
                     order=order,
                     return_reason=return_reason,
                     description=f"Last item returned: {description[:450]}" if description else "All items returned",
-                    refund_amount=Decimal('0.00'),  # Already refunded through items
+                    refund_amount=Decimal('0.00'),  
                     return_status='pending'
                 )
-                
-                # Set order status to returned_checking
                 order.order_status = 'returned_checking'
             
             order.save()
@@ -697,15 +663,13 @@ def AdminHandleReturnView(request, order_id):
     if request.method == 'POST':
         try:
             order = get_object_or_404(Order, id=order_id)
-            action = request.POST.get('action')  # 'approved' or 'rejected'
+            action = request.POST.get('action')
             
             if order.order_status != 'returned_checking':
                 return JsonResponse({
                     'success': False,
                     'message': 'This order is not pending return approval.'
                 }, status=400)
-            
-            # Get the return request
             try:
                 return_request = order.return_request
             except OrderReturn.DoesNotExist:
@@ -715,40 +679,30 @@ def AdminHandleReturnView(request, order_id):
                 }, status=400)
             
             if action == 'approved':
-                # Use atomic transaction to ensure all operations succeed or rollback
                 try:
                     with transaction.atomic():
-                        # 1. Approve the return request
                         return_request.return_status = 'approved'
                         return_request.processed_at = timezone.now()
                         return_request.save()
                         
-                        # 2. Update order status and payment status
                         order.order_status = 'returned'
                         order.payment_status = 'refunded'
                         order.save(update_fields=['order_status', 'payment_status', 'updated_at'])
                         
-                        # 3. Restore stock for all order items
                         from products.models import ProductVariant
                         for order_item in order.items.all():
-                            if order_item.variant:  # Check if variant exists
-                                # Use F() expression to avoid race conditions
+                            if order_item.variant:  
                                 ProductVariant.objects.filter(id=order_item.variant.id).update(
                                     stock=F('stock') + order_item.quantity
                                 )
-                        
-                        # 4. Add refund to wallet
+
                         wallet, created = Wallet.objects.get_or_create(user=order.user)
-                        
-                        # Calculate refund amount
+
                         refund_amount = return_request.refund_amount
-                        
-                        # Add to wallet balance
+
                         wallet.balance += refund_amount
                         wallet.save()
-                        
-                        # 5. Create wallet transaction
-                        # Check if WalletTransaction model has description field
+
                         transaction_data = {
                             'wallet': wallet,
                             'transaction_type': 'credit',
@@ -756,14 +710,12 @@ def AdminHandleReturnView(request, order_id):
                             'order': order,
                         }
                         
-                        # Try to add description if the field exists
                         try:
                             WalletTransaction.objects.create(
                                 **transaction_data,
                                 description=f'Refund for returned order {order.order_number}'
                             )
                         except TypeError:
-                            # If description field doesn't exist, create without it
                             WalletTransaction.objects.create(**transaction_data)
                         
                         return JsonResponse({
@@ -772,10 +724,9 @@ def AdminHandleReturnView(request, order_id):
                         })
                         
                 except Exception as e:
-                    # Transaction will automatically rollback on exception
                     import traceback
                     error_details = traceback.format_exc()
-                    print(f"Return approval error: {error_details}")  # For debugging
+                    print(f"Return approval error: {error_details}") 
                     
                     return JsonResponse({
                         'success': False,
@@ -783,12 +734,10 @@ def AdminHandleReturnView(request, order_id):
                     }, status=500)
                     
             elif action == 'rejected':
-                # Reject the return
                 return_request.return_status = 'rejected'
                 return_request.processed_at = timezone.now()
                 return_request.save()
-                
-                # Restore order to delivered status
+
                 order.order_status = 'delivered'
                 order.save(update_fields=['order_status', 'updated_at'])
                 
@@ -806,8 +755,7 @@ def AdminHandleReturnView(request, order_id):
         except Exception as e:
             import traceback
             error_details = traceback.format_exc()
-            print(f"Return handling error: {error_details}")  # For debugging
-            
+            print(f"Return handling error: {error_details}") 
             return JsonResponse({
                 'success': False,
                 'message': f'An error occurred: {str(e)}'
@@ -820,8 +768,7 @@ def AdminHandleReturnView(request, order_id):
 @user_passes_test(lambda u: u.is_superuser, login_url="admin_login")
 def AdminOrderDetailView(request, order_id):
     order = get_object_or_404(Order, id=order_id)
-    
-    # Get return request if exists
+
     return_request = None
     try:
         return_request = order.return_request

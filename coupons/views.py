@@ -11,7 +11,6 @@ from datetime import datetime
 @login_required(login_url="admin_login")
 def AdminCouponsListView(request):
     """Display list of all coupons"""
-    # Fetch all coupons ordered by creation date
     coupons = Coupon.objects.all().order_by('-created_at')
     view_coupon_id = request.GET.get('view_coupon')
     selected_coupon = None
@@ -37,11 +36,9 @@ def AdminCouponsSearchView(request):
 
     coupons = Coupon.objects.all()
 
-    # Filter by search query
     if query:
         coupons = coupons.filter(code__icontains=query)
 
-    # Filter by status
     if status_filter == 'active':
         coupons = coupons.filter(is_active=True)
     elif status_filter == 'inactive':
@@ -65,8 +62,6 @@ def AdminCouponsCreateView(request):
     if request.method == "POST":
         data = request.POST
         errors = {}
-
-        # Extract and clean data
         code = data.get("couponCode", "").strip().upper()
         discount_str = data.get("discountValue", "").strip()
         min_purchase_str = data.get("minPurchase", "").strip()
@@ -225,7 +220,6 @@ def AdminCouponsUpdateView(request, coupon_id):
         elif not code.isalnum():
             errors["couponCode"] = "Coupon code can only contain letters (A-Z) and numbers (0-9)"
         elif not (any(c.isalpha() for c in code) and any(c.isdigit() for c in code)):
-            # ← NEW: Must contain at least one letter AND one number
             errors["couponCode"] = "Coupon code must contain both letters and numbers"
         elif Coupon.objects.filter(code=code).exists():
             errors["couponCode"] = "This coupon code already exists"

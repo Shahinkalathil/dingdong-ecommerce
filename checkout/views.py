@@ -33,32 +33,26 @@ def checkout(request):
     addresses = get_user_addresses(request.user)
     default_address = get_default_address(request.user)
 
-    # Get or create wallet
     wallet, _ = Wallet.objects.get_or_create(user=request.user)
 
-    # Calculate prices WITH offers applied
     subtotal_before_offer = Decimal('0')
     subtotal_after_offer = Decimal('0')
     total_offer_discount = Decimal('0')
     has_offer = False
-    
-    # Calculate offer details for each item
+
     for item in cart_items:
         base_price = item.variant.price
         quantity = item.quantity
-        
-        # Get offer details
+
         final_price, discount_percentage, offer_type = get_offer_details(
             item.variant.product, 
             base_price
         )
-        
-        # Calculate item totals
+
         item_subtotal_before = base_price * quantity
         item_subtotal_after = final_price * quantity
         item_offer_discount = item_subtotal_before - item_subtotal_after
         
-        # Store calculated values on item for template
         item.base_price = base_price
         item.final_price = final_price
         item.offer_discount_percentage = discount_percentage
@@ -66,8 +60,7 @@ def checkout(request):
         item.item_offer_discount = item_offer_discount
         item.subtotal_before_offer = item_subtotal_before
         item.subtotal_after_offer = item_subtotal_after
-        
-        # Add to totals
+
         subtotal_before_offer += item_subtotal_before
         subtotal_after_offer += item_subtotal_after
         
@@ -75,20 +68,16 @@ def checkout(request):
             has_offer = True
             total_offer_discount += item_offer_discount
     
-    # Use subtotal after offers for calculations
     subtotal = subtotal_after_offer
     delivery_charge = Decimal('0') if subtotal >= 500 else Decimal('40')
     free_delivery = max(Decimal('0'), Decimal('500') - subtotal)
-    
-    # Get coupon discount from session
+
     coupon_discount = Decimal(request.session.get('coupon_discount', '0'))
     coupon_code = request.session.get('coupon_code', None)
-    
-    # Calculate total with coupon
+
     total_before_discount = subtotal + delivery_charge
     total = total_before_discount - coupon_discount
-    
-    # Get available coupons for user
+
     now = timezone.now()
     used_coupon_ids = CouponUsage.objects.filter(user=request.user).values_list('coupon_id', flat=True)
     available_coupons = Coupon.objects.filter(
@@ -118,7 +107,7 @@ def checkout(request):
         'razorpay_key_id': settings.RAZORPAY_KEY_ID,
         'has_offer': has_offer,
         'available_coupons': available_coupons,
-        'cod_disabled': total > 1000,  # Disable COD for orders above 1000
+        'cod_disabled': total > 1000,  
     }
     return render(request, 'user_side/checkout/checkout.html', context)
 
@@ -132,11 +121,9 @@ def apply_coupon(request):
         return JsonResponse({'success': False, 'message': 'Please enter a coupon code'})
     
     try:
-        # Get cart
         cart = Cart.objects.get(user=request.user)
         cart_items = cart.items.select_related('variant__product__brand').all()
-        
-        # Check if any offer is applied
+
         has_offer = False
         for item in cart_items:
             _, discount_percentage, offer_type = get_offer_details(
@@ -153,48 +140,36 @@ def apply_coupon(request):
                 'message': 'Coupon cannot be applied when product/brand offers are active'
             })
         
-        # Get coupon
         now = timezone.now()
         coupon = Coupon.objects.get(
             code=coupon_code,
             is_active=True,
             valid_from__lte=now
         )
-        
-        # Check if coupon is expired
         if coupon.valid_until and coupon.valid_until < now:
             return JsonResponse({'success': False, 'message': 'This coupon has expired'})
-        
-        # Check if user already used this coupon
         if CouponUsage.objects.filter(user=request.user, coupon=coupon).exists():
             return JsonResponse({'success': False, 'message': 'You have already used this coupon'})
-        
-        # Check if coupon usage limit reached
+
         if coupon.usage_limit > 0:
             usage_count = CouponUsage.objects.filter(coupon=coupon).count()
             if usage_count >= coupon.usage_limit:
                 return JsonResponse({'success': False, 'message': 'This coupon has reached its usage limit'})
         
-        # Calculate subtotal (already with offers applied since no offers are present)
         subtotal = cart.get_total_price()
         delivery_charge = Decimal('0') if subtotal >= 500 else Decimal('40')
         total_before_discount = subtotal + delivery_charge
-        
-        # Check minimum purchase amount
+
         if subtotal < coupon.min_purchase_amount:
             return JsonResponse({
                 'success': False, 
                 'message': f'Minimum purchase of ₹{coupon.min_purchase_amount} required for this coupon'
             })
-        
-        # Calculate discount
+
         discount_amount = (total_before_discount * Decimal(coupon.discount_percentage)) / Decimal('100')
-        
-        # Apply max discount limit if set
         if coupon.max_discount_amount and discount_amount > coupon.max_discount_amount:
             discount_amount = coupon.max_discount_amount
-        
-        # Store in session
+
         request.session['coupon_code'] = coupon_code
         request.session['coupon_discount'] = str(discount_amount)
         request.session['coupon_id'] = coupon.id
@@ -222,15 +197,12 @@ def apply_coupon(request):
 def remove_coupon(request):
     """Remove applied coupon"""
     try:
-        # Remove from session
         request.session.pop('coupon_code', None)
         request.session.pop('coupon_discount', None)
         request.session.pop('coupon_id', None)
-        
-        # Recalculate total
+
         cart = Cart.objects.get(user=request.user)
-        
-        # Calculate with offers
+
         subtotal = Decimal('0')
         for item in cart.items.select_related('variant__product__brand').all():
             final_price, _, _ = get_offer_details(item.variant.product, item.variant.price)
@@ -267,40 +239,34 @@ def place_order(request):
             messages.error(request, 'Please add a delivery address.')
             return redirect('checkout')
 
-        # Calculate subtotal WITH offers applied
         subtotal = Decimal('0')
         for item in cart_items:
             final_price, _, _ = get_offer_details(item.variant.product, item.variant.price)
             subtotal += final_price * item.quantity
         
         delivery_charge = Decimal('0') if subtotal >= 500 else Decimal('40')
-        
-        # Get coupon discount from session
+
         coupon_discount = Decimal(request.session.get('coupon_discount', '0'))
         coupon_id = request.session.get('coupon_id', None)
         
         total = subtotal + delivery_charge - coupon_discount
-        
-        # Check if COD is disabled for this order
+
         if payment_method == 'cod' and total > 1000:
             messages.error(request, 'Cash on Delivery is not available for orders above ₹1000. Please choose another payment method.')
             return redirect('checkout')
-        
-        # Check stock availability
+
         for cart_item in cart_items:
             if cart_item.variant.stock < cart_item.quantity:
                 messages.error(request, f'Insufficient stock for {cart_item.variant.product.name}')
                 return redirect('checkout')
 
-        # Handle Wallet payment
         if payment_method == 'wallet':
             wallet = Wallet.objects.get(user=request.user)
             
             if wallet.balance < total:
                 messages.error(request, f'Insufficient wallet balance. Your balance: ₹{wallet.balance}, Required: ₹{total}')
                 return redirect('checkout')
-            
-            # Create order
+
             order = Order.objects.create(
                 user=request.user,
                 address=default_address,
@@ -313,20 +279,18 @@ def place_order(request):
                 payment_status='paid',
                 is_paid=True
             )
-            
-            # Store coupon info if used
+
             if coupon_id:
                 order.coupon_code = request.session.get('coupon_code')
                 order.coupon_discount = coupon_discount
                 order.save()
-                
-                # Mark coupon as used
+
                 CouponUsage.objects.create(
                     user=request.user,
                     coupon_id=coupon_id
                 )
             
-            # Create order address
+ 
             OrderAddress.objects.create(
                 order=order,
                 full_name=default_address.full_name,
@@ -339,10 +303,9 @@ def place_order(request):
                 pincode=default_address.pincode
             )
             
-            # Create order items with OFFER PRICE and deduct stock
             for cart_item in cart_items:
                 variant = cart_item.variant
-                # Get the final price after offers
+
                 final_price, _, _ = get_offer_details(variant.product, variant.price)
                 
                 OrderItem.objects.create(
@@ -351,17 +314,15 @@ def place_order(request):
                     product_name=variant.product.name,
                     color_name=variant.color_name,
                     color_code=variant.color_code,
-                    price=final_price,  # Store offer price
+                    price=final_price,  
                     quantity=cart_item.quantity
                 )
                 variant.stock -= cart_item.quantity
                 variant.save()
             
-            # Deduct from wallet
             wallet.balance -= total
             wallet.save()
-            
-            # Create wallet transaction
+
             WalletTransaction.objects.create(
                 wallet=wallet,
                 order=order,
@@ -369,7 +330,6 @@ def place_order(request):
                 transaction_type='debit'
             )
             
-            # Clear cart and session
             cart.items.all().delete()
             request.session.pop('coupon_code', None)
             request.session.pop('coupon_discount', None)
@@ -378,7 +338,6 @@ def place_order(request):
             messages.success(request, 'Order placed successfully using wallet!')
             return redirect('order_success', order_id=order.id)
 
-        # Handle Razorpay payment
         if payment_method == 'online':
             try:
                 order = Order.objects.create(
@@ -393,8 +352,7 @@ def place_order(request):
                     payment_status='pending',
                     is_paid=False
                 )
-                
-                # Store coupon info temporarily
+
                 if coupon_id:
                     order.coupon_code = request.session.get('coupon_code')
                     order.coupon_discount = coupon_discount
@@ -414,7 +372,6 @@ def place_order(request):
 
                 for cart_item in cart_items:
                     variant = cart_item.variant
-                    # Get the final price after offers
                     final_price, _, _ = get_offer_details(variant.product, variant.price)
                     
                     OrderItem.objects.create(
@@ -423,7 +380,7 @@ def place_order(request):
                         product_name=variant.product.name,
                         color_name=variant.color_name,
                         color_code=variant.color_code,
-                        price=final_price,  # Store offer price
+                        price=final_price, 
                         quantity=cart_item.quantity
                     )
 
@@ -457,7 +414,6 @@ def place_order(request):
                     order.delete()
                 return redirect('checkout')
 
-        # Handle COD
         order = Order.objects.create(
             user=request.user,
             address=default_address,
@@ -471,13 +427,12 @@ def place_order(request):
             is_paid=False
         )
         
-        # Store coupon info if used
+
         if coupon_id:
             order.coupon_code = request.session.get('coupon_code')
             order.coupon_discount = coupon_discount
             order.save()
             
-            # Mark coupon as used
             CouponUsage.objects.create(
                 user=request.user,
                 coupon_id=coupon_id
@@ -497,7 +452,6 @@ def place_order(request):
 
         for cart_item in cart_items:
             variant = cart_item.variant
-            # Get the final price after offers
             final_price, _, _ = get_offer_details(variant.product, variant.price)
             
             OrderItem.objects.create(
@@ -506,15 +460,13 @@ def place_order(request):
                 product_name=variant.product.name,
                 color_name=variant.color_name,
                 color_code=variant.color_code,
-                price=final_price,  # Store offer price
+                price=final_price,
                 quantity=cart_item.quantity
             )
             variant.stock -= cart_item.quantity
             variant.save()
             
         cart.items.all().delete()
-        
-        # Clear coupon session
         request.session.pop('coupon_code', None)
         request.session.pop('coupon_discount', None)
         request.session.pop('coupon_id', None)
@@ -581,8 +533,7 @@ def payment_success(request):
         razorpay_client.utility.verify_payment_signature(params_dict)
         
         order = Order.objects.get(razorpay_order_id=razorpay_order_id)
-        
-        # Check stock and deduct
+
         with transaction.atomic():
             for item in order.items.all():
                 variant = item.variant
@@ -594,8 +545,7 @@ def payment_success(request):
                 
                 variant.stock -= item.quantity
                 variant.save()
-        
-        # Mark coupon as used if applicable
+
         if order.coupon_code:
             try:
                 coupon = Coupon.objects.get(code=order.coupon_code)
@@ -611,8 +561,7 @@ def payment_success(request):
         order.is_paid = True
         order.razorpay_payment_id = razorpay_payment_id
         order.save()
-        
-        # Clear session
+
         request.session.pop('coupon_code', None)
         request.session.pop('coupon_discount', None)
         request.session.pop('coupon_id', None)

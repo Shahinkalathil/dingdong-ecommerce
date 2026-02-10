@@ -78,8 +78,7 @@ def AdminProductOfferCreateView(request, product_id):
     valid_until = request.POST.get('valid_until', '').strip()
     
     errors = {}
-    
-    # Validate discount percentage
+
     try:
         discount_decimal = Decimal(discount)
         if discount_decimal <= 0:
@@ -88,21 +87,16 @@ def AdminProductOfferCreateView(request, product_id):
             errors['discount_percentage'] = "Discount cannot exceed 100%."
     except (ValueError, InvalidOperation):
         errors['discount_percentage'] = "Please enter a valid discount percentage."
-    
-    # Validate valid_until date
+
     try:
         valid_until_date = timezone.make_aware(
             datetime.strptime(valid_until, '%Y-%m-%dT%H:%M')
         )
-        
-        # Check if date is in the past
         if valid_until_date <= timezone.now():
             errors['valid_until'] = "Expiry date must be in the future."
             
     except (ValueError, TypeError):
         errors['valid_until'] = "Please enter a valid date and time."
-    
-    # If there are errors, return to the edit page with error context
     if errors:
         variants = product.variants.prefetch_related("images").all()
         context = {
@@ -115,17 +109,13 @@ def AdminProductOfferCreateView(request, product_id):
             'variants': variants,
         }
         return render(request, 'admin_panel/product/product_edit.html', context)
-    
-    # No errors - proceed with save
     try:
         if product_offer:
-            # Update existing offer
             product_offer.discount_percentage = discount_decimal
             product_offer.valid_until = valid_until_date
             product_offer.save()
             messages.success(request, "Product offer updated successfully!")
         else:
-            # Create new offer
             ProductOffer.objects.create(
                 product=product,
                 discount_percentage=discount_decimal,
@@ -148,8 +138,6 @@ def AdminProductOfferToggleView(request, product_id):
     """
     product = get_object_or_404(Product, id=product_id)
     product_offer = get_object_or_404(ProductOffer, product=product)
-    
-    # Toggle the active status
     product_offer.is_active = not product_offer.is_active
     product_offer.save()
     
