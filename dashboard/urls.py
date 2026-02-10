@@ -4,12 +4,8 @@ from . import views
 
 
 urlpatterns = [
-    path('',views.DashboardHomeView, name='admin_index'),
+    path('', views.DashboardHomeView, name='admin_index'),
+    path('sales-report/', views.sales_report_view, name='sales_report'),
+    path('sales-report/download-pdf/', views.download_sales_pdf, name='download_sales_pdf'),
+]
 
-] 
-"""
-    path('dashboard/sales-reports/', SalesReportListView.as_view(), name='sales_report_list'),
-    path('dashboard/sales-reports/export/pdf/', SalesReportPDFView.as_view(), name='sales_report_pdf'),
-    path('dashboard/sales-reports/export/excel/', SalesReportExcelView.as_view(), name='sales_report_excel'),
-    path('dashboard/analytics/', AnalyticsDashboardView.as_view(), name='analytics'),
-"""

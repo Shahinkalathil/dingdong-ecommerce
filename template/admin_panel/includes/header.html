@@ -73,7 +73,7 @@
             <nav class="flex-1 px-4 space-y-2">
                 <!-- Dashboard -->
                 <a href="{% url 'admin_index' %}" class="nav-item flex items-center px-4 py-3 text-sm font-medium rounded-lg sidebar-item 
-                    {% if request.resolver_match.url_name == 'admin_index' %} active-nav {% else %} text-gray-700 hover:bg-gray-100 hover:text-gray-900 {% endif %}">
+                    {% if request.resolver_match.url_name in 'admin_index sales_report' %} active-nav {% else %} text-gray-700 hover:bg-gray-100 hover:text-gray-900 {% endif %}">
                     <svg class="w-5 h-5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1h3a1 1 0 001-1V10M9 21h6" />
