@@ -29,8 +29,6 @@ def AdminBrandToggleListView(request, brand_id):
     Returns brand detail modal HTML content (not a full page)
     """
     brand = get_object_or_404(Brand, id=brand_id)
-    
-    # Try to get the brand offer if it exists
     try:
         brand_offer = BrandOffer.objects.get(brand=brand)
     except BrandOffer.DoesNotExist:
@@ -41,8 +39,6 @@ def AdminBrandToggleListView(request, brand_id):
         'brand_offer': brand_offer,
         'now': timezone.now(),
     }
-    
-    # Return only the modal HTML content 
     return render(request, 'admin_panel/brands/brand_detail_modal.html', context)
 
 # Search brands
@@ -50,7 +46,6 @@ def AdminBrandToggleListView(request, brand_id):
 @login_required(login_url="admin_login")
 def AdminBrandsearchView(request):
     keyword = request.GET.get('keyword', '').strip()
-    
     if keyword:
         brands = Brand.objects.filter(
             Q(name__icontains=keyword)
@@ -76,16 +71,12 @@ def AdminBrandCreateView(request):
         image = request.FILES.get("image")
 
         errors = {}
-
-        # Brand Name Validation
         if not name:
             errors['name'] = "Brand name is required."
         elif len(name) > 50:
             errors['name'] = "Brand name must be 50 characters or less."
         elif Brand.objects.filter(name__iexact=name).exists():
             errors['name'] = "A brand with this name already exists."
-
-        # Image Validation 
         if image:
             try:
                 if not image.content_type.startswith('image/'):
@@ -97,8 +88,6 @@ def AdminBrandCreateView(request):
                     errors['image'] = "Image dimensions too large (max 2000x2000)."
             except Exception:
                 errors['image'] = "Invalid image file."
-
-        # re-render with old data & errors
         if errors:
             context = {
                 'errors': errors,
@@ -112,6 +101,8 @@ def AdminBrandCreateView(request):
         )
         return redirect('admin_brands')
     return render(request, "admin_panel/brands/add_brand.html", context)
+
+
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 @login_required(login_url="admin_login")
 def AdminBrandUpdateView(request, brand_id):
@@ -136,8 +127,6 @@ def AdminBrandUpdateView(request, brand_id):
             image = request.FILES.get('image')
             
             errors = {}
-
-            # 1. Brand Name Validation
             if not name:
                 errors['name'] = "Brand name is required."
             elif len(name) > 50:
@@ -145,7 +134,6 @@ def AdminBrandUpdateView(request, brand_id):
             elif Brand.objects.filter(name__iexact=name).exclude(id=brand_id).exists():
                 errors['name'] = "A brand with this name already exists."
 
-            # 2. Image Validation (if new image uploaded)
             if image:
                 try:
                     if not image.content_type.startswith('image/'):
@@ -158,26 +146,20 @@ def AdminBrandUpdateView(request, brand_id):
                 except Exception:
                     errors['image'] = "Invalid image file."
 
-            # If there are errors → re-render form with old values & errors
             if errors:
                 context['errors'] = errors
                 context['old_name'] = name
                 return render(request, 'admin_panel/brands/edit_brand.html', context)
 
-            # No errors → update brand
             try:
                 brand.name = name
                 brand.is_listed = is_listed
-                
-                # Handle image logic
                 if image:
-                    # New image uploaded - replace old one
                     if brand.image:
                         brand.image.delete(save=False)
                     brand.image = image
                     brand.is_listed = True
                 elif remove_image and brand.image:
-                    # Remove image without replacement
                     brand.image.delete(save=False)
                     brand.image = None
                 

@@ -35,10 +35,8 @@ def add_to_cart(request, product_variant_id):
         return redirect('product_detail', variant_id=variant.id)
         
     except ProductVariant.DoesNotExist:
-        messages.error(request, 'Product not found.')
         return redirect('products')
     except Exception as e:
-        messages.error(request, 'Something went wrong.')
         return redirect('products')
 
 
@@ -156,16 +154,12 @@ def update_cart_quantity(request, item_id):
                     'message_type': 'warning'
                 })
         
-        # Calculate item price with offers
         original_price = cart_item.variant.price
         discounted_price, discount_percentage, offer_type = get_offer_details(
             cart_item.variant.product,
             original_price
         )
-        
         item_subtotal = discounted_price * cart_item.quantity
-        
-        # Recalculate cart totals with offers
         cart = cart_item.cart
         cart_items = cart.items.select_related(
             'variant__product__brand',
@@ -184,7 +178,6 @@ def update_cart_quantity(request, item_id):
         
         total_items = cart.get_total_items()
         
-        # Check if checkout is still possible
         has_out_of_stock = False
         has_unlisted = False
         for item in cart_items:
@@ -233,8 +226,6 @@ def remove_from_cart(request, item_id):
         product_name = cart_item.variant.product.name
         cart = cart_item.cart
         cart_item.delete()
-        
-        # Recalculate cart totals with offers
         cart_items = cart.items.select_related(
             'variant__product__brand',
             'variant__product__category',
@@ -251,11 +242,7 @@ def remove_from_cart(request, item_id):
             subtotal += item_price * item.quantity
         
         total_items = cart.get_total_items()
-        
-        # Check if cart is empty
         is_empty = not cart_items.exists()
-        
-        # Check if checkout is still possible
         can_checkout = True
         if not is_empty:
             has_out_of_stock = False

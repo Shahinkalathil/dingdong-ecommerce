@@ -14,15 +14,11 @@ def wishlist(request):
     Excludes items already in cart
     """
     user = request.user
-    
-    # Get cart variant IDs to exclude from wishlist display
     try:
         user_cart = Cart.objects.get(user=user)
         cart_variant_ids = CartItem.objects.filter(cart=user_cart).values_list("variant_id", flat=True)
     except Cart.DoesNotExist:
         cart_variant_ids = []
-    
-    # Get wishlist items (exclude items already in cart)
     wishlist_items = WishlistItem.objects.filter(
         user=user
     ).exclude(
@@ -39,14 +35,11 @@ def wishlist(request):
         variant = item.variant
         product = variant.product
         
-        # Get first image
         product_image = variant.images.first()
-        
-        # Calculate price with offers
+
         original_price = variant.price
         final_price, discount_percentage = get_best_offer_price(product, original_price)
-        
-        # Check stock
+
         in_stock = variant.stock > 0
         
         wishlist_data.append({
@@ -95,12 +88,10 @@ def toggle_wishlist(request, variant_id):
     try:
         variant = get_object_or_404(ProductVariant, id=variant_id, is_listed=True)
         
-        # Check if product/category/brand are listed
         if not variant.product.is_listed or not variant.product.category.is_listed or not variant.product.brand.is_listed:
             messages.error(request, "Product not available.")
             return redirect('products')
         
-        # Check if variant is already in cart
         try:
             cart = Cart.objects.get(user=request.user)
             if CartItem.objects.filter(cart=cart, variant=variant).exists():
@@ -108,20 +99,15 @@ def toggle_wishlist(request, variant_id):
                 return redirect('product_detail', variant_id=variant_id)
         except Cart.DoesNotExist:
             pass
-        
-        # Toggle wishlist
+
         wishlist_item = WishlistItem.objects.filter(user=request.user, variant=variant).first()
         
         if wishlist_item:
-            # Remove from wishlist
             wishlist_item.delete()
             messages.success(request, "Removed from wishlist.")
         else:
-            # Add to wishlist
             WishlistItem.objects.create(user=request.user, variant=variant)
             messages.success(request, "Added to wishlist.")
-        
-        # Redirect back to the SAME variant detail page
         return redirect('product_detail', variant_id=variant_id)
 
     except ProductVariant.DoesNotExist:

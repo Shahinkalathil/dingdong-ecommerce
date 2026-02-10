@@ -26,11 +26,9 @@ from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 @user_passes_test(lambda u: u.is_superuser, login_url="admin_login")
 def DashboardHomeView(request):
     User = get_user_model()
-    
-    # Get today's date
+
     today = timezone.now().date()
-    
-    # Calculate today's sales
+
     today_orders = Order.objects.filter(
         created_at__date=today,
         order_status__in=['delivered', 'confirmed', 'shipped', 'out_for_delivery']
@@ -41,7 +39,6 @@ def DashboardHomeView(request):
         total_count=Count('id')
     )
     
-    # Get week data for chart
     week_start = today - timedelta(days=today.weekday())
     daily_sales = []
     
@@ -56,8 +53,7 @@ def DashboardHomeView(request):
             'date': day.strftime('%d %b'),
             'amount': float(day_orders['total'] or 0)
         })
-    
-    # Recent orders for table
+   
     recent_orders = Order.objects.filter(
         order_status__in=['delivered', 'confirmed', 'shipped', 'out_for_delivery']
     ).select_related('user').prefetch_related('items').order_by('-created_at')[:10]
@@ -74,8 +70,8 @@ def DashboardHomeView(request):
                 'price': item.price,
                 'subtotal': item.subtotal,
             })
-            break  # Only show first item for dashboard
-    
+            break  
+
     superusers = User.objects.filter(is_superuser=True).values("username", "email")
     current_super = request.user
     
@@ -95,17 +91,14 @@ def DashboardHomeView(request):
 @login_required(login_url="admin_login")
 @user_passes_test(lambda u: u.is_superuser, login_url="admin_login")
 def sales_report_view(request):
-    # Get filter parameters
     report_type = request.GET.get('report_type', 'daily')
     start_date = request.GET.get('start_date', '')
     end_date = request.GET.get('end_date', '')
     
-    # Base queryset - only delivered and confirmed orders
     orders = Order.objects.filter(
         order_status__in=['delivered', 'confirmed', 'shipped', 'out_for_delivery']
     )
-    
-    # Apply date filters
+
     today = timezone.now().date()
     
     if report_type == 'daily':
@@ -134,10 +127,8 @@ def sales_report_view(request):
         except ValueError:
             period_label = "Custom Report"
     else:
-        # All time
         period_label = "All Time Report"
-    
-    # Calculate aggregated data
+
     total_sales = orders.aggregate(
         total_count=Count('id'),
         total_amount=Sum('total_amount'),
@@ -145,7 +136,6 @@ def sales_report_view(request):
         total_coupon_discount=Sum('coupon_discount')
     )
     
-    # Get order details with items
     order_details = []
     for order in orders.select_related('user').prefetch_related('items'):
         active_items = order.items.filter(item_status='active')
@@ -163,8 +153,7 @@ def sales_report_view(request):
                 'payment_method': order.get_payment_method_display(),
                 'status': order.get_order_status_display(),
             })
-    
-    # Calculate totals
+
     total_order_amount = total_sales['total_amount'] or Decimal('0.00')
     total_discount_amount = (total_sales['total_discount'] or Decimal('0.00')) + (total_sales['total_coupon_discount'] or Decimal('0.00'))
     
@@ -186,12 +175,10 @@ def sales_report_view(request):
 @login_required(login_url="admin_login")
 @user_passes_test(lambda u: u.is_superuser, login_url="admin_login")
 def download_sales_pdf(request):
-    # Get the same filter parameters
     report_type = request.GET.get('report_type', 'daily')
     start_date = request.GET.get('start_date', '')
     end_date = request.GET.get('end_date', '')
-    
-    # Apply the same filters as the view
+
     orders = Order.objects.filter(
         order_status__in=['delivered', 'confirmed', 'shipped', 'out_for_delivery']
     )
@@ -226,22 +213,18 @@ def download_sales_pdf(request):
     else:
         period_label = "All Time Report"
     
-    # Calculate totals
     total_sales = orders.aggregate(
         total_count=Count('id'),
         total_amount=Sum('total_amount'),
         total_discount=Sum('discount_amount'),
         total_coupon_discount=Sum('coupon_discount')
     )
-    
-    # Create PDF
+
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=30, leftMargin=30, topMargin=30, bottomMargin=30)
-    
-    # Container for the 'Flowable' objects
+
     elements = []
-    
-    # Define styles
+
     styles = getSampleStyleSheet()
     title_style = ParagraphStyle(
         'CustomTitle',
@@ -262,16 +245,13 @@ def download_sales_pdf(request):
         fontName='Helvetica-Bold'
     )
     
-    # Add title
     title = Paragraph("DINGDONG Sales Report", title_style)
     elements.append(title)
-    
-    # Add period label
+
     period = Paragraph(period_label, heading_style)
     elements.append(period)
     elements.append(Spacer(1, 20))
-    
-    # Summary data
+
     total_order_amount = total_sales['total_amount'] or Decimal('0.00')
     total_discount_amount = (total_sales['total_discount'] or Decimal('0.00')) + (total_sales['total_coupon_discount'] or Decimal('0.00'))
     
@@ -300,14 +280,12 @@ def download_sales_pdf(request):
     
     elements.append(summary_table)
     elements.append(Spacer(1, 30))
-    
-    # Order details
+
     if orders.exists():
         details_heading = Paragraph("Order Details", heading_style)
         elements.append(details_heading)
         elements.append(Spacer(1, 10))
-        
-        # Table header
+
         detail_data = [['Order ID', 'Date', 'Customer', 'Items', 'Amount', 'Discount']]
         
         for order in orders.select_related('user'):
@@ -338,11 +316,9 @@ def download_sales_pdf(request):
         ]))
         
         elements.append(detail_table)
-    
-    # Build PDF
+
     doc.build(elements)
     
-    # Get the value of the BytesIO buffer and write it to the response
     pdf = buffer.getvalue()
     buffer.close()
     
