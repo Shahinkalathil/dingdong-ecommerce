@@ -123,23 +123,6 @@ def apply_coupon(request):
     try:
         cart = Cart.objects.get(user=request.user)
         cart_items = cart.items.select_related('variant__product__brand').all()
-
-        has_offer = False
-        for item in cart_items:
-            _, discount_percentage, offer_type = get_offer_details(
-                item.variant.product, 
-                item.variant.price
-            )
-            if discount_percentage > 0:
-                has_offer = True
-                break
-        
-        if has_offer:
-            return JsonResponse({
-                'success': False, 
-                'message': 'Coupon cannot be applied when product/brand offers are active'
-            })
-        
         now = timezone.now()
         coupon = Coupon.objects.get(
             code=coupon_code,

@@ -81,11 +81,9 @@ def AdminCouponsCreateView(request):
         elif not code.isalnum():
             errors["couponCode"] = "Coupon code can only contain letters (A-Z) and numbers (0-9)"
         elif not (any(c.isalpha() for c in code) and any(c.isdigit() for c in code)):
-            # ← NEW: Must contain at least one letter AND one number
             errors["couponCode"] = "Coupon code must contain both letters and numbers"
         elif Coupon.objects.filter(code=code).exists():
             errors["couponCode"] = "This coupon code already exists"
-        # Discount Percentage
         discount = None
         if not discount_str:
             errors["discountValue"] = "Discount percentage is required"
@@ -97,7 +95,6 @@ def AdminCouponsCreateView(request):
             except ValueError:
                 errors["discountValue"] = "Discount must be a valid number"
 
-        # Minimum Purchase
         min_purchase = None
         if not min_purchase_str:
             errors["minPurchase"] = "Minimum purchase amount is required"
@@ -108,8 +105,6 @@ def AdminCouponsCreateView(request):
                     errors["minPurchase"] = "Minimum purchase cannot be negative"
             except (InvalidOperation, ValueError):
                 errors["minPurchase"] = "Minimum purchase must be a valid number"
-
-        # Max Discount (optional)
         max_discount = None
         if max_discount_str:
             try:
@@ -119,7 +114,6 @@ def AdminCouponsCreateView(request):
             except (InvalidOperation, ValueError):
                 errors["maxDiscount"] = "Max discount must be a valid number"
 
-        # Dates - Very Important!
         valid_from = None
         valid_until = None
 
@@ -143,14 +137,12 @@ def AdminCouponsCreateView(request):
             except ValueError:
                 errors["validUntil"] = "Invalid date format (use YYYY-MM-DD)"
 
-        # Additional date logic
         if valid_from and valid_until:
             if valid_until <= valid_from:
                 errors["validUntil"] = "Valid until date must be after valid from date"
             if valid_from < timezone.now():
                 pass
 
-        # Usage Limits
         usage_limit = None
         if not usage_limit_str:
             errors["usageLimit"] = "Total usage limit is required"
@@ -162,7 +154,6 @@ def AdminCouponsCreateView(request):
             except ValueError:
                 errors["usageLimit"] = "Usage limit must be a valid number"
 
-        # If there are errors → return to form
         if errors:
             return render(request, "admin_panel/coupons/coupon_add.html", {
                 "errors": errors,
@@ -182,15 +173,13 @@ def AdminCouponsCreateView(request):
                 is_active=True,
             )
             messages.success(request, f"Coupon '{code}' created successfully!")
-            return redirect("admin_coupons")  # or whatever your list URL name is
+            return redirect("admin_coupons") 
         except Exception as e:
             errors["general"] = f"Error creating coupon: {str(e)}"
             return render(request, "admin_panel/coupons/coupon_add.html", {
                 "errors": errors,
                 "old": data,
             })
-
-    # GET request → show empty form
     return render(request, "admin_panel/coupons/coupon_add.html")
 
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
