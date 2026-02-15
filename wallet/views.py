@@ -45,11 +45,9 @@ def AdminPaymentListView(request):
     """Admin view to list all payments (Orders + Wallet Transactions)"""
     search_query = request.GET.get('search', '')
     page_number = request.GET.get('page', 1)
-    
-    # Get all orders
+
     orders = Order.objects.select_related('user').all()
-    
-    # Search functionality
+
     if search_query:
         orders = orders.filter(
             Q(order_number__icontains=search_query) |
@@ -60,8 +58,7 @@ def AdminPaymentListView(request):
         )
     
     orders = orders.order_by('-created_at')
-    
-    # Get wallet transactions
+
     wallet_transactions = WalletTransaction.objects.select_related('wallet__user', 'order').all()
     
     if search_query:
@@ -72,17 +69,15 @@ def AdminPaymentListView(request):
         )
     
     wallet_transactions = wallet_transactions.order_by('-created_at')
-    
-    # Combine payments
+
     payments = []
-    
-    # Add orders to payments list
+
     for order in orders:
         payments.append({
             'type': 'order',
             'transaction_id': f"PAY-{order.created_at.year}-{str(order.id).zfill(6)}",
             'order_id': order.order_number,
-            'customer': order.user.username,
+            'customer': order.user.fullname,
             'customer_email': order.user.email,
             'date': order.created_at,
             'amount': order.total_amount,
@@ -91,14 +86,13 @@ def AdminPaymentListView(request):
             'status': order.payment_status,
             'order_obj': order,
         })
-    
-    # Add wallet transactions to payments list
+
     for transaction in wallet_transactions:
         payments.append({
             'type': 'wallet',
             'transaction_id': f"WAL-{transaction.created_at.year}-{str(transaction.id).zfill(6)}",
             'order_id': transaction.order.order_number if transaction.order else '-',
-            'customer': transaction.wallet.user.username,
+            'customer': transaction.wallet.user.fullname,
             'customer_email': transaction.wallet.user.email,
             'date': transaction.created_at,
             'amount': transaction.amount,
@@ -108,11 +102,9 @@ def AdminPaymentListView(request):
             'transaction_type': transaction.transaction_type,
             'wallet_transaction': transaction,
         })
-    
-    # Sort by date
+
     payments.sort(key=lambda x: x['date'], reverse=True)
-    
-    # Calculate statistics
+
     total_payments = Order.objects.aggregate(total=Sum('total_amount'))['total'] or 0
     paid_amount = Order.objects.filter(payment_status='paid').aggregate(
         total=Sum('total_amount'))['total'] or 0
@@ -120,8 +112,7 @@ def AdminPaymentListView(request):
         total=Sum('total_amount'))['total'] or 0
     refunded_amount = Order.objects.filter(payment_status='refunded').aggregate(
         total=Sum('total_amount'))['total'] or 0
-    
-    # Pagination
+ 
     paginator = Paginator(payments, 10)
     payments_page = paginator.get_page(page_number)
     
@@ -143,7 +134,6 @@ def AdminPaymentDetailView(request, payment_type, payment_id):
     """Admin view to see detailed payment information"""
     
     if payment_type == 'order':
-        # Get order payment details
         order = get_object_or_404(Order.objects.select_related('user', 'address'), id=payment_id)
         
         context = {
@@ -156,7 +146,6 @@ def AdminPaymentDetailView(request, payment_type, payment_id):
         return render(request, 'admin_panel/payment/payment_detail.html', context)
     
     elif payment_type == 'wallet':
-        # Get wallet transaction details
         transaction = get_object_or_404(
             WalletTransaction.objects.select_related('wallet__user', 'order'), 
             id=payment_id
