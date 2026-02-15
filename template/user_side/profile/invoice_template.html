@@ -3,142 +3,400 @@
 <head>
     <meta charset="UTF-8">
     <title>Invoice - {{ order.order_number }}</title>
-    <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @page {
             size: A4;
-            margin: 1cm;
+            margin: 1.5cm 1.5cm 1.5cm 1.5cm;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            font-size: 12px;
+            color: #1f2937;
+            background: #ffffff;
+            line-height: 1.4;
+        }
+
+        /* ── Header ── */
+        .header {
+            background-color: #1a1a1a;
+            color: #ffffff;
+            padding: 20px 24px;
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-left .brand {
+            font-size: 28px;
+            font-weight: 800;
+            letter-spacing: 4px;
+            color: #ffffff;
+        }
+
+        .header-left .tagline {
+            font-size: 10px;
+            color: #9ca3af;
+            margin-top: 4px;
+            letter-spacing: 1px;
+        }
+
+        .header-right {
+            text-align: right;
+        }
+
+        .header-right .invoice-label {
+            font-size: 22px;
+            font-weight: 700;
+            color: #ffffff;
+            letter-spacing: 2px;
+        }
+
+        .header-right .order-meta {
+            font-size: 10px;
+            color: #9ca3af;
+            margin-top: 4px;
+        }
+
+        .info-grid {
+            display: table;
+            width: 100%;
+            margin-bottom: 24px;
+            border-collapse: separate;
+            border-spacing: 12px 0;
+        }
+
+        .info-col {
+            display: table-cell;
+            width: 50%;
+            border: 1px solid #d1d5db;
+            padding: 14px 16px;
+            vertical-align: top;
+        }
+
+        .info-col h3 {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #111827;
+            padding-bottom: 8px;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #d1d5db;
+        }
+
+        .info-row {
+            display: table;
+            width: 100%;
+            margin-bottom: 6px;
+        }
+
+        .info-label {
+            display: table-cell;
+            color: #6b7280;
+            font-size: 10px;
+            width: 48%;
+        }
+
+        .info-value {
+            display: table-cell;
+            font-weight: 600;
+            font-size: 10px;
+            text-align: right;
+            color: #111827;
+        }
+
+        /* Status badges */
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            font-size: 9px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-radius: 2px;
+        }
+
+        .badge-confirmed  { background: #d1fae5; color: #065f46; }
+        .badge-pending    { background: #fef3c7; color: #92400e; }
+        .badge-shipped    { background: #dbeafe; color: #1e40af; }
+        .badge-delivered  { background: #1f2937; color: #ffffff; }
+        .badge-cancelled  { background: #fee2e2; color: #991b1b; }
+
+        /* ── Delivery Address ── */
+        .addr-name    { font-weight: 700; font-size: 11px; color: #111827; margin-bottom: 3px; }
+        .addr-phone   { color: #6b7280; font-size: 10px; margin-bottom: 6px; }
+        .addr-line    { font-size: 10px; color: #374151; margin-bottom: 2px; }
+        .addr-bold    { font-weight: 600; font-size: 10px; color: #111827; margin-top: 3px; }
+
+        /* ── Items Table ── */
+        .section-title {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #111827;
+            margin-bottom: 10px;
+        }
+
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 24px;
+        }
+
+        .items-table thead tr {
+            background-color: #1f2937;
+        }
+
+        .items-table thead th {
+            padding: 9px 12px;
+            text-align: left;
+            font-size: 9px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: #ffffff;
+            border: 1px solid #374151;
+        }
+
+        .items-table tbody td {
+            padding: 10px 12px;
+            font-size: 10px;
+            border: 1px solid #e5e7eb;
+            color: #374151;
+            vertical-align: middle;
+        }
+
+        .items-table tbody tr:nth-child(even) {
+            background-color: #f9fafb;
+        }
+
+        .items-table tbody tr:nth-child(odd) {
+            background-color: #ffffff;
+        }
+
+        .product-name {
+            font-weight: 500;
+            color: #111827;
+        }
+
+        .color-dot {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            border: 1px solid #9ca3af;
+            margin-right: 5px;
+            vertical-align: middle;
+        }
+
+        .subtotal-cell {
+            font-weight: 700;
+            color: #111827;
+        }
+
+        /* ── Totals ── */
+        .totals-wrapper {
+            border-top: 2px solid #6b7280;
+            padding-top: 16px;
+            margin-bottom: 40px;
+        }
+
+        .totals-table {
+            float: right;
+            width: 260px;
+        }
+
+        .totals-row {
+            display: table;
+            width: 100%;
+            margin-bottom: 8px;
+        }
+
+        .totals-label {
+            display: table-cell;
+            font-size: 11px;
+            color: #4b5563;
+        }
+
+        .totals-amount {
+            display: table-cell;
+            font-size: 11px;
+            font-weight: 600;
+            text-align: right;
+            color: #111827;
+        }
+
+        .totals-grand {
+            border-top: 2px solid #1f2937;
+            padding-top: 10px;
+            margin-top: 6px;
+        }
+
+        .totals-grand .totals-label {
+            font-size: 13px;
+            font-weight: 700;
+            color: #111827;
+        }
+
+        .totals-grand .totals-amount {
+            font-size: 13px;
+            font-weight: 800;
+            color: #111827;
+        }
+
+        /* ── Footer ── */
+        .footer {
+            clear: both;
+            border-top: 1px solid #d1d5db;
+            padding-top: 16px;
+            text-align: center;
+            margin-top: 60px;
+        }
+
+        .footer-main {
+            font-size: 12px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 5px;
+        }
+
+        .footer-support {
+            font-size: 10px;
+            color: #6b7280;
+            margin-bottom: 4px;
+        }
+
+        .footer-note {
+            font-size: 9px;
+            color: #9ca3af;
         }
     </style>
 </head>
-<body class="font-sans text-gray-800">
-    <!-- Header with Black Background -->
-    <div class="bg-[#1a1a1a] text-white px-6 py-5 mb-6">
-        <div class="flex justify-between items-center">
-            <div>
-                <h1 class="text-3xl font-bold tracking-wider">DINGDONG</h1>
-                <p class="text-gray-400 text-xs mt-1">Premium Products Store</p>
-            </div>
-            <div class="text-right">
-                <p class="text-2xl font-bold">INVOICE</p>
-                <p class="text-xs text-gray-400 mt-1">{{ order.order_number }}</p>
-                <p class="text-xs text-gray-400">{{ order.created_at|date:"d M, Y" }}</p>
-            </div>
+<body>
+    <div class="header">
+        <div class="header-left">
+            <div class="brand">DINGDONG</div>
+            <div class="tagline">Premium Products Store</div>
+        </div>
+        <div class="header-right">
+            <div class="invoice-label">INVOICE</div>
+            <div class="order-meta">{{ order.order_number }}</div>
+            <div class="order-meta">{{ order.created_at|date:"d M, Y" }}</div>
         </div>
     </div>
-    
-    <!-- Info Section -->
-    <div class="grid grid-cols-2 gap-6 mb-6">
+
+    <div class="info-grid">
         <!-- Order Information -->
-        <div class="border border-gray-300 p-4">
-            <h3 class="text-gray-800 font-bold text-sm uppercase tracking-wide mb-3 pb-2 border-b border-gray-300">Order Information</h3>
-            <div class="space-y-2 text-xs">
-                <div class="flex justify-between">
-                    <span class="text-gray-600">Order Number:</span>
-                    <span class="font-semibold">{{ order.order_number }}</span>
-                </div>
-                <div class="flex justify-between">
-                    <span class="text-gray-600">Order Date:</span>
-                    <span class="font-semibold">{{ order.created_at|date:"d M, Y h:i A" }}</span>
-                </div>
-                <div class="flex justify-between">
-                    <span class="text-gray-600">Payment Method:</span>
-                    <span class="font-semibold">{{ order.get_payment_method_display }}</span>
-                </div>
-                <div class="flex justify-between">
-                    <span class="text-gray-600">Payment Status:</span>
-                    <span class="font-semibold">{{ order.get_payment_status_display }}</span>
-                </div>
-                <div class="flex justify-between items-center">
-                    <span class="text-gray-600">Order Status:</span>
-                    <span class="inline-block px-2 py-0.5 text-xs font-semibold uppercase
-                        {% if order.order_status == 'confirmed' %}bg-green-100 text-green-800
-                        {% elif order.order_status == 'pending' %}bg-yellow-100 text-yellow-800
-                        {% elif order.order_status == 'shipped' %}bg-blue-100 text-blue-800
-                        {% elif order.order_status == 'delivered' %}bg-gray-800 text-white
-                        {% elif order.order_status == 'cancelled' %}bg-red-100 text-red-800
-                        {% endif %}">
-                        {{ order.get_order_status_display }}
-                    </span>
-                </div>
+        <div class="info-col">
+            <h3>Order Information</h3>
+
+            <div class="info-row">
+                <span class="info-label">Order Number:</span>
+                <span class="info-value">{{ order.order_number }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Order Date:</span>
+                <span class="info-value">{{ order.created_at|date:"d M, Y h:i A" }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Payment Method:</span>
+                <span class="info-value">{{ order.get_payment_method_display }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Payment Status:</span>
+                <span class="info-value">{{ order.get_payment_status_display }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Order Status:</span>
+                <span class="info-value">
+                    {% if order.order_status == 'confirmed' %}
+                        <span class="badge badge-confirmed">{{ order.get_order_status_display }}</span>
+                    {% elif order.order_status == 'pending' %}
+                        <span class="badge badge-pending">{{ order.get_order_status_display }}</span>
+                    {% elif order.order_status == 'shipped' %}
+                        <span class="badge badge-shipped">{{ order.get_order_status_display }}</span>
+                    {% elif order.order_status == 'delivered' %}
+                        <span class="badge badge-delivered">{{ order.get_order_status_display }}</span>
+                    {% elif order.order_status == 'cancelled' %}
+                        <span class="badge badge-cancelled">{{ order.get_order_status_display }}</span>
+                    {% endif %}
+                </span>
             </div>
         </div>
-        
+
         <!-- Delivery Address -->
-        <div class="border border-gray-300 p-4">
-            <h3 class="text-gray-800 font-bold text-sm uppercase tracking-wide mb-3 pb-2 border-b border-gray-300">Delivery Address</h3>
-            <div class="space-y-1 text-xs">
-                <p class="font-bold text-gray-900">{{ delivery_address.full_name }}</p>
-                <p class="text-gray-600">{{ delivery_address.phone_number }}</p>
-                <p class="mt-1">{{ delivery_address.flat_house }}</p>
-                <p>{{ delivery_address.area_street }}</p>
-                {% if delivery_address.landmark %}
-                <p class="text-gray-600">Landmark: {{ delivery_address.landmark }}</p>
-                {% endif %}
-                <p class="font-semibold">{{ delivery_address.town_city }}, {{ delivery_address.state }}</p>
-                <p class="font-semibold">PIN: {{ delivery_address.pincode }}</p>
+        <div class="info-col">
+            <h3>Delivery Address</h3>
+            <p class="addr-name">{{ delivery_address.full_name }}</p>
+            <p class="addr-phone">{{ delivery_address.phone_number }}</p>
+            <p class="addr-line">{{ delivery_address.flat_house }}</p>
+            <p class="addr-line">{{ delivery_address.area_street }}</p>
+            {% if delivery_address.landmark %}
+            <p class="addr-line" style="color:#6b7280;">Landmark: {{ delivery_address.landmark }}</p>
+            {% endif %}
+            <p class="addr-bold">{{ delivery_address.town_city }}, {{ delivery_address.state }}</p>
+            <p class="addr-bold">PIN: {{ delivery_address.pincode }}</p>
+        </div>
+    </div>
+    <p class="section-title">Order Items</p>
+    <table class="items-table">
+        <thead>
+            <tr>
+                <th style="width:40%;">Product</th>
+                <th style="width:18%;">Color</th>
+                <th style="width:14%;">Price</th>
+                <th style="width:12%;">Qty</th>
+                <th style="width:16%;">Subtotal</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in order_items %}
+            {% if not item.is_cancelled %}
+            <tr>
+                <td class="product-name">{{ item.product_name }}</td>
+                <td>
+                    <span class="color-dot" style="background-color: {{ item.color_code }};"></span>
+                    {{ item.color_name }}
+                </td>
+                <td>&#8377;{{ item.price }}</td>
+                <td>{{ item.quantity }}</td>
+                <td class="subtotal-cell">&#8377;{{ item.subtotal }}</td>
+            </tr>
+            {% endif %}
+            {% endfor %}
+        </tbody>
+    </table>
+    <div class="totals-wrapper">
+        <div class="totals-table">
+            <div class="totals-row">
+                <span class="totals-label">Subtotal:</span>
+                <span class="totals-amount">&#8377;{{ order.subtotal }}</span>
+            </div>
+            <div class="totals-row">
+                <span class="totals-label">Delivery Charges:</span>
+                <span class="totals-amount">&#8377;{{ order.delivery_charge }}</span>
+            </div>
+            <div class="totals-row totals-grand">
+                <span class="totals-label">Grand Total:</span>
+                <span class="totals-amount">&#8377;{{ order.total_amount }}</span>
             </div>
         </div>
     </div>
-    
-    <!-- Items Table -->
-    <div class="mb-6">
-        <h3 class="text-gray-800 font-bold text-sm uppercase tracking-wide mb-3">Order Items</h3>
-        <table class="w-full border-collapse border border-gray-300">
-            <thead class="bg-gray-800 text-white">
-                <tr>
-                    <th class="px-3 py-2.5 text-left text-xs font-semibold uppercase tracking-wider border border-gray-300">Product</th>
-                    <th class="px-3 py-2.5 text-left text-xs font-semibold uppercase tracking-wider border border-gray-300">Color</th>
-                    <th class="px-3 py-2.5 text-left text-xs font-semibold uppercase tracking-wider border border-gray-300">Price</th>
-                    <th class="px-3 py-2.5 text-left text-xs font-semibold uppercase tracking-wider border border-gray-300">Quantity</th>
-                    <th class="px-3 py-2.5 text-left text-xs font-semibold uppercase tracking-wider border border-gray-300">Subtotal</th>
-                </tr>
-            </thead>
-            <tbody class="bg-white">
-                {% for item in order_items %}
-                {% if not item.is_cancelled %}
-                <tr class="{% if forloop.counter|divisibleby:2 %}bg-gray-50{% endif %}">
-                    <td class="px-3 py-3 text-xs border border-gray-300">{{ item.product_name }}</td>
-                    <td class="px-3 py-3 text-xs border border-gray-300">
-                        <span class="inline-block w-3.5 h-3.5 rounded-full border border-gray-400 align-middle mr-1" 
-                              style="background-color: {{ item.color_code }};"></span>
-                        {{ item.color_name }}
-                    </td>
-                    <td class="px-3 py-3 text-xs border border-gray-300">₹{{ item.price }}</td>
-                    <td class="px-3 py-3 text-xs border border-gray-300">{{ item.quantity }}</td>
-                    <td class="px-3 py-3 text-xs font-semibold border border-gray-300">₹{{ item.subtotal }}</td>
-                </tr>
-                {% endif %}
-                {% endfor %}
-            </tbody>
-        </table>
+
+    <div class="footer">
+        <p class="footer-main">Thank you for shopping with DINGDONG!</p>
+        <p class="footer-support">For any queries, please contact our support team.</p>
+        <p class="footer-note">This is a computer-generated invoice and does not require a signature.</p>
     </div>
-    
-    <!-- Totals Section -->
-    <div class="border-t-2 border-gray-400 pt-4 mb-8">
-        <div class="float-right w-72">
-            <div class="space-y-2 text-sm">
-                <div class="flex justify-between text-gray-700">
-                    <span>Subtotal:</span>
-                    <span class="font-semibold">₹{{ order.subtotal }}</span>
-                </div>
-                <div class="flex justify-between text-gray-700">
-                    <span>Delivery Charges:</span>
-                    <span class="font-semibold">₹{{ order.delivery_charge }}</span>
-                </div>
-                <div class="flex justify-between text-base font-bold text-gray-900 border-t-2 border-gray-800 pt-3 mt-2">
-                    <span>Grand Total:</span>
-                    <span>₹{{ order.total_amount }}</span>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Footer -->
-    <div class="clear-both mt-16 text-center pt-4 border-t border-gray-300">
-        <p class="font-semibold text-gray-800 text-sm">Thank you for shopping with DINGDONG!</p>
-        <p class="text-xs text-gray-600 mt-2">For any queries, please contact our support team.</p>
-        <p class="text-xs text-gray-500 mt-2">This is a computer-generated invoice and does not require a signature.</p>
-    </div>
+
 </body>
 </html>
