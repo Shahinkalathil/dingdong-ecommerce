@@ -422,7 +422,7 @@ def request_item_return(request, order_number, item_id):
                 return_reason=return_reason,
                 description=description[:500],
                 refund_amount=item.subtotal,
-                return_status='pending'
+                return_status='approved'
             )
             
             item.is_returned = True
@@ -509,7 +509,6 @@ def generate_pdf(request, order_number):
 
     
 # Admin
-
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 @user_passes_test(lambda u: u.is_superuser, login_url="admin_login")
 def AdminOrderListView(request):

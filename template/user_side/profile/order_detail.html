@@ -19,7 +19,7 @@
             <div>
                 <h1 class="text-2xl font-bold text-gray-900 mb-2">Order #{{ order.order_number }}</h1>
                 <p class="text-gray-600">Placed on {{ order.created_at|date:"d M Y" }}</p>
-                
+
                 {% if order.order_status == 'returned_checking' %}
                 <div class="mt-2">
                     <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-orange-100 text-orange-800">
@@ -30,7 +30,33 @@
                     </span>
                 </div>
                 {% endif %}
+
+                {% if order.order_status == 'cancelled' %}
+                <div class="mt-2">
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
+                        <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                        </svg>
+                        Order Cancelled
+                    </span>
+                </div>
+                {% if order.cancellation_reason %}
+                <p class="text-sm text-gray-500 mt-1 ml-1">Reason: {{ order.cancellation_reason }}</p>
+                {% endif %}
+                {% endif %}
+
+                {% if order.order_status == 'returned' %}
+                <div class="mt-2">
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800">
+                        <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M7.707 3.293a1 1 0 010 1.414L5.414 7H11a7 7 0 017 7v2a1 1 0 11-2 0v-2a5 5 0 00-5-5H5.414l2.293 2.293a1 1 0 11-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                        </svg>
+                        Order Returned
+                    </span>
+                </div>
+                {% endif %}
             </div>
+
             <div class="flex flex-col sm:flex-row gap-3 mt-4 md:mt-0">
                 {% if can_download_invoice %}
                 <a href="{% url 'download_invoice' order.order_number %}"
@@ -39,6 +65,7 @@
                 </a>
                 {% endif %}
 
+                <!-- RETRY PAYMENT BUTTON: shows when payment method is online and payment failed -->
                 {% if can_cancel %}
                 <button onclick="openCancelOrderModal()"
                     class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
@@ -52,7 +79,10 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- Main Content -->
         <div class="lg:col-span-2 space-y-6">
-            <!-- Order Items -->
+
+            <!-- ✅ ACTIVE ORDER ITEMS -->
+            {% with active_items=order.items.all %}
+            {% if active_items %}
             <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                 <h2 class="text-lg font-semibold text-gray-900 mb-6">Order Items</h2>
 
@@ -60,16 +90,13 @@
                 {% if not item.is_cancelled and not item.is_returned %}
                 <div class="flex items-start space-x-4 {% if not forloop.last %}pb-6 border-b border-gray-200 mb-6{% endif %}"
                     id="item-{{ item.id }}">
-                    <div
-                        class="w-20 h-20 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0">
+                    <div class="w-20 h-20 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0">
                         {% if item.variant.images.first %}
                         <img src="{{ item.variant.images.first.image.url }}" alt="{{ item.product_name }}"
                             class="w-full h-full object-cover">
                         {% else %}
                         <svg class="w-10 h-10 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd"
-                                d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z"
-                                clip-rule="evenodd" />
+                            <path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd"/>
                         </svg>
                         {% endif %}
                     </div>
@@ -82,22 +109,22 @@
                             <span class="text-xs text-gray-500">{{ item.color_code }}</span>
                         </div>
                         <p class="text-sm text-gray-600 mb-2">Quantity: {{ item.quantity }}</p>
-                        
                         <div class="flex items-center justify-between">
                             <span class="text-lg font-semibold text-gray-900">₹{{ item.subtotal|floatformat:2 }}</span>
-                            
                             <div class="flex gap-2">
-                                {% if can_cancel %}
-                                <button onclick="openCancelItemModal({{ item.id }}, '{{ item.product_name|escapejs }}')"
-                                    class="px-3 py-1 text-sm text-red-600 border border-red-600 rounded hover:bg-red-50 transition-colors">
-                                    Cancel Item
-                                </button>
-                                {% endif %}
-                                {% if can_return %}
-                                <button onclick="openReturnItemModal({{ item.id }}, '{{ item.product_name|escapejs }}', {{ item.subtotal }})"
-                                    class="px-3 py-1 text-sm text-orange-600 border border-orange-600 rounded hover:bg-orange-50 transition-colors">
-                                    Return Item
-                                </button>
+                                {% if active_items_count > 1 %}
+                                    {% if can_cancel %}
+                                    <button onclick="openCancelItemModal({{ item.id }}, '{{ item.product_name|escapejs }}')"
+                                        class="px-3 py-1 text-sm text-red-600 border border-red-600 rounded hover:bg-red-50 transition-colors">
+                                        Cancel Item
+                                    </button>
+                                    {% endif %}
+                                    {% if can_return %}
+                                    <button onclick="openReturnItemModal({{ item.id }}, '{{ item.product_name|escapejs }}', {{ item.subtotal }})"
+                                        class="px-3 py-1 text-sm text-orange-600 border border-orange-600 rounded hover:bg-orange-50 transition-colors">
+                                        Return Item
+                                    </button>
+                                    {% endif %}
                                 {% endif %}
                             </div>
                         </div>
@@ -105,8 +132,7 @@
                 </div>
                 {% endif %}
                 {% endfor %}
-                
-                <!-- Show message if no active items -->
+
                 {% if order.order_status == 'returned_checking' %}
                 <div class="text-center py-8">
                     <svg class="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -117,6 +143,130 @@
                 </div>
                 {% endif %}
             </div>
+            {% endif %}
+            {% endwith %}
+
+            <!-- ✅ CANCELLED ITEMS SECTION -->
+            {% with cancelled_items=order.items.all %}
+            {% for item in order.items.all %}{% if item.is_cancelled %}{% if forloop.first %}
+            <div class="bg-white rounded-lg shadow-sm border border-red-100 p-6">
+                <div class="flex items-center gap-2 mb-5">
+                    <div class="w-2 h-2 rounded-full bg-red-500"></div>
+                    <h2 class="text-lg font-semibold text-red-700">Cancelled Items</h2>
+                </div>
+            {% endif %}
+                <div class="flex items-start space-x-4 pb-5 border-b border-red-50 last:border-0 last:pb-0 mb-5 last:mb-0 opacity-70">
+                    <div class="w-20 h-20 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0 relative">
+                        {% if item.variant.images.first %}
+                        <img src="{{ item.variant.images.first.image.url }}" alt="{{ item.product_name }}"
+                            class="w-full h-full object-cover grayscale">
+                        {% else %}
+                        <svg class="w-10 h-10 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd"/>
+                        </svg>
+                        {% endif %}
+                        <!-- Cancelled overlay badge -->
+                        <div class="absolute inset-0 bg-red-500 bg-opacity-20 flex items-center justify-center rounded-lg">
+                            <span class="text-red-700 text-xs font-bold bg-white bg-opacity-80 px-1 py-0.5 rounded">CANCELLED</span>
+                        </div>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <h3 class="font-medium text-gray-700 mb-1">{{ item.product_name }}</h3>
+                        <p class="text-sm text-gray-500 mb-1">Color: {{ item.color_name }}</p>
+                        <div class="flex items-center space-x-2 mb-1">
+                            <span class="inline-block w-4 h-4 rounded border border-gray-300 opacity-50"
+                                style="background-color: {{ item.color_code }};"></span>
+                            <span class="text-xs text-gray-400">{{ item.color_code }}</span>
+                        </div>
+                        <p class="text-sm text-gray-500 mb-2">Quantity: {{ item.quantity }}</p>
+                        <div class="flex items-center justify-between">
+                            <span class="text-base font-semibold text-gray-500 line-through">₹{{ item.subtotal|floatformat:2 }}</span>
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700">
+                                <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                                </svg>
+                                Item Cancelled
+                            </span>
+                        </div>
+                        {% if item.cancelled_at %}
+                        <p class="text-xs text-gray-400 mt-1">Cancelled on {{ item.cancelled_at|date:"d M Y, h:i A" }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            {% if forloop.last %}</div>{% endif %}
+            {% endif %}{% endfor %}
+            {% endwith %}
+
+            <!-- ✅ RETURNED ITEMS SECTION -->
+            {% for item in order.items.all %}{% if item.is_returned %}{% if forloop.first %}
+            <div class="bg-white rounded-lg shadow-sm border border-purple-100 p-6">
+                <div class="flex items-center gap-2 mb-5">
+                    <div class="w-2 h-2 rounded-full bg-purple-500"></div>
+                    <h2 class="text-lg font-semibold text-purple-700">Returned Items</h2>
+                </div>
+            {% endif %}
+                <div class="flex items-start space-x-4 pb-5 border-b border-purple-50 last:border-0 last:pb-0 mb-5 last:mb-0 opacity-70">
+                    <div class="w-20 h-20 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0 relative">
+                        {% if item.variant.images.first %}
+                        <img src="{{ item.variant.images.first.image.url }}" alt="{{ item.product_name }}"
+                            class="w-full h-full object-cover grayscale">
+                        {% else %}
+                        <svg class="w-10 h-10 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd"/>
+                        </svg>
+                        {% endif %}
+                        <!-- Returned overlay badge -->
+                        <div class="absolute inset-0 bg-purple-500 bg-opacity-20 flex items-center justify-center rounded-lg">
+                            <span class="text-purple-700 text-xs font-bold bg-white bg-opacity-80 px-1 py-0.5 rounded">RETURNED</span>
+                        </div>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <h3 class="font-medium text-gray-700 mb-1">{{ item.product_name }}</h3>
+                        <p class="text-sm text-gray-500 mb-1">Color: {{ item.color_name }}</p>
+                        <div class="flex items-center space-x-2 mb-1">
+                            <span class="inline-block w-4 h-4 rounded border border-gray-300 opacity-50"
+                                style="background-color: {{ item.color_code }};"></span>
+                            <span class="text-xs text-gray-400">{{ item.color_code }}</span>
+                        </div>
+                        <p class="text-sm text-gray-500 mb-2">Quantity: {{ item.quantity }}</p>
+                        <div class="flex items-center justify-between flex-wrap gap-2">
+                            <span class="text-base font-semibold text-gray-500">₹{{ item.subtotal|floatformat:2 }}</span>
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <!-- Return status badge -->
+                                {% if item.return_request %}
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium
+                                    {% if item.return_request.return_status == 'pending' %}bg-yellow-100 text-yellow-700
+                                    {% elif item.return_request.return_status == 'approved' %}bg-green-100 text-green-700
+                                    {% else %}bg-red-100 text-red-700{% endif %}">
+                                    {% if item.return_request.return_status == 'pending' %}⏳ Return Pending
+                                    {% elif item.return_request.return_status == 'approved' %}✓ Return Approved
+                                    {% else %}✗ Return Rejected{% endif %}
+                                </span>
+                                {% if item.return_request.return_status == 'approved' %}
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                                    💰 Refund: ₹{{ item.return_request.refund_amount|floatformat:2 }}
+                                </span>
+                                {% endif %}
+                                {% else %}
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-700">
+                                    <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M7.707 3.293a1 1 0 010 1.414L5.414 7H11a7 7 0 017 7v2a1 1 0 11-2 0v-2a5 5 0 00-5-5H5.414l2.293 2.293a1 1 0 11-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                                    </svg>
+                                    Item Returned
+                                </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% if item.returned_at %}
+                        <p class="text-xs text-gray-400 mt-1">Returned on {{ item.returned_at|date:"d M Y, h:i A" }}</p>
+                        {% endif %}
+                        {% if item.return_request and item.return_request.description %}
+                        <p class="text-xs text-gray-400 mt-1">Reason: {{ item.return_request.get_return_reason_display }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            {% if forloop.last %}</div>{% endif %}
+            {% endif %}{% endfor %}
 
             <!-- Shipping & Payment Info -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -144,9 +294,7 @@
                         <div class="flex items-center space-x-3">
                             <div class="w-8 h-8 bg-blue-600 rounded flex items-center justify-center">
                                 <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd"
-                                        d="M4 4a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2H4zm0 2h12v8H4V6z"
-                                        clip-rule="evenodd" />
+                                    <path fill-rule="evenodd" d="M4 4a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2H4zm0 2h12v8H4V6z" clip-rule="evenodd"/>
                                 </svg>
                             </div>
                             <div>
@@ -164,6 +312,20 @@
                                 {{ order.get_payment_status_display }}
                             </span>
                         </div>
+
+                        <!-- ✅ RETRY PAYMENT inline nudge -->
+                        {% if order.payment_method == 'online' and order.payment_status == 'failed' %}
+                        <div class="pt-2 border-t border-gray-100">
+                            <p class="text-xs text-red-600 mb-2">Payment failed. Please retry to confirm your order.</p>
+                            <a href="{% url 'retry_payment' order.id %}"
+                                class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-yellow-500 text-white text-sm font-medium rounded-lg hover:bg-yellow-600 transition-colors">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                                </svg>
+                                Retry Payment
+                            </a>
+                        </div>
+                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -182,8 +344,7 @@
                     </div>
                     <div class="flex justify-between">
                         <span class="text-gray-600">Delivery Charges</span>
-                        <span
-                            class="{% if order.subtotal >= 500 %}text-green-600{% else %}text-gray-900{% endif %}">
+                        <span class="{% if order.subtotal >= 500 %}text-green-600{% else %}text-gray-900{% endif %}">
                             {% if order.subtotal >= 500 %}Free{% else %}₹40{% endif %}
                         </span>
                     </div>
@@ -200,106 +361,95 @@
 
             <!-- Return Order Section -->
             {% if can_return %}
-            {% if order.return_request %}
-            <!-- Return Request Already Submitted -->
-            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <h3 class="text-lg font-semibold text-gray-900 mb-2">Return Status</h3>
-                <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                    <div class="flex items-start gap-3">
-                        <svg class="w-5 h-5 text-yellow-600 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd"
-                                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-                                clip-rule="evenodd" />
-                        </svg>
-                        <div class="flex-1">
-                            <p class="text-sm font-medium text-yellow-800 mb-1">
-                                {% if order.return_request.return_status == 'pending' %}
-                                Return Request Under Review
-                                {% elif order.return_request.return_status == 'approved' %}
-                                Return Request Approved
-                                {% elif order.return_request.return_status == 'rejected' %}
-                                Return Request Rejected
-                                {% endif %}
-                            </p>
-                            <p class="text-xs text-yellow-700 mb-3">
-                                {% if order.return_request.return_status == 'pending' %}
-                                Your return request is being reviewed by our team.
-                                {% elif order.return_request.return_status == 'approved' %}
-                                Your return has been approved. Refund will be processed soon.
-                                {% elif order.return_request.return_status == 'rejected' %}
-                                Unfortunately, your return request was not approved.
-                                {% endif %}
-                            </p>
-                            <div class="text-xs text-yellow-700 space-y-1 bg-white bg-opacity-50 p-3 rounded">
-                                <p><strong>Reason:</strong> {{ order.return_request.get_return_reason_display }}</p>
-                                {% if order.return_request.description %}
-                                <p><strong>Details:</strong> {{ order.return_request.description }}</p>
-                                {% endif %}
-                                <p><strong>Requested on:</strong> {{ order.return_request.requested_at|date:"d M Y, h:i A" }}</p>
-                                <p><strong>Refund Amount:</strong> ₹{{ order.return_request.refund_amount|floatformat:2 }}</p>
+                {% if order.return_request %}
+                <!-- Return Request Already Submitted -->
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2">Return Status</h3>
+                    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                        <div class="flex items-start gap-3">
+                            <svg class="w-5 h-5 text-yellow-600 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                            </svg>
+                            <div class="flex-1">
+                                <p class="text-sm font-medium text-yellow-800 mb-1">
+                                    {% if order.return_request.return_status == 'pending' %}Return Request Under Review
+                                    {% elif order.return_request.return_status == 'approved' %}Return Request Approved
+                                    {% elif order.return_request.return_status == 'rejected' %}Return Request Rejected
+                                    {% endif %}
+                                </p>
+                                <p class="text-xs text-yellow-700 mb-3">
+                                    {% if order.return_request.return_status == 'pending' %}Your return request is being reviewed by our team.
+                                    {% elif order.return_request.return_status == 'approved' %}Your return has been approved. Refund will be processed soon.
+                                    {% elif order.return_request.return_status == 'rejected' %}Unfortunately, your return request was not approved.
+                                    {% endif %}
+                                </p>
+                                <div class="text-xs text-yellow-700 space-y-1 bg-white bg-opacity-50 p-3 rounded">
+                                    <p><strong>Reason:</strong> {{ order.return_request.get_return_reason_display }}</p>
+                                    {% if order.return_request.description %}
+                                    <p><strong>Details:</strong> {{ order.return_request.description }}</p>
+                                    {% endif %}
+                                    <p><strong>Requested on:</strong> {{ order.return_request.requested_at|date:"d M Y, h:i A" }}</p>
+                                    <p><strong>Refund Amount:</strong> ₹{{ order.return_request.refund_amount|floatformat:2 }}</p>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
-            {% else %}
-            <!-- Return Order Form -->
-            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <h3 class="text-lg font-semibold text-gray-900 mb-2">Return Entire Order</h3>
+                {% else %}
+                <!-- Return Order Form -->
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2">Return Entire Order</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label for="returnReason" class="block text-sm font-medium text-gray-700 mb-2">
+                                Reason for Return <span class="text-red-500">*</span>
+                            </label>
+                            <select id="returnReason"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
+                                <option value="">Select a reason</option>
+                                <option value="product_damaged">Product Damaged</option>
+                                <option value="wrong_product">Wrong Product Delivered</option>
+                                <option value="defective">Defective/Not Working</option>
+                                <option value="quality_issue">Quality Not as Expected</option>
+                                <option value="size_issue">Size/Fit Issue</option>
+                                <option value="changed_mind">Changed My Mind</option>
+                                <option value="better_price">Found Better Price</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
 
-                <div class="space-y-4">
-                    <div>
-                        <label for="returnReason" class="block text-sm font-medium text-gray-700 mb-2">
-                            Reason for Return <span class="text-red-500">*</span>
-                        </label>
-                        <select id="returnReason"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
-                            <option value="">Select a reason</option>
-                            <option value="product_damaged">Product Damaged</option>
-                            <option value="wrong_product">Wrong Product Delivered</option>
-                            <option value="defective">Defective/Not Working</option>
-                            <option value="quality_issue">Quality Not as Expected</option>
-                            <option value="size_issue">Size/Fit Issue</option>
-                            <option value="changed_mind">Changed My Mind</option>
-                            <option value="better_price">Found Better Price</option>
-                            <option value="other">Other</option>
-                        </select>
-                    </div>
+                        <div>
+                            <label for="returnDescription" class="block text-sm font-medium text-gray-700 mb-2">
+                                Additional Details (Optional)
+                            </label>
+                            <textarea id="returnDescription" rows="3" maxlength="500"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm resize-none"
+                                placeholder="Please provide more details about your return..."></textarea>
+                            <p class="text-xs text-gray-500 mt-1">Maximum 500 characters</p>
+                        </div>
 
-                    <div>
-                        <label for="returnDescription" class="block text-sm font-medium text-gray-700 mb-2">
-                            Additional Details (Optional)
-                        </label>
-                        <textarea id="returnDescription" rows="3" maxlength="500"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm resize-none"
-                            placeholder="Please provide more details about your return..."></textarea>
-                        <p class="text-xs text-gray-500 mt-1">Maximum 500 characters</p>
-                    </div>
+                        <div class="bg-amber-50 border border-amber-200 rounded-lg p-3">
+                            <p class="text-xs text-amber-800">
+                                <strong>Time Remaining:</strong> {{ return_days_left }} day{{ return_days_left|pluralize }} left to return this order
+                            </p>
+                        </div>
 
-                    <div class="bg-amber-50 border border-amber-200 rounded-lg p-3">
-                        <p class="text-xs text-amber-800">
-                            <strong>Time Remaining:</strong> {{ return_days_left }} day{{ return_days_left|pluralize }}
-                            left to return this order
-                        </p>
-                    </div>
+                        <button onclick="openReturnModal()"
+                            class="w-full bg-red-600 hover:bg-red-700 text-white font-medium py-2.5 px-4 rounded-lg transition duration-200 flex items-center justify-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/>
+                            </svg>
+                            Return Entire Order
+                        </button>
 
-                    <button onclick="openReturnModal()"
-                        class="w-full bg-red-600 hover:bg-red-700 text-white font-medium py-2.5 px-4 rounded-lg transition duration-200 flex items-center justify-center gap-2">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
-                        </svg>
-                        Return Entire Order
-                    </button>
-
-                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                        <p class="text-xs text-blue-800">
-                            <strong>Return Policy:</strong> Refund will be credited to your wallet after admin approval.
-                        </p>
+                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                            <p class="text-xs text-blue-800">
+                                <strong>Return Policy:</strong> Refund will be credited to your wallet after admin approval.
+                            </p>
+                        </div>
                     </div>
                 </div>
-            </div>
-            {% endif %}
+                {% endif %}
             {% endif %}
         </div>
     </div>
@@ -311,16 +461,13 @@
         <div class="flex items-center gap-3 mb-4">
             <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
                 <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
                 </svg>
             </div>
             <h3 class="text-xl font-semibold text-gray-900">Confirm Return Request</h3>
         </div>
-
         <div class="mb-6">
             <p class="text-gray-600 mb-4">Are you sure you want to return this entire order?</p>
-
             <div class="bg-gray-50 rounded-lg p-4 space-y-2 text-sm">
                 <div class="flex justify-between">
                     <span class="text-gray-600">Order Number:</span>
@@ -335,14 +482,12 @@
                     <span class="font-medium text-green-600">₹{{ order.total_amount|floatformat:2 }}</span>
                 </div>
             </div>
-
             <div class="mt-4 bg-yellow-50 border border-yellow-200 rounded-lg p-3">
                 <p class="text-xs text-yellow-800">
                     <strong>Note:</strong> Refund will be credited to your wallet after admin approval.
                 </p>
             </div>
         </div>
-
         <div class="flex gap-3">
             <button onclick="closeReturnModal()"
                 class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2.5 px-4 rounded-lg transition duration-200">
@@ -360,9 +505,7 @@
 <div id="returnItemModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
     <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
         <h3 class="text-lg font-semibold text-gray-900 mb-4">Return Item</h3>
-        
         <p class="text-gray-600 mb-4">Item: <strong id="returnItemName"></strong></p>
-        
         <div class="mb-4">
             <label class="block text-sm font-medium text-gray-700 mb-2">Reason for Return *</label>
             <select id="returnItemReason"
@@ -378,20 +521,17 @@
                 <option value="other">Other</option>
             </select>
         </div>
-        
         <div class="mb-4">
             <label class="block text-sm font-medium text-gray-700 mb-2">Additional Details (Optional)</label>
             <textarea id="returnItemDescription" rows="3" maxlength="500"
                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm resize-none"
                 placeholder="Please provide more details..."></textarea>
         </div>
-        
         <div class="bg-green-50 border border-green-200 rounded-lg p-3 mb-4">
             <p class="text-xs text-green-800">
                 <strong>✓ Instant Refund:</strong> ₹<span id="returnItemAmount"></span> will be credited to your wallet immediately
             </p>
         </div>
-        
         <div class="flex gap-3">
             <button type="button" onclick="closeReturnItemModal()"
                 class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
@@ -464,7 +604,6 @@
     function openCancelOrderModal() {
         document.getElementById('cancelOrderModal').classList.remove('hidden');
     }
-
     function closeCancelOrderModal() {
         document.getElementById('cancelOrderModal').classList.add('hidden');
         document.getElementById('cancelOrderReason').value = '';
@@ -473,35 +612,18 @@
     document.getElementById('cancelOrderForm').addEventListener('submit', async function (e) {
         e.preventDefault();
         const reason = document.getElementById('cancelOrderReason').value;
-        if (!reason) {
-            alert('Please select a reason for cancellation.');
-            return;
-        }
-
+        if (!reason) { alert('Please select a reason for cancellation.'); return; }
         const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-
         try {
             const response = await fetch('{% url "cancel_order" order.order_number %}', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': csrfToken
-                },
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
                 body: JSON.stringify({ reason: reason })
             });
-
             const data = await response.json();
-
-            if (data.success) {
-                window.location.href = data.redirect_url;
-            } else {
-                alert(data.message);
-                closeCancelOrderModal();
-            }
-        } catch (error) {
-            alert('Error cancelling order. Please try again.');
-            closeCancelOrderModal();
-        }
+            if (data.success) { window.location.href = data.redirect_url; }
+            else { alert(data.message); closeCancelOrderModal(); }
+        } catch (error) { alert('Error cancelling order. Please try again.'); closeCancelOrderModal(); }
     });
 
     function openCancelItemModal(itemId, itemName) {
@@ -509,7 +631,6 @@
         document.getElementById('itemName').textContent = itemName;
         document.getElementById('cancelItemModal').classList.remove('hidden');
     }
-
     function closeCancelItemModal() {
         document.getElementById('cancelItemModal').classList.add('hidden');
         currentItemId = null;
@@ -518,49 +639,28 @@
     async function confirmCancelItem() {
         if (!currentItemId) return;
         const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-
         try {
             const url = `/orders/{{ order.order_number }}/item/${currentItemId}/cancel/`;
             const response = await fetch(url, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': csrfToken
-                }
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken }
             });
-
             const data = await response.json();
-
             if (data.success) {
-                if (data.order_cancelled) {
-                    window.location.href = '{% url "order" %}';
-                } else {
-                    location.reload();
-                }
-            } else {
-                alert(data.message);
-                closeCancelItemModal();
-            }
-        } catch (error) {
-            alert('Error cancelling item. Please try again.');
-            closeCancelItemModal();
-        }
+                if (data.order_cancelled) { window.location.href = '{% url "order" %}'; }
+                else { location.reload(); }
+            } else { alert(data.message); closeCancelItemModal(); }
+        } catch (error) { alert('Error cancelling item. Please try again.'); closeCancelItemModal(); }
     }
 
     function openReturnModal() {
         const reason = document.getElementById('returnReason').value;
-        if (!reason) {
-            alert('Please select a reason for return.');
-            return;
-        }
-
+        if (!reason) { alert('Please select a reason for return.'); return; }
         const reasonSelect = document.getElementById('returnReason');
         const reasonText = reasonSelect.options[reasonSelect.selectedIndex].text;
         document.getElementById('modalReturnReason').textContent = reasonText;
-
         document.getElementById('returnModal').classList.remove('hidden');
     }
-
     function closeReturnModal() {
         document.getElementById('returnModal').classList.add('hidden');
     }
@@ -568,41 +668,18 @@
     async function confirmReturn() {
         const reason = document.getElementById('returnReason').value;
         const description = document.getElementById('returnDescription').value;
-
-        if (!reason) {
-            alert('Please select a reason for return.');
-            closeReturnModal();
-            return;
-        }
-
+        if (!reason) { alert('Please select a reason for return.'); closeReturnModal(); return; }
         const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-
         try {
             const response = await fetch('{% url "request_return" order.order_number %}', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': csrfToken
-                },
-                body: JSON.stringify({
-                    reason: reason,
-                    description: description
-                })
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+                body: JSON.stringify({ reason: reason, description: description })
             });
-
             const data = await response.json();
-
-            if (data.success) {
-                alert(data.message);
-                window.location.href = data.redirect_url;
-            } else {
-                alert(data.message);
-                closeReturnModal();
-            }
-        } catch (error) {
-            alert('Error submitting return request. Please try again.');
-            closeReturnModal();
-        }
+            if (data.success) { alert(data.message); window.location.href = data.redirect_url; }
+            else { alert(data.message); closeReturnModal(); }
+        } catch (error) { alert('Error submitting return request. Please try again.'); closeReturnModal(); }
     }
 
     function openReturnItemModal(itemId, itemName, itemAmount) {
@@ -611,7 +688,6 @@
         document.getElementById('returnItemAmount').textContent = itemAmount.toFixed(2);
         document.getElementById('returnItemModal').classList.remove('hidden');
     }
-
     function closeReturnItemModal() {
         document.getElementById('returnItemModal').classList.add('hidden');
         document.getElementById('returnItemReason').value = '';
@@ -621,52 +697,29 @@
 
     async function confirmReturnItem() {
         if (!currentReturnItemId) return;
-
         const reason = document.getElementById('returnItemReason').value;
         const description = document.getElementById('returnItemDescription').value;
-
-        if (!reason) {
-            alert('Please select a reason for return.');
-            return;
-        }
-
+        if (!reason) { alert('Please select a reason for return.'); return; }
         const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-
         try {
             const url = `/orders/{{ order.order_number }}/item/${currentReturnItemId}/return/`;
-
             const response = await fetch(url, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': csrfToken
-                },
-                body: JSON.stringify({
-                    reason: reason,
-                    description: description
-                })
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+                body: JSON.stringify({ reason: reason, description: description })
             });
-
             const data = await response.json();
-
-            if (data.success) {
-                alert(data.message);
-                location.reload();
-            } else {
-                alert(data.message);
-                closeReturnItemModal();
-            }
-        } catch (error) {
-            alert('Error submitting return request. Please try again.');
-            closeReturnItemModal();
-        }
+            if (data.success) { alert(data.message); location.reload(); }
+            else { alert(data.message); closeReturnItemModal(); }
+        } catch (error) { alert('Error submitting return request. Please try again.'); closeReturnItemModal(); }
     }
 
     // Close modals when clicking outside
     ['cancelOrderModal', 'cancelItemModal', 'returnModal', 'returnItemModal'].forEach(modalId => {
         document.getElementById(modalId).addEventListener('click', function (e) {
             if (e.target === this) {
-                eval(`close${modalId.charAt(0).toUpperCase() + modalId.slice(1, -5)}Modal()`);
+                const name = modalId.charAt(0).toUpperCase() + modalId.slice(1, -5);
+                window[`close${name}Modal`]?.() || eval(`close${name}Modal()`);
             }
         });
     });
@@ -681,23 +734,12 @@
         }
     });
 
-    // Character limit for textarea
-    const returnDescription = document.getElementById('returnDescription');
-    if (returnDescription) {
-        returnDescription.addEventListener('input', function (e) {
-            if (e.target.value.length > 500) {
-                e.target.value = e.target.value.substring(0, 500);
-            }
+    // Character limit for textareas
+    ['returnDescription', 'returnItemDescription'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener('input', function (e) {
+            if (e.target.value.length > 500) e.target.value = e.target.value.substring(0, 500);
         });
-    }
-
-    const returnItemDescription = document.getElementById('returnItemDescription');
-    if (returnItemDescription) {
-        returnItemDescription.addEventListener('input', function (e) {
-            if (e.target.value.length > 500) {
-                e.target.value = e.target.value.substring(0, 500);
-            }
-        });
-    }
+    });
 </script>
 {% endblock %}
