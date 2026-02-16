@@ -488,31 +488,23 @@ def download_invoice(request, order_number):
 
 @login_required
 def generate_pdf(request, order_number):
-    """Generate and download a pixel-perfect PDF invoice."""
-
+    """Generate and download PDF invoice"""
     order = get_object_or_404(Order, order_number=order_number, user=request.user)
-
+    
     context = {
         'order': order,
         'order_items': order.items.all(),
         'delivery_address': order.delivery_address,
     }
-
-    html_string = render_to_string(
-        'user_side/profile/invoice_template.html',
-        context,
-        request=request,   
-    )
-    pdf_bytes = HTML(
-        string=html_string,
-        base_url=request.build_absolute_uri('/')
-    ).write_pdf()
-
+    
+    html_string = render_to_string('user_side/profile/invoice_template.html', context)
+    html = HTML(string=html_string)
+    result = html.write_pdf()
+    
     response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = (
-        f'attachment; filename="Invoice_{order_number}.pdf"'
-    )
-    response.write(pdf_bytes)
+    response['Content-Disposition'] = f'attachment; filename="Invoice_{order_number}.pdf"'
+    response.write(result)
+    
     return response
 
     
