@@ -4,71 +4,76 @@
 
 {% block content %}
 <div class="max-w-7xl mx-auto px-4 py-6">
+
     <!-- Breadcrumb -->
-    <div class="flex items-center space-x-2 text-sm text-gray-600 mb-6">
-        <a href="{% url 'profile' %}" class="hover:text-blue-600">Home</a>
-        <span>></span>
-        <a href="{% url 'order' %}" class="hover:text-blue-600">Orders</a>
-        <span>></span>
-        <span class="text-gray-900 font-medium">{{ order.order_number }}</span>
+    <div class="flex items-center space-x-2 text-sm text-gray-500 mb-6">
+        <a href="{% url 'profile' %}" class="hover:text-blue-600 transition-colors">Home</a>
+        <svg class="w-3 h-3 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M7.293 4.707a1 1 0 011.414 0l5 5a1 1 0 010 1.414l-5 5a1 1 0 01-1.414-1.414L11.586 10 7.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
+        </svg>
+        <a href="{% url 'order' %}" class="hover:text-blue-600 transition-colors">Orders</a>
+        <svg class="w-3 h-3 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M7.293 4.707a1 1 0 011.414 0l5 5a1 1 0 010 1.414l-5 5a1 1 0 01-1.414-1.414L11.586 10 7.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
+        </svg>
+        <span class="text-gray-800 font-medium">{{ order.order_number }}</span>
     </div>
 
-    <!-- Order Header -->
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-        <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+    <!-- ORDER HEADER CARD -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
-                <h1 class="text-2xl font-bold text-gray-900 mb-2">Order #{{ order.order_number }}</h1>
-                <p class="text-gray-600">Placed on {{ order.created_at|date:"d M Y" }}</p>
+                <h1 class="text-2xl font-bold text-gray-900">Order #{{ order.order_number }}</h1>
+                <p class="text-sm text-gray-500 mt-1">Placed on {{ order.created_at|date:"d M Y" }}</p>
 
-                {% if order.order_status == 'returned_checking' %}
-                <div class="mt-2">
-                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-orange-100 text-orange-800">
-                        <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                <div class="flex flex-wrap gap-2 mt-3">
+                    {% if order.order_status == 'returned_checking' %}
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium bg-orange-100 text-orange-700 border border-orange-200">
+                        <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/>
                         </svg>
-                        Return Request Under Review
+                        Return Under Review
                     </span>
-                </div>
-                {% endif %}
+                    {% endif %}
 
-                {% if order.order_status == 'cancelled' %}
-                <div class="mt-2">
-                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
-                        <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                    {% if order.order_status == 'cancelled' %}
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-700 border border-red-200">
+                        <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
                         </svg>
                         Order Cancelled
                     </span>
-                </div>
-                {% if order.cancellation_reason %}
-                <p class="text-sm text-gray-500 mt-1 ml-1">Reason: {{ order.cancellation_reason }}</p>
-                {% endif %}
-                {% endif %}
+                    {% if order.cancellation_reason %}
+                    <span class="text-sm text-gray-500 mt-1">Reason: {{ order.cancellation_reason }}</span>
+                    {% endif %}
+                    {% endif %}
 
-                {% if order.order_status == 'returned' %}
-                <div class="mt-2">
-                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800">
-                        <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                    {% if order.order_status == 'returned' %}
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-700 border border-purple-200">
+                        <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd" d="M7.707 3.293a1 1 0 010 1.414L5.414 7H11a7 7 0 017 7v2a1 1 0 11-2 0v-2a5 5 0 00-5-5H5.414l2.293 2.293a1 1 0 11-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd"/>
                         </svg>
                         Order Returned
                     </span>
+                    {% endif %}
                 </div>
-                {% endif %}
             </div>
 
-            <div class="flex flex-col sm:flex-row gap-3 mt-4 md:mt-0">
+            <div class="flex flex-wrap gap-3">
                 {% if can_download_invoice %}
                 <a href="{% url 'download_invoice' order.order_number %}"
-                    class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-center">
+                    class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
                     Download Invoice
                 </a>
                 {% endif %}
-
-                <!-- RETRY PAYMENT BUTTON: shows when payment method is online and payment failed -->
                 {% if can_cancel %}
                 <button onclick="openCancelOrderModal()"
-                    class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
+                    class="inline-flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm font-medium">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
                     Cancel Order
                 </button>
                 {% endif %}
@@ -76,52 +81,54 @@
         </div>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <!-- Main Content -->
-        <div class="lg:col-span-2 space-y-6">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
 
-            <!-- ✅ ACTIVE ORDER ITEMS -->
-            {% with active_items=order.items.all %}
-            {% if active_items %}
-            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <h2 class="text-lg font-semibold text-gray-900 mb-6">Order Items</h2>
+        <!-- LEFT: Active Order Items -->
+        <div class="lg:col-span-2">
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <h2 class="text-lg font-semibold text-gray-900 mb-6 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+                    </svg>
+                    Order Items
+                </h2>
 
                 {% for item in order.items.all %}
                 {% if not item.is_cancelled and not item.is_returned %}
-                <div class="flex items-start space-x-4 {% if not forloop.last %}pb-6 border-b border-gray-200 mb-6{% endif %}"
-                    id="item-{{ item.id }}">
-                    <div class="w-20 h-20 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0">
+                <div class="flex items-start gap-4 {% if not forloop.last %}pb-6 border-b border-gray-100 mb-6{% endif %}" id="item-{{ item.id }}">
+                    <!-- Product Image -->
+                    <div class="w-20 h-20 bg-gray-50 rounded-xl flex items-center justify-center overflow-hidden flex-shrink-0 border border-gray-100">
                         {% if item.variant.images.first %}
-                        <img src="{{ item.variant.images.first.image.url }}" alt="{{ item.product_name }}"
-                            class="w-full h-full object-cover">
+                        <img src="{{ item.variant.images.first.image.url }}" alt="{{ item.product_name }}" class="w-full h-full object-cover">
                         {% else %}
-                        <svg class="w-10 h-10 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                        <svg class="w-9 h-9 text-gray-300" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd"/>
                         </svg>
                         {% endif %}
                     </div>
+                    <!-- Product Details -->
                     <div class="flex-1 min-w-0">
-                        <h3 class="font-medium text-gray-900 mb-1">{{ item.product_name }}</h3>
-                        <p class="text-sm text-gray-600 mb-1">Color: {{ item.color_name }}</p>
-                        <div class="flex items-center space-x-2 mb-1">
-                            <span class="inline-block w-4 h-4 rounded border border-gray-300"
-                                style="background-color: {{ item.color_code }};"></span>
-                            <span class="text-xs text-gray-500">{{ item.color_code }}</span>
+                        <h3 class="font-semibold text-gray-900 mb-1 text-sm leading-tight">{{ item.product_name }}</h3>
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="inline-block w-3.5 h-3.5 rounded-full border border-gray-300 flex-shrink-0" style="background-color: {{ item.color_code }};"></span>
+                            <span class="text-xs text-gray-500">{{ item.color_name }}</span>
+                            <span class="text-gray-300">·</span>
+                            <span class="text-xs text-gray-400">{{ item.color_code }}</span>
                         </div>
-                        <p class="text-sm text-gray-600 mb-2">Quantity: {{ item.quantity }}</p>
-                        <div class="flex items-center justify-between">
-                            <span class="text-lg font-semibold text-gray-900">₹{{ item.subtotal|floatformat:2 }}</span>
+                        <p class="text-xs text-gray-500 mb-3">Qty: <span class="font-medium text-gray-700">{{ item.quantity }}</span></p>
+                        <div class="flex items-center justify-between flex-wrap gap-2">
+                            <span class="text-base font-bold text-gray-900">₹{{ item.subtotal|floatformat:2 }}</span>
                             <div class="flex gap-2">
                                 {% if active_items_count > 1 %}
                                     {% if can_cancel %}
                                     <button onclick="openCancelItemModal({{ item.id }}, '{{ item.product_name|escapejs }}')"
-                                        class="px-3 py-1 text-sm text-red-600 border border-red-600 rounded hover:bg-red-50 transition-colors">
+                                        class="px-3 py-1.5 text-xs text-red-600 border border-red-200 rounded-lg hover:bg-red-50 hover:border-red-400 transition-colors font-medium">
                                         Cancel Item
                                     </button>
                                     {% endif %}
                                     {% if can_return %}
                                     <button onclick="openReturnItemModal({{ item.id }}, '{{ item.product_name|escapejs }}', {{ item.subtotal }})"
-                                        class="px-3 py-1 text-sm text-orange-600 border border-orange-600 rounded hover:bg-orange-50 transition-colors">
+                                        class="px-3 py-1.5 text-xs text-orange-600 border border-orange-200 rounded-lg hover:bg-orange-50 hover:border-orange-400 transition-colors font-medium">
                                         Return Item
                                     </button>
                                     {% endif %}
@@ -134,367 +141,442 @@
                 {% endfor %}
 
                 {% if order.order_status == 'returned_checking' %}
-                <div class="text-center py-8">
-                    <svg class="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
-                    </svg>
-                    <p class="text-gray-500 font-medium">All items have been returned</p>
+                <div class="text-center py-10">
+                    <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
+                        </svg>
+                    </div>
+                    <p class="text-gray-600 font-medium">All items have been returned</p>
                     <p class="text-sm text-gray-400 mt-1">Your return request is being reviewed</p>
                 </div>
                 {% endif %}
             </div>
-            {% endif %}
-            {% endwith %}
-
-            <!-- ✅ CANCELLED ITEMS SECTION -->
-            {% with cancelled_items=order.items.all %}
-            {% for item in order.items.all %}{% if item.is_cancelled %}{% if forloop.first %}
-            <div class="bg-white rounded-lg shadow-sm border border-red-100 p-6">
-                <div class="flex items-center gap-2 mb-5">
-                    <div class="w-2 h-2 rounded-full bg-red-500"></div>
-                    <h2 class="text-lg font-semibold text-red-700">Cancelled Items</h2>
-                </div>
-            {% endif %}
-                <div class="flex items-start space-x-4 pb-5 border-b border-red-50 last:border-0 last:pb-0 mb-5 last:mb-0 opacity-70">
-                    <div class="w-20 h-20 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0 relative">
-                        {% if item.variant.images.first %}
-                        <img src="{{ item.variant.images.first.image.url }}" alt="{{ item.product_name }}"
-                            class="w-full h-full object-cover grayscale">
-                        {% else %}
-                        <svg class="w-10 h-10 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd"/>
-                        </svg>
-                        {% endif %}
-                        <!-- Cancelled overlay badge -->
-                        <div class="absolute inset-0 bg-red-500 bg-opacity-20 flex items-center justify-center rounded-lg">
-                            <span class="text-red-700 text-xs font-bold bg-white bg-opacity-80 px-1 py-0.5 rounded">CANCELLED</span>
-                        </div>
-                    </div>
-                    <div class="flex-1 min-w-0">
-                        <h3 class="font-medium text-gray-700 mb-1">{{ item.product_name }}</h3>
-                        <p class="text-sm text-gray-500 mb-1">Color: {{ item.color_name }}</p>
-                        <div class="flex items-center space-x-2 mb-1">
-                            <span class="inline-block w-4 h-4 rounded border border-gray-300 opacity-50"
-                                style="background-color: {{ item.color_code }};"></span>
-                            <span class="text-xs text-gray-400">{{ item.color_code }}</span>
-                        </div>
-                        <p class="text-sm text-gray-500 mb-2">Quantity: {{ item.quantity }}</p>
-                        <div class="flex items-center justify-between">
-                            <span class="text-base font-semibold text-gray-500 line-through">₹{{ item.subtotal|floatformat:2 }}</span>
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700">
-                                <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
-                                </svg>
-                                Item Cancelled
-                            </span>
-                        </div>
-                        {% if item.cancelled_at %}
-                        <p class="text-xs text-gray-400 mt-1">Cancelled on {{ item.cancelled_at|date:"d M Y, h:i A" }}</p>
-                        {% endif %}
-                    </div>
-                </div>
-            {% if forloop.last %}</div>{% endif %}
-            {% endif %}{% endfor %}
-            {% endwith %}
-
-            <!-- ✅ RETURNED ITEMS SECTION -->
-            {% for item in order.items.all %}{% if item.is_returned %}{% if forloop.first %}
-            <div class="bg-white rounded-lg shadow-sm border border-purple-100 p-6">
-                <div class="flex items-center gap-2 mb-5">
-                    <div class="w-2 h-2 rounded-full bg-purple-500"></div>
-                    <h2 class="text-lg font-semibold text-purple-700">Returned Items</h2>
-                </div>
-            {% endif %}
-                <div class="flex items-start space-x-4 pb-5 border-b border-purple-50 last:border-0 last:pb-0 mb-5 last:mb-0 opacity-70">
-                    <div class="w-20 h-20 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0 relative">
-                        {% if item.variant.images.first %}
-                        <img src="{{ item.variant.images.first.image.url }}" alt="{{ item.product_name }}"
-                            class="w-full h-full object-cover grayscale">
-                        {% else %}
-                        <svg class="w-10 h-10 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd"/>
-                        </svg>
-                        {% endif %}
-                        <!-- Returned overlay badge -->
-                        <div class="absolute inset-0 bg-purple-500 bg-opacity-20 flex items-center justify-center rounded-lg">
-                            <span class="text-purple-700 text-xs font-bold bg-white bg-opacity-80 px-1 py-0.5 rounded">RETURNED</span>
-                        </div>
-                    </div>
-                    <div class="flex-1 min-w-0">
-                        <h3 class="font-medium text-gray-700 mb-1">{{ item.product_name }}</h3>
-                        <p class="text-sm text-gray-500 mb-1">Color: {{ item.color_name }}</p>
-                        <div class="flex items-center space-x-2 mb-1">
-                            <span class="inline-block w-4 h-4 rounded border border-gray-300 opacity-50"
-                                style="background-color: {{ item.color_code }};"></span>
-                            <span class="text-xs text-gray-400">{{ item.color_code }}</span>
-                        </div>
-                        <p class="text-sm text-gray-500 mb-2">Quantity: {{ item.quantity }}</p>
-                        <div class="flex items-center justify-between flex-wrap gap-2">
-                            <span class="text-base font-semibold text-gray-500">₹{{ item.subtotal|floatformat:2 }}</span>
-                            <div class="flex items-center gap-2 flex-wrap">
-                                <!-- Return status badge -->
-                                {% if item.return_request %}
-                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium
-                                    {% if item.return_request.return_status == 'pending' %}bg-yellow-100 text-yellow-700
-                                    {% elif item.return_request.return_status == 'approved' %}bg-green-100 text-green-700
-                                    {% else %}bg-red-100 text-red-700{% endif %}">
-                                    {% if item.return_request.return_status == 'pending' %}⏳ Return Pending
-                                    {% elif item.return_request.return_status == 'approved' %}✓ Return Approved
-                                    {% else %}✗ Return Rejected{% endif %}
-                                </span>
-                                {% if item.return_request.return_status == 'approved' %}
-                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">
-                                    💰 Refund: ₹{{ item.return_request.refund_amount|floatformat:2 }}
-                                </span>
-                                {% endif %}
-                                {% else %}
-                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-700">
-                                    <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M7.707 3.293a1 1 0 010 1.414L5.414 7H11a7 7 0 017 7v2a1 1 0 11-2 0v-2a5 5 0 00-5-5H5.414l2.293 2.293a1 1 0 11-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                                    </svg>
-                                    Item Returned
-                                </span>
-                                {% endif %}
-                            </div>
-                        </div>
-                        {% if item.returned_at %}
-                        <p class="text-xs text-gray-400 mt-1">Returned on {{ item.returned_at|date:"d M Y, h:i A" }}</p>
-                        {% endif %}
-                        {% if item.return_request and item.return_request.description %}
-                        <p class="text-xs text-gray-400 mt-1">Reason: {{ item.return_request.get_return_reason_display }}</p>
-                        {% endif %}
-                    </div>
-                </div>
-            {% if forloop.last %}</div>{% endif %}
-            {% endif %}{% endfor %}
-
-            <!-- Shipping & Payment Info -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Shipping Address -->
-                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Shipping Address</h3>
-                    {% if order.delivery_address %}
-                    <div class="text-sm text-gray-600 space-y-1">
-                        <p class="font-medium text-gray-900">{{ order.delivery_address.full_name }}</p>
-                        <p>{{ order.delivery_address.flat_house }}</p>
-                        <p>{{ order.delivery_address.area_street }}</p>
-                        {% if order.delivery_address.landmark %}
-                        <p>Landmark: {{ order.delivery_address.landmark }}</p>
-                        {% endif %}
-                        <p>{{ order.delivery_address.town_city }}, {{ order.delivery_address.state }}</p>
-                        <p class="pt-2">Phone: {{ order.delivery_address.phone_number }}</p>
-                    </div>
-                    {% endif %}
-                </div>
-
-                <!-- Payment Info -->
-                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Payment Info</h3>
-                    <div class="space-y-3">
-                        <div class="flex items-center space-x-3">
-                            <div class="w-8 h-8 bg-blue-600 rounded flex items-center justify-center">
-                                <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M4 4a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2H4zm0 2h12v8H4V6z" clip-rule="evenodd"/>
-                                </svg>
-                            </div>
-                            <div>
-                                <p class="font-medium text-gray-900">{{ order.get_payment_method_display }}</p>
-                            </div>
-                        </div>
-                        <div class="pt-2">
-                            <p class="text-sm text-gray-600">Payment Status:</p>
-                            <span class="inline-block mt-1 
-                                {% if order.payment_status == 'paid' %}text-green-600 bg-green-50
-                                {% elif order.payment_status == 'failed' %}text-red-600 bg-red-50
-                                {% elif order.payment_status == 'refunded' %}text-purple-600 bg-purple-50
-                                {% else %}text-yellow-600 bg-yellow-50{% endif %} 
-                                px-3 py-1 rounded-full text-sm font-medium">
-                                {{ order.get_payment_status_display }}
-                            </span>
-                        </div>
-
-                        <!-- ✅ RETRY PAYMENT inline nudge -->
-                        {% if order.payment_method == 'online' and order.payment_status == 'failed' %}
-                        <div class="pt-2 border-t border-gray-100">
-                            <p class="text-xs text-red-600 mb-2">Payment failed. Please retry to confirm your order.</p>
-                            <a href="{% url 'retry_payment' order.id %}"
-                                class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-yellow-500 text-white text-sm font-medium rounded-lg hover:bg-yellow-600 transition-colors">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-                                </svg>
-                                Retry Payment
-                            </a>
-                        </div>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
         </div>
 
-        <!-- Sidebar -->
-        <div class="lg:col-span-1 space-y-6">
-            <!-- Order Summary -->
-            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <h3 class="text-lg font-semibold text-gray-900 mb-6">Order Summary</h3>
+        <!-- RIGHT: Order Summary + Return Entire Order -->
+        <div class="lg:col-span-1 space-y-5">
 
+            <!-- Order Summary Card -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <h3 class="text-base font-semibold text-gray-900 mb-5 flex items-center gap-2">
+                    <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 11h.01M12 11h.01M15 11h.01M4 19h16a2 2 0 002-2V7a2 2 0 00-2-2H4a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                    </svg>
+                    Order Summary
+                </h3>
                 <div class="space-y-3 text-sm">
-                    <div class="flex justify-between">
-                        <span class="text-gray-600">Subtotal</span>
-                        <span class="text-gray-900">₹{{ order.subtotal|floatformat:2 }}</span>
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-500">Subtotal</span>
+                        <span class="text-gray-900 font-medium">₹{{ order.subtotal|floatformat:2 }}</span>
                     </div>
-                    <div class="flex justify-between">
-                        <span class="text-gray-600">Delivery Charges</span>
-                        <span class="{% if order.subtotal >= 500 %}text-green-600{% else %}text-gray-900{% endif %}">
-                            {% if order.subtotal >= 500 %}Free{% else %}₹40{% endif %}
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-500">Delivery Charges</span>
+                        <span class="{% if order.subtotal >= 500 %}text-green-600 font-medium{% else %}text-gray-900 font-medium{% endif %}">
+                            {% if order.subtotal >= 500 %}
+                            <span class="inline-flex items-center gap-1">
+                                <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></path></svg>
+                                Free
+                            </span>
+                            {% else %}₹40{% endif %}
                         </span>
                     </div>
-
-                    <div class="border-t border-gray-200 pt-3">
+                    <div class="border-t border-gray-100 pt-3 mt-3">
                         <div class="flex justify-between items-center">
-                            <span class="text-lg font-semibold text-gray-900">Total</span>
-                            <span class="text-lg font-bold text-gray-900">₹{{ order.total_amount|floatformat:2 }}</span>
+                            <span class="font-semibold text-gray-900">Total</span>
+                            <span class="text-xl font-bold text-gray-900">₹{{ order.total_amount|floatformat:2 }}</span>
                         </div>
                     </div>
-                    <p class="text-xs text-gray-500 mt-2">Inclusive of all taxes and charges</p>
+                    <p class="text-xs text-gray-400">Inclusive of all taxes and charges</p>
                 </div>
             </div>
 
-            <!-- Return Order Section -->
+            <!-- Return Entire Order Section -->
             {% if can_return %}
                 {% if order.return_request %}
-                <!-- Return Request Already Submitted -->
-                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                    <h3 class="text-lg font-semibold text-gray-900 mb-2">Return Status</h3>
-                    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                        <div class="flex items-start gap-3">
-                            <svg class="w-5 h-5 text-yellow-600 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
-                            </svg>
-                            <div class="flex-1">
-                                <p class="text-sm font-medium text-yellow-800 mb-1">
-                                    {% if order.return_request.return_status == 'pending' %}Return Request Under Review
-                                    {% elif order.return_request.return_status == 'approved' %}Return Request Approved
-                                    {% elif order.return_request.return_status == 'rejected' %}Return Request Rejected
-                                    {% endif %}
-                                </p>
-                                <p class="text-xs text-yellow-700 mb-3">
-                                    {% if order.return_request.return_status == 'pending' %}Your return request is being reviewed by our team.
-                                    {% elif order.return_request.return_status == 'approved' %}Your return has been approved. Refund will be processed soon.
-                                    {% elif order.return_request.return_status == 'rejected' %}Unfortunately, your return request was not approved.
-                                    {% endif %}
-                                </p>
-                                <div class="text-xs text-yellow-700 space-y-1 bg-white bg-opacity-50 p-3 rounded">
-                                    <p><strong>Reason:</strong> {{ order.return_request.get_return_reason_display }}</p>
-                                    {% if order.return_request.description %}
-                                    <p><strong>Details:</strong> {{ order.return_request.description }}</p>
-                                    {% endif %}
-                                    <p><strong>Requested on:</strong> {{ order.return_request.requested_at|date:"d M Y, h:i A" }}</p>
-                                    <p><strong>Refund Amount:</strong> ₹{{ order.return_request.refund_amount|floatformat:2 }}</p>
-                                </div>
+                <!-- Return Request Status Card -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <h3 class="text-base font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                        <svg class="w-4 h-4 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/>
+                        </svg>
+                        Return Status
+                    </h3>
+                    <div class="rounded-xl p-4 space-y-3
+                        {% if order.return_request.return_status == 'pending' %}bg-yellow-50 border border-yellow-200
+                        {% elif order.return_request.return_status == 'approved' %}bg-green-50 border border-green-200
+                        {% else %}bg-red-50 border border-red-200{% endif %}">
+                        <div class="flex items-center gap-2">
+                            {% if order.return_request.return_status == 'pending' %}
+                            <div class="w-2 h-2 rounded-full bg-yellow-400 animate-pulse"></div>
+                            <span class="text-sm font-semibold text-yellow-800">Return Request Under Review</span>
+                            {% elif order.return_request.return_status == 'approved' %}
+                            <svg class="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></path></svg>
+                            <span class="text-sm font-semibold text-green-800">Return Approved</span>
+                            {% else %}
+                            <svg class="w-4 h-4 text-red-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/></path></svg>
+                            <span class="text-sm font-semibold text-red-800">Return Rejected</span>
+                            {% endif %}
+                        </div>
+                        <p class="text-xs leading-relaxed
+                            {% if order.return_request.return_status == 'pending' %}text-yellow-700
+                            {% elif order.return_request.return_status == 'approved' %}text-green-700
+                            {% else %}text-red-700{% endif %}">
+                            {% if order.return_request.return_status == 'pending' %}Your return request is being reviewed by our team.
+                            {% elif order.return_request.return_status == 'approved' %}Your return has been approved. Refund will be processed to your wallet soon.
+                            {% elif order.return_request.return_status == 'rejected' %}Unfortunately, your return request was not approved.
+                            {% endif %}
+                        </p>
+                        <div class="bg-white bg-opacity-60 rounded-lg p-3 space-y-1.5 text-xs">
+                            <div class="flex justify-between">
+                                <span class="text-gray-500">Reason:</span>
+                                <span class="font-medium text-gray-700">{{ order.return_request.get_return_reason_display }}</span>
+                            </div>
+                            {% if order.return_request.description %}
+                            <div class="flex justify-between">
+                                <span class="text-gray-500">Details:</span>
+                                <span class="font-medium text-gray-700 text-right max-w-32 truncate">{{ order.return_request.description }}</span>
+                            </div>
+                            {% endif %}
+                            <div class="flex justify-between">
+                                <span class="text-gray-500">Requested:</span>
+                                <span class="font-medium text-gray-700">{{ order.return_request.requested_at|date:"d M Y" }}</span>
+                            </div>
+                            <div class="flex justify-between border-t border-gray-200 pt-1.5 mt-1.5">
+                                <span class="text-gray-500 font-medium">Refund Amount:</span>
+                                <span class="font-bold text-green-700">₹{{ order.return_request.refund_amount|floatformat:2 }}</span>
                             </div>
                         </div>
                     </div>
                 </div>
                 {% else %}
                 <!-- Return Order Form -->
-                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                    <h3 class="text-lg font-semibold text-gray-900 mb-2">Return Entire Order</h3>
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <h3 class="text-base font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                        <svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/>
+                        </svg>
+                        Return Entire Order
+                    </h3>
                     <div class="space-y-4">
                         <div>
-                            <label for="returnReason" class="block text-sm font-medium text-gray-700 mb-2">
+                            <label for="returnReason" class="block text-xs font-medium text-gray-700 mb-1.5">
                                 Reason for Return <span class="text-red-500">*</span>
                             </label>
                             <select id="returnReason"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
+                                class="w-full px-3 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm bg-gray-50 transition-colors">
                                 <option value="">Select a reason</option>
                                 <option value="product_damaged">Product Damaged</option>
                                 <option value="wrong_product">Wrong Product Delivered</option>
-                                <option value="defective">Defective/Not Working</option>
+                                <option value="defective">Defective / Not Working</option>
                                 <option value="quality_issue">Quality Not as Expected</option>
-                                <option value="size_issue">Size/Fit Issue</option>
+                                <option value="size_issue">Size / Fit Issue</option>
                                 <option value="changed_mind">Changed My Mind</option>
                                 <option value="better_price">Found Better Price</option>
                                 <option value="other">Other</option>
                             </select>
                         </div>
-
                         <div>
-                            <label for="returnDescription" class="block text-sm font-medium text-gray-700 mb-2">
-                                Additional Details (Optional)
+                            <label for="returnDescription" class="block text-xs font-medium text-gray-700 mb-1.5">
+                                Additional Details <span class="text-gray-400">(Optional)</span>
                             </label>
                             <textarea id="returnDescription" rows="3" maxlength="500"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm resize-none"
-                                placeholder="Please provide more details about your return..."></textarea>
-                            <p class="text-xs text-gray-500 mt-1">Maximum 500 characters</p>
+                                class="w-full px-3 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm resize-none bg-gray-50 transition-colors"
+                                placeholder="Describe the issue in more detail..."></textarea>
+                            <p class="text-xs text-gray-400 mt-1">Max 500 characters</p>
                         </div>
-
-                        <div class="bg-amber-50 border border-amber-200 rounded-lg p-3">
-                            <p class="text-xs text-amber-800">
-                                <strong>Time Remaining:</strong> {{ return_days_left }} day{{ return_days_left|pluralize }} left to return this order
-                            </p>
+                        <div class="flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                            <svg class="w-4 h-4 text-amber-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/>
+                            </svg>
+                            <p class="text-xs text-amber-800"><strong>{{ return_days_left }} day{{ return_days_left|pluralize }}</strong> left to return this order</p>
                         </div>
-
                         <button onclick="openReturnModal()"
-                            class="w-full bg-red-600 hover:bg-red-700 text-white font-medium py-2.5 px-4 rounded-lg transition duration-200 flex items-center justify-center gap-2">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            class="w-full bg-red-600 hover:bg-red-700 active:bg-red-800 text-white font-semibold py-2.5 px-4 rounded-lg transition-colors flex items-center justify-center gap-2 text-sm">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/>
                             </svg>
-                            Return Entire Order
+                            Request Return
                         </button>
-
-                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                            <p class="text-xs text-blue-800">
-                                <strong>Return Policy:</strong> Refund will be credited to your wallet after admin approval.
-                            </p>
+                        <div class="flex items-start gap-2 bg-blue-50 border border-blue-200 rounded-lg px-3 py-2">
+                            <svg class="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                            </svg>
+                            <p class="text-xs text-blue-800"><strong>Return Policy:</strong> Refund will be credited to your wallet after admin approval.</p>
                         </div>
                     </div>
                 </div>
                 {% endif %}
             {% endif %}
+
         </div>
+        <!-- END RIGHT SIDEBAR -->
     </div>
+
+
+
+    <!-- ═══════════════════════════════════════════
+         SECTION 2: CANCELLED ITEMS (Full Width, below main grid)
+    ═══════════════════════════════════════════ -->
+    {% for item in order.items.all %}{% if item.is_cancelled %}{% if forloop.first %}
+    <div class="bg-white rounded-xl shadow-sm border border-red-200 p-6 mb-6">
+        <div class="flex items-center gap-3 mb-6">
+            <div class="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
+                <svg class="w-4 h-4 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                </svg>
+            </div>
+            <h2 class="text-base font-semibold text-red-700">Cancelled Items</h2>
+            <span class="ml-auto text-xs text-red-500 bg-red-50 border border-red-200 px-2.5 py-1 rounded-full font-medium">Removed from order</span>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+    {% endif %}
+
+        <!-- Cancelled Item Card -->
+        <div class="flex items-start gap-3 p-4 bg-red-50 rounded-xl border border-red-100">
+            <div class="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0 relative">
+                {% if item.variant.images.first %}
+                <img src="{{ item.variant.images.first.image.url }}" alt="{{ item.product_name }}" class="w-full h-full object-cover grayscale opacity-80">
+                {% else %}
+                <svg class="w-8 h-8 text-gray-300" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd"/>
+                </svg>
+                {% endif %}
+                <div class="absolute inset-0 bg-red-600 bg-opacity-15 rounded-lg flex items-end justify-center pb-1">
+                    <span class="text-red-700 text-[9px] font-bold bg-white bg-opacity-90 px-1.5 py-0.5 rounded">CANCELLED</span>
+                </div>
+            </div>
+            <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium text-gray-600 leading-tight mb-1 truncate">{{ item.product_name }}</p>
+                <div class="flex items-center gap-1.5 mb-1">
+                    <span class="inline-block w-3 h-3 rounded-full border border-gray-300 opacity-60 flex-shrink-0" style="background-color: {{ item.color_code }};"></span>
+                    <span class="text-xs text-gray-400">{{ item.color_name }}</span>
+                </div>
+                <p class="text-xs text-gray-400 mb-2">Qty: {{ item.quantity }}</p>
+                <div class="flex items-center justify-between flex-wrap gap-1">
+                    <span class="text-sm font-semibold text-gray-400 line-through">₹{{ item.subtotal|floatformat:2 }}</span>
+                    {% if item.cancelled_at %}
+                    <span class="text-xs text-gray-400">{{ item.cancelled_at|date:"d M Y" }}</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+    {% if forloop.last %}
+        </div><!-- end grid -->
+    </div><!-- end cancelled items box -->
+    {% endif %}
+    {% endif %}{% endfor %}
+
+
+    <!-- ═══════════════════════════════════════════
+         SECTION 3: RETURNED ITEMS (Full Width, below cancelled)
+    ═══════════════════════════════════════════ -->
+    {% for item in order.items.all %}{% if item.is_returned %}{% if forloop.first %}
+    <div class="bg-white rounded-xl shadow-sm border border-purple-200 p-6 mb-6">
+        <div class="flex items-center gap-3 mb-6">
+            <div class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+                <svg class="w-4 h-4 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M7.707 3.293a1 1 0 010 1.414L5.414 7H11a7 7 0 017 7v2a1 1 0 11-2 0v-2a5 5 0 00-5-5H5.414l2.293 2.293a1 1 0 11-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                </svg>
+            </div>
+            <h2 class="text-base font-semibold text-purple-700">Returned Items</h2>
+            <span class="ml-auto text-xs text-purple-500 bg-purple-50 border border-purple-200 px-2.5 py-1 rounded-full font-medium">Return in progress</span>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+    {% endif %}
+
+        <!-- Returned Item Card -->
+        <div class="flex items-start gap-3 p-4 bg-purple-50 rounded-xl border border-purple-100">
+            <div class="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0 relative">
+                {% if item.variant.images.first %}
+                <img src="{{ item.variant.images.first.image.url }}" alt="{{ item.product_name }}" class="w-full h-full object-cover grayscale opacity-80">
+                {% else %}
+                <svg class="w-8 h-8 text-gray-300" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd"/>
+                </svg>
+                {% endif %}
+                <div class="absolute inset-0 bg-purple-600 bg-opacity-15 rounded-lg flex items-end justify-center pb-1">
+                    <span class="text-purple-700 text-[9px] font-bold bg-white bg-opacity-90 px-1.5 py-0.5 rounded">RETURNED</span>
+                </div>
+            </div>
+            <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium text-gray-600 leading-tight mb-1 truncate">{{ item.product_name }}</p>
+                <div class="flex items-center gap-1.5 mb-1">
+                    <span class="inline-block w-3 h-3 rounded-full border border-gray-300 opacity-60 flex-shrink-0" style="background-color: {{ item.color_code }};"></span>
+                    <span class="text-xs text-gray-400">{{ item.color_name }}</span>
+                </div>
+                <p class="text-xs text-gray-400 mb-2">Qty: {{ item.quantity }}</p>
+                <div class="flex items-center justify-between flex-wrap gap-1 mb-2">
+                    <span class="text-sm font-semibold text-gray-500">₹{{ item.subtotal|floatformat:2 }}</span>
+                    {% if item.returned_at %}
+                    <span class="text-xs text-gray-400">{{ item.returned_at|date:"d M Y" }}</span>
+                    {% endif %}
+                </div>
+                <!-- Return Status Badge -->
+                {% if item.return_request %}
+                <div class="flex flex-wrap gap-1.5">
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium
+                        {% if item.return_request.return_status == 'pending' %}bg-yellow-100 text-yellow-700
+                        {% elif item.return_request.return_status == 'approved' %}bg-green-100 text-green-700
+                        {% else %}bg-red-100 text-red-700{% endif %}">
+                        {% if item.return_request.return_status == 'pending' %}⏳ Pending
+                        {% elif item.return_request.return_status == 'approved' %}✓ Approved
+                        {% else %}✗ Rejected{% endif %}
+                    </span>
+                    {% if item.return_request.return_status == 'approved' %}
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                        💰 ₹{{ item.return_request.refund_amount|floatformat:2 }}
+                    </span>
+                    {% endif %}
+                </div>
+                {% if item.return_request.description %}
+                <p class="text-xs text-gray-400 mt-1 truncate">{{ item.return_request.get_return_reason_display }}</p>
+                {% endif %}
+                {% else %}
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-700">
+                    ↩ Item Returned
+                </span>
+                {% endif %}
+            </div>
+        </div>
+
+    {% if forloop.last %}
+        </div><!-- end grid -->
+    </div><!-- end returned items box -->
+    {% endif %}
+    {% endif %}{% endfor %}
+
+
+    <!-- ═══════════════════════════════════════════
+         SECTION 4: SHIPPING ADDRESS + PAYMENT INFO (Bottom)
+    ═══════════════════════════════════════════ -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+        <!-- Shipping Address -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <h3 class="text-base font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+                Shipping Address
+            </h3>
+            {% if order.delivery_address %}
+            <div class="text-sm text-gray-600 space-y-1 bg-gray-50 rounded-lg p-4">
+                <p class="font-semibold text-gray-900 text-base">{{ order.delivery_address.full_name }}</p>
+                <p class="text-gray-600 mt-2">{{ order.delivery_address.flat_house }}</p>
+                <p class="text-gray-600">{{ order.delivery_address.area_street }}</p>
+                {% if order.delivery_address.landmark %}
+                <p class="text-gray-500 text-xs">Landmark: {{ order.delivery_address.landmark }}</p>
+                {% endif %}
+                <p class="text-gray-600">{{ order.delivery_address.town_city }}, {{ order.delivery_address.state }}</p>
+                <div class="flex items-center gap-2 pt-2 mt-2 border-t border-gray-200">
+                    <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                    </svg>
+                    <p class="text-gray-700 font-medium">{{ order.delivery_address.phone_number }}</p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Payment Info -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <h3 class="text-base font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+                </svg>
+                Payment Info
+            </h3>
+            <div class="bg-gray-50 rounded-lg p-4 space-y-4">
+                <!-- Method -->
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 bg-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-400">Payment Method</p>
+                        <p class="text-sm font-semibold text-gray-900">{{ order.get_payment_method_display }}</p>
+                    </div>
+                </div>
+                <!-- Status -->
+                <div class="flex items-center justify-between border-t border-gray-200 pt-3">
+                    <p class="text-sm text-gray-500">Payment Status</p>
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold
+                        {% if order.payment_status == 'paid' %}text-green-700 bg-green-100 border border-green-200
+                        {% elif order.payment_status == 'failed' %}text-red-700 bg-red-100 border border-red-200
+                        {% elif order.payment_status == 'refunded' %}text-purple-700 bg-purple-100 border border-purple-200
+                        {% else %}text-yellow-700 bg-yellow-100 border border-yellow-200{% endif %}">
+                        {% if order.payment_status == 'paid' %}
+                        <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></path></svg>
+                        {% endif %}
+                        {{ order.get_payment_status_display }}
+                    </span>
+                </div>
+                <!-- Retry Payment -->
+                {% if order.payment_method == 'online' and order.payment_status == 'failed' %}
+                <div class="border-t border-red-100 pt-3">
+                    <p class="text-xs text-red-600 mb-3">Payment failed. Please retry to confirm your order.</p>
+                    <a href="{% url 'retry_payment' order.id %}"
+                        class="inline-flex items-center gap-2 px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white text-sm font-semibold rounded-lg transition-colors w-full justify-center">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                        </svg>
+                        Retry Payment
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
+    <!-- END SECTION 4 -->
+
 </div>
+<!-- END PAGE WRAPPER -->
+
+
+<!-- ═══════════════════════════════════════════════════════
+     MODALS
+═══════════════════════════════════════════════════════ -->
 
 <!-- Return Confirmation Modal -->
-<div id="returnModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-    <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
-        <div class="flex items-center gap-3 mb-4">
-            <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
-                <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<div id="returnModal" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
+        <div class="flex items-center gap-3 mb-5">
+            <div class="w-11 h-11 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
                 </svg>
             </div>
-            <h3 class="text-xl font-semibold text-gray-900">Confirm Return Request</h3>
+            <h3 class="text-lg font-bold text-gray-900">Confirm Return Request</h3>
         </div>
-        <div class="mb-6">
-            <p class="text-gray-600 mb-4">Are you sure you want to return this entire order?</p>
-            <div class="bg-gray-50 rounded-lg p-4 space-y-2 text-sm">
-                <div class="flex justify-between">
-                    <span class="text-gray-600">Order Number:</span>
-                    <span class="font-medium text-gray-900">#{{ order.order_number }}</span>
-                </div>
-                <div class="flex justify-between">
-                    <span class="text-gray-600">Return Reason:</span>
-                    <span class="font-medium text-gray-900" id="modalReturnReason">-</span>
-                </div>
-                <div class="flex justify-between">
-                    <span class="text-gray-600">Refund Amount:</span>
-                    <span class="font-medium text-green-600">₹{{ order.total_amount|floatformat:2 }}</span>
-                </div>
+        <p class="text-sm text-gray-600 mb-4">Are you sure you want to return this entire order?</p>
+        <div class="bg-gray-50 rounded-xl p-4 space-y-2.5 text-sm mb-4">
+            <div class="flex justify-between">
+                <span class="text-gray-500">Order Number</span>
+                <span class="font-semibold text-gray-900">#{{ order.order_number }}</span>
             </div>
-            <div class="mt-4 bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-                <p class="text-xs text-yellow-800">
-                    <strong>Note:</strong> Refund will be credited to your wallet after admin approval.
-                </p>
+            <div class="flex justify-between">
+                <span class="text-gray-500">Return Reason</span>
+                <span class="font-semibold text-gray-900" id="modalReturnReason">-</span>
             </div>
+            <div class="flex justify-between border-t border-gray-200 pt-2.5">
+                <span class="text-gray-500">Refund Amount</span>
+                <span class="font-bold text-green-600 text-base">₹{{ order.total_amount|floatformat:2 }}</span>
+            </div>
+        </div>
+        <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-3 mb-5">
+            <p class="text-xs text-yellow-800"><strong>Note:</strong> Refund will be credited to your wallet after admin approval.</p>
         </div>
         <div class="flex gap-3">
-            <button onclick="closeReturnModal()"
-                class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2.5 px-4 rounded-lg transition duration-200">
+            <button onclick="closeReturnModal()" class="flex-1 py-2.5 px-4 border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 font-medium text-sm transition-colors">
                 Cancel
             </button>
-            <button onclick="confirmReturn()"
-                class="flex-1 bg-red-600 hover:bg-red-700 text-white font-medium py-2.5 px-4 rounded-lg transition duration-200">
+            <button onclick="confirmReturn()" class="flex-1 py-2.5 px-4 bg-red-600 hover:bg-red-700 text-white rounded-xl font-semibold text-sm transition-colors">
                 Yes, Return Order
             </button>
         </div>
@@ -502,43 +584,50 @@
 </div>
 
 <!-- Return Item Modal -->
-<div id="returnItemModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-    <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
-        <h3 class="text-lg font-semibold text-gray-900 mb-4">Return Item</h3>
-        <p class="text-gray-600 mb-4">Item: <strong id="returnItemName"></strong></p>
-        <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-700 mb-2">Reason for Return *</label>
-            <select id="returnItemReason"
-                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                <option value="">Select reason</option>
-                <option value="product_damaged">Product Damaged</option>
-                <option value="wrong_product">Wrong Product Delivered</option>
-                <option value="defective">Defective/Not Working</option>
-                <option value="quality_issue">Quality Not as Expected</option>
-                <option value="size_issue">Size/Fit Issue</option>
-                <option value="changed_mind">Changed My Mind</option>
-                <option value="better_price">Found Better Price</option>
-                <option value="other">Other</option>
-            </select>
+<div id="returnItemModal" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
+        <div class="flex items-center justify-between mb-5">
+            <h3 class="text-lg font-bold text-gray-900">Return Item</h3>
+            <button onclick="closeReturnItemModal()" class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 transition-colors">
+                <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
         </div>
-        <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-700 mb-2">Additional Details (Optional)</label>
-            <textarea id="returnItemDescription" rows="3" maxlength="500"
-                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm resize-none"
-                placeholder="Please provide more details..."></textarea>
+        <div class="bg-gray-50 rounded-xl p-3 mb-4">
+            <p class="text-xs text-gray-500 mb-0.5">Returning item</p>
+            <p class="text-sm font-semibold text-gray-900" id="returnItemName"></p>
         </div>
-        <div class="bg-green-50 border border-green-200 rounded-lg p-3 mb-4">
-            <p class="text-xs text-green-800">
-                <strong>✓ Instant Refund:</strong> ₹<span id="returnItemAmount"></span> will be credited to your wallet immediately
-            </p>
+        <div class="space-y-4 mb-5">
+            <div>
+                <label class="block text-xs font-medium text-gray-700 mb-1.5">Reason for Return <span class="text-red-500">*</span></label>
+                <select id="returnItemReason" class="w-full px-3 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-sm bg-gray-50">
+                    <option value="">Select reason</option>
+                    <option value="product_damaged">Product Damaged</option>
+                    <option value="wrong_product">Wrong Product Delivered</option>
+                    <option value="defective">Defective / Not Working</option>
+                    <option value="quality_issue">Quality Not as Expected</option>
+                    <option value="size_issue">Size / Fit Issue</option>
+                    <option value="changed_mind">Changed My Mind</option>
+                    <option value="better_price">Found Better Price</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-gray-700 mb-1.5">Additional Details <span class="text-gray-400">(Optional)</span></label>
+                <textarea id="returnItemDescription" rows="3" maxlength="500"
+                    class="w-full px-3 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-sm resize-none bg-gray-50"
+                    placeholder="Describe the issue..."></textarea>
+            </div>
+        </div>
+        <div class="bg-green-50 border border-green-200 rounded-xl p-3 mb-5">
+            <p class="text-xs text-green-800"><strong>✓ Instant Refund:</strong> ₹<span id="returnItemAmount" class="font-bold"></span> will be credited to your wallet immediately</p>
         </div>
         <div class="flex gap-3">
-            <button type="button" onclick="closeReturnItemModal()"
-                class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+            <button type="button" onclick="closeReturnItemModal()" class="flex-1 py-2.5 px-4 border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 font-medium text-sm transition-colors">
                 Cancel
             </button>
-            <button type="button" onclick="confirmReturnItem()"
-                class="flex-1 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors">
+            <button type="button" onclick="confirmReturnItem()" class="flex-1 py-2.5 px-4 bg-orange-600 hover:bg-orange-700 text-white rounded-xl font-semibold text-sm transition-colors">
                 Confirm Return
             </button>
         </div>
@@ -546,16 +635,25 @@
 </div>
 
 <!-- Cancel Order Modal -->
-<div id="cancelOrderModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-    <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-        <h3 class="text-lg font-semibold text-gray-900 mb-4">Cancel Order</h3>
-        <p class="text-gray-600 mb-4">Are you sure you want to cancel this order?</p>
+<div id="cancelOrderModal" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
+        <div class="flex items-center gap-3 mb-5">
+            <div class="w-11 h-11 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </div>
+            <div>
+                <h3 class="text-lg font-bold text-gray-900">Cancel Order</h3>
+                <p class="text-sm text-gray-500">This action cannot be undone</p>
+            </div>
+        </div>
         <form id="cancelOrderForm">
             {% csrf_token %}
-            <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 mb-1">Reason for Cancellation *</label>
+            <div class="mb-5">
+                <label class="block text-xs font-medium text-gray-700 mb-1.5">Reason for Cancellation <span class="text-red-500">*</span></label>
                 <select id="cancelOrderReason"
-                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    class="w-full px-3 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm bg-gray-50"
                     required>
                     <option value="">Select reason</option>
                     <option value="Changed my mind">Changed my mind</option>
@@ -566,13 +664,11 @@
                 </select>
             </div>
             <div class="flex gap-3">
-                <button type="button" onclick="closeCancelOrderModal()"
-                    class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
-                    No, Keep Order
+                <button type="button" onclick="closeCancelOrderModal()" class="flex-1 py-2.5 px-4 border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 font-medium text-sm transition-colors">
+                    Keep Order
                 </button>
-                <button type="submit"
-                    class="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
-                    Yes, Cancel Order
+                <button type="submit" class="flex-1 py-2.5 px-4 bg-red-600 hover:bg-red-700 text-white rounded-xl font-semibold text-sm transition-colors">
+                    Cancel Order
                 </button>
             </div>
         </form>
@@ -580,27 +676,37 @@
 </div>
 
 <!-- Cancel Item Modal -->
-<div id="cancelItemModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-    <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-        <h3 class="text-lg font-semibold text-gray-900 mb-4">Cancel Item</h3>
-        <p class="text-gray-600 mb-4">Are you sure you want to cancel <strong id="itemName"></strong>?</p>
+<div id="cancelItemModal" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
+        <div class="flex items-center gap-3 mb-5">
+            <div class="w-11 h-11 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </div>
+            <h3 class="text-lg font-bold text-gray-900">Cancel Item</h3>
+        </div>
+        <p class="text-sm text-gray-600 mb-6">Are you sure you want to cancel <strong id="itemName" class="text-gray-900"></strong>?</p>
         <div class="flex gap-3">
-            <button type="button" onclick="closeCancelItemModal()"
-                class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
-                No, Keep Item
+            <button type="button" onclick="closeCancelItemModal()" class="flex-1 py-2.5 px-4 border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 font-medium text-sm transition-colors">
+                Keep Item
             </button>
-            <button type="button" onclick="confirmCancelItem()"
-                class="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
-                Yes, Cancel Item
+            <button type="button" onclick="confirmCancelItem()" class="flex-1 py-2.5 px-4 bg-red-600 hover:bg-red-700 text-white rounded-xl font-semibold text-sm transition-colors">
+                Cancel Item
             </button>
         </div>
     </div>
 </div>
 
+
+<!-- ═══════════════════════════════════════════════════════
+     JAVASCRIPT
+═══════════════════════════════════════════════════════ -->
 <script>
     let currentItemId = null;
     let currentReturnItemId = null;
 
+    // ── Cancel Order Modal ──
     function openCancelOrderModal() {
         document.getElementById('cancelOrderModal').classList.remove('hidden');
     }
@@ -618,14 +724,15 @@
             const response = await fetch('{% url "cancel_order" order.order_number %}', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
-                body: JSON.stringify({ reason: reason })
+                body: JSON.stringify({ reason })
             });
             const data = await response.json();
             if (data.success) { window.location.href = data.redirect_url; }
             else { alert(data.message); closeCancelOrderModal(); }
-        } catch (error) { alert('Error cancelling order. Please try again.'); closeCancelOrderModal(); }
+        } catch { alert('Error cancelling order. Please try again.'); closeCancelOrderModal(); }
     });
 
+    // ── Cancel Item Modal ──
     function openCancelItemModal(itemId, itemName) {
         currentItemId = itemId;
         document.getElementById('itemName').textContent = itemName;
@@ -640,8 +747,7 @@
         if (!currentItemId) return;
         const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
         try {
-            const url = `/orders/{{ order.order_number }}/item/${currentItemId}/cancel/`;
-            const response = await fetch(url, {
+            const response = await fetch(`/orders/{{ order.order_number }}/item/${currentItemId}/cancel/`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken }
             });
@@ -650,14 +756,14 @@
                 if (data.order_cancelled) { window.location.href = '{% url "order" %}'; }
                 else { location.reload(); }
             } else { alert(data.message); closeCancelItemModal(); }
-        } catch (error) { alert('Error cancelling item. Please try again.'); closeCancelItemModal(); }
+        } catch { alert('Error cancelling item. Please try again.'); closeCancelItemModal(); }
     }
 
+    // ── Return Order Modal ──
     function openReturnModal() {
         const reason = document.getElementById('returnReason').value;
         if (!reason) { alert('Please select a reason for return.'); return; }
-        const reasonSelect = document.getElementById('returnReason');
-        const reasonText = reasonSelect.options[reasonSelect.selectedIndex].text;
+        const reasonText = document.getElementById('returnReason').options[document.getElementById('returnReason').selectedIndex].text;
         document.getElementById('modalReturnReason').textContent = reasonText;
         document.getElementById('returnModal').classList.remove('hidden');
     }
@@ -674,14 +780,15 @@
             const response = await fetch('{% url "request_return" order.order_number %}', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
-                body: JSON.stringify({ reason: reason, description: description })
+                body: JSON.stringify({ reason, description })
             });
             const data = await response.json();
             if (data.success) { alert(data.message); window.location.href = data.redirect_url; }
             else { alert(data.message); closeReturnModal(); }
-        } catch (error) { alert('Error submitting return request. Please try again.'); closeReturnModal(); }
+        } catch { alert('Error submitting return request. Please try again.'); closeReturnModal(); }
     }
 
+    // ── Return Item Modal ──
     function openReturnItemModal(itemId, itemName, itemAmount) {
         currentReturnItemId = itemId;
         document.getElementById('returnItemName').textContent = itemName;
@@ -702,30 +809,29 @@
         if (!reason) { alert('Please select a reason for return.'); return; }
         const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
         try {
-            const url = `/orders/{{ order.order_number }}/item/${currentReturnItemId}/return/`;
-            const response = await fetch(url, {
+            const response = await fetch(`/orders/{{ order.order_number }}/item/${currentReturnItemId}/return/`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
-                body: JSON.stringify({ reason: reason, description: description })
+                body: JSON.stringify({ reason, description })
             });
             const data = await response.json();
             if (data.success) { alert(data.message); location.reload(); }
             else { alert(data.message); closeReturnItemModal(); }
-        } catch (error) { alert('Error submitting return request. Please try again.'); closeReturnItemModal(); }
+        } catch { alert('Error submitting return request. Please try again.'); closeReturnItemModal(); }
     }
 
-    // Close modals when clicking outside
-    ['cancelOrderModal', 'cancelItemModal', 'returnModal', 'returnItemModal'].forEach(modalId => {
-        document.getElementById(modalId).addEventListener('click', function (e) {
+    // ── Close on backdrop click ──
+    ['cancelOrderModal', 'cancelItemModal', 'returnModal', 'returnItemModal'].forEach(id => {
+        document.getElementById(id).addEventListener('click', function(e) {
             if (e.target === this) {
-                const name = modalId.charAt(0).toUpperCase() + modalId.slice(1, -5);
-                window[`close${name}Modal`]?.() || eval(`close${name}Modal()`);
+                const fnName = 'close' + id.charAt(0).toUpperCase() + id.slice(1, -5) + 'Modal';
+                if (typeof window[fnName] === 'function') window[fnName]();
             }
         });
     });
 
-    // Close modals on Escape key
-    document.addEventListener('keydown', function (e) {
+    // ── Close on Escape key ──
+    document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
             closeCancelOrderModal();
             closeCancelItemModal();
@@ -734,12 +840,13 @@
         }
     });
 
-    // Character limit for textareas
+    // ── Textarea character limit ──
     ['returnDescription', 'returnItemDescription'].forEach(id => {
         const el = document.getElementById(id);
-        if (el) el.addEventListener('input', function (e) {
-            if (e.target.value.length > 500) e.target.value = e.target.value.substring(0, 500);
+        if (el) el.addEventListener('input', function() {
+            if (this.value.length > 500) this.value = this.value.substring(0, 500);
         });
     });
 </script>
+
 {% endblock %}

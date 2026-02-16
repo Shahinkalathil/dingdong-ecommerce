@@ -80,56 +80,47 @@
             </div>
         </div>
     </div>
-    
-    <!-- Items Table -->
-    <div class="mb-6">
-        <h3 class="text-gray-800 font-bold text-sm uppercase tracking-wide mb-3">Order Items</h3>
-        <table class="w-full border-collapse border border-gray-300">
-            <thead class="bg-gray-800 text-white">
-                <tr>
-                    <th class="px-3 py-2.5 text-left text-xs font-semibold uppercase tracking-wider border border-gray-300">Product</th>
-                    <th class="px-3 py-2.5 text-left text-xs font-semibold uppercase tracking-wider border border-gray-300">Color</th>
-                    <th class="px-3 py-2.5 text-left text-xs font-semibold uppercase tracking-wider border border-gray-300">Price</th>
-                    <th class="px-3 py-2.5 text-left text-xs font-semibold uppercase tracking-wider border border-gray-300">Quantity</th>
-                    <th class="px-3 py-2.5 text-left text-xs font-semibold uppercase tracking-wider border border-gray-300">Subtotal</th>
-                </tr>
-            </thead>
-            <tbody class="bg-white">
-                {% for item in order_items %}
-                {% if not item.is_cancelled %}
-                <tr class="{% if forloop.counter|divisibleby:2 %}bg-gray-50{% endif %}">
-                    <td class="px-3 py-3 text-xs border border-gray-300">{{ item.product_name }}</td>
-                    <td class="px-3 py-3 text-xs border border-gray-300">
-                        <span class="inline-block w-3.5 h-3.5 rounded-full border border-gray-400 align-middle mr-1" 
-                              style="background-color: {{ item.color_code }};"></span>
-                        {{ item.color_name }}
-                    </td>
-                    <td class="px-3 py-3 text-xs border border-gray-300">₹{{ item.price }}</td>
-                    <td class="px-3 py-3 text-xs border border-gray-300">{{ item.quantity }}</td>
-                    <td class="px-3 py-3 text-xs font-semibold border border-gray-300">₹{{ item.subtotal }}</td>
-                </tr>
-                {% endif %}
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-    
-    <!-- Totals Section -->
-    <div class="border-t-2 border-gray-400 pt-4 mb-8">
-        <div class="float-right w-72">
-            <div class="space-y-2 text-sm">
-                <div class="flex justify-between text-gray-700">
-                    <span>Subtotal:</span>
-                    <span class="font-semibold">₹{{ order.subtotal }}</span>
-                </div>
-                <div class="flex justify-between text-gray-700">
-                    <span>Delivery Charges:</span>
-                    <span class="font-semibold">₹{{ order.delivery_charge }}</span>
-                </div>
-                <div class="flex justify-between text-base font-bold text-gray-900 border-t-2 border-gray-800 pt-3 mt-2">
-                    <span>Grand Total:</span>
-                    <span>₹{{ order.total_amount }}</span>
-                </div>
+    <p class="section-title">Order Items</p>
+    <table class="items-table">
+        <thead>
+            <tr>
+                <th style="width:40%;">Product</th>
+                <th style="width:18%;">Color</th>
+                <th style="width:14%;">Price</th>
+                <th style="width:12%;">Qty</th>
+                <th style="width:16%;">Subtotal</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in order_items %}
+            {% if not item.is_cancelled and not item.is_returned %}
+            <tr>
+                <td class="product-name">{{ item.product_name }}</td>
+                <td>
+                    <span class="color-dot" style="background-color: {{ item.color_code }};"></span>
+                    {{ item.color_name }}
+                </td>
+                <td>&#8377;{{ item.price }}</td>
+                <td>{{ item.quantity }}</td>
+                <td class="subtotal-cell">&#8377;{{ item.subtotal }}</td>
+            </tr>
+            {% endif %}
+            {% endfor %}
+        </tbody>
+    </table>
+    <div class="totals-wrapper">
+        <div class="totals-table">
+            <div class="totals-row">
+                <span class="totals-label">Subtotal:</span>
+                <span class="totals-amount">&#8377;{{ order.subtotal }}</span>
+            </div>
+            <div class="totals-row">
+                <span class="totals-label">Delivery Charges:</span>
+                <span class="totals-amount">&#8377;{{ order.delivery_charge }}</span>
+            </div>
+            <div class="totals-row totals-grand">
+                <span class="totals-label">Grand Total:</span>
+                <span class="totals-amount">&#8377;{{ order.total_amount }}</span>
             </div>
         </div>
     </div>
