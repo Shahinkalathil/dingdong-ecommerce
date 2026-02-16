@@ -360,7 +360,7 @@
         </thead>
         <tbody>
             {% for item in order_items %}
-            {% if not item.is_cancelled %}
+            {% if not item.is_cancelled and not item.is_returned %}
             <tr>
                 <td class="product-name">{{ item.product_name }}</td>
                 <td>

@@ -479,7 +479,7 @@ def download_invoice(request, order_number):
     
     context = {
         'order': order,
-        'order_items': order.items.all(),
+        'order_items': order.items.filter(item_status='active'),
         'delivery_address': order.delivery_address,
     }
     

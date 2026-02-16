@@ -17,13 +17,18 @@ User = get_user_model()
 @login_required
 def wallet_view(request):
     wallet, _ = Wallet.objects.get_or_create(user=request.user)
+    
+    transactions = WalletTransaction.objects.filter(wallet=wallet)
+    
     transaction_filter = request.GET.get('filter', 'all')
-    transactions = WalletTransaction.objects.filter(wallet=wallet).order_by('-created_at')
     if transaction_filter == 'credit':
         transactions = transactions.filter(transaction_type='credit')
     elif transaction_filter == 'debit':
         transactions = transactions.filter(transaction_type='debit')
-    paginator = Paginator(transactions, 5)  
+    
+    transactions = transactions.order_by('-created_at')   
+    
+    paginator = Paginator(transactions, 5)
     page_number = request.GET.get('page', 1)
     page_obj = paginator.get_page(page_number)
     
@@ -33,7 +38,6 @@ def wallet_view(request):
         'transaction_filter': transaction_filter,
         'total_transactions': paginator.count,
     }
-    
     return render(request, 'user_side/profile/wallet/wallet.html', context)
 
 # Admin Side
