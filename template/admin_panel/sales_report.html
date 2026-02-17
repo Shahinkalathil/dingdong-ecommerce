@@ -1,298 +1,397 @@
 {% extends 'admin_panel/base.html' %}
-{% block title %}DINGDONG - Sales Report{% endblock %}
+{% block title %}DINGDONG – Sales Report{% endblock %}
 {% load static %}
 
-{% block extra_css %}
-<style>
-    /* Custom CSS variables for consistent theming */
-    :root {
-        --color-primary: #1e40af;
-        --color-secondary: #7c3aed;
-        --color-accent: #059669;
-        --color-danger: #dc2626;
-        --color-dark: #1f2937;
-    }
-
-    .text-primary { color: var(--color-primary); }
-    .bg-primary { background-color: var(--color-primary); }
-    .text-secondary { color: var(--color-secondary); }
-    .bg-secondary { background-color: var(--color-secondary); }
-    .text-accent { color: var(--color-accent); }
-    .bg-accent { background-color: var(--color-accent); }
-    .text-danger { color: var(--color-danger); }
-    .bg-danger { background-color: var(--color-danger); }
-    .text-dark { color: var(--color-dark); }
-    .bg-dark { background-color: var(--color-dark); }
-
-    /* Scrollbar styles */
-    .overflow-x-auto {
-        scrollbar-gutter: stable;
-    }
-
-    .overflow-x-auto::-webkit-scrollbar {
-        height: 8px;
-    }
-    .overflow-x-auto::-webkit-scrollbar-thumb {
-        background: #d1d5db;
-        border-radius: 9999px;
-    }
-    .overflow-x-auto::-webkit-scrollbar-track {
-        background: #f3f4f6;
-    }
-
-    /* Table row hover effect */
-    .table-row:hover {
-        background-color: #f9fafb;
-    }
-    
-    .stat-card {
-        transition: transform 0.2s ease-in-out;
-    }
-    
-    .stat-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-    }
-</style>
-{% endblock %}
-
 {% block content %}
-<main class="flex-1 bg-gray-50">
-    <!-- Dashboard View -->
-    <div class="p-4 lg:p-6">
-        
-        <!-- Header -->
-        <div class="mb-6">
-            <h1 class="text-2xl lg:text-3xl font-bold text-dark">Sales Report</h1>
-            <p class="mt-1 text-sm text-gray-600">{{ period_label }}</p>
-        </div>
+<main class="flex-1 bg-gray-50 min-h-screen">
+<div class="p-4 lg:p-6 max-w-screen-2xl mx-auto">
 
-        <!-- Filter Section -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 lg:p-6 mb-6">
-            <h3 class="text-base lg:text-lg font-semibold text-dark mb-4 lg:mb-5">Report Filters</h3>
-
-            <form method="GET" action="{% url 'sales_report' %}" id="filterForm" class="space-y-4 lg:space-y-6">
-
-                <!-- Quick Filter Buttons -->
-                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 lg:gap-3">
-                    <button type="button" onclick="setReportType('daily')"
-                        class="filter-btn px-3 lg:px-4 py-2.5 lg:py-3 text-xs lg:text-sm font-medium rounded-lg border border-gray-300 transition-all
-                        {% if report_type == 'daily' %} bg-primary text-white border-primary shadow-sm {% else %} bg-white text-gray-700 hover:bg-gray-50 {% endif %}">
-                        Today
-                    </button>
-
-                    <button type="button" onclick="setReportType('weekly')"
-                        class="filter-btn px-3 lg:px-4 py-2.5 lg:py-3 text-xs lg:text-sm font-medium rounded-lg border border-gray-300 transition-all
-                        {% if report_type == 'weekly' %} bg-primary text-white border-primary shadow-sm {% else %} bg-white text-gray-700 hover:bg-gray-50 {% endif %}">
-                        This Week
-                    </button>
-
-                    <button type="button" onclick="setReportType('monthly')"
-                        class="filter-btn px-3 lg:px-4 py-2.5 lg:py-3 text-xs lg:text-sm font-medium rounded-lg border border-gray-300 transition-all
-                        {% if report_type == 'monthly' %} bg-primary text-white border-primary shadow-sm {% else %} bg-white text-gray-700 hover:bg-gray-50 {% endif %}">
-                        This Month
-                    </button>
-
-                    <button type="button" onclick="setReportType('yearly')"
-                        class="filter-btn px-3 lg:px-4 py-2.5 lg:py-3 text-xs lg:text-sm font-medium rounded-lg border border-gray-300 transition-all
-                        {% if report_type == 'yearly' %} bg-primary text-white border-primary shadow-sm {% else %} bg-white text-gray-700 hover:bg-gray-50 {% endif %}">
-                        This Year
-                    </button>
-
-                    <button type="button" onclick="toggleCustomDate()"
-                        class="filter-btn px-3 lg:px-4 py-2.5 lg:py-3 text-xs lg:text-sm font-medium rounded-lg border border-gray-300 transition-all
-                        {% if report_type == 'custom' %} bg-primary text-white border-primary shadow-sm {% else %} bg-white text-gray-700 hover:bg-gray-50 {% endif %}">
-                        Custom Range
-                    </button>
-
-                    <button type="button" onclick="setReportType('all')"
-                        class="filter-btn px-3 lg:px-4 py-2.5 lg:py-3 text-xs lg:text-sm font-medium rounded-lg border border-gray-300 transition-all
-                        {% if report_type == 'all' %} bg-primary text-white border-primary shadow-sm {% else %} bg-white text-gray-700 hover:bg-gray-50 {% endif %}">
-                        All Time
-                    </button>
-                </div>
-
-                <!-- Custom Date Range -->
-                <div id="customDateInputs" class="{% if report_type == 'custom' %}flex{% else %}hidden{% endif %} flex-col sm:flex-row items-stretch sm:items-end gap-3 lg:gap-4">
-                    <div class="flex-1 min-w-0 sm:min-w-[200px]">
-                        <label class="block text-sm font-medium text-gray-700 mb-1.5">Start Date</label>
-                        <input type="date" name="start_date" value="{{ start_date }}"
-                            class="w-full px-3 lg:px-4 py-2 lg:py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary">
-                    </div>
-                    <div class="flex-1 min-w-0 sm:min-w-[200px]">
-                        <label class="block text-sm font-medium text-gray-700 mb-1.5">End Date</label>
-                        <input type="date" name="end_date" value="{{ end_date }}"
-                            class="w-full px-3 lg:px-4 py-2 lg:py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary">
-                    </div>
-                    <div class="w-full sm:w-auto">
-                        <button type="submit"
-                            class="w-full sm:w-auto px-6 py-2 lg:py-2.5 bg-primary text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition">
-                            Apply
-                        </button>
-                    </div>
-                </div>
-
-                <input type="hidden" name="report_type" id="reportTypeInput" value="{{ report_type }}">
-
-            </form>
-        </div>
-
-        <!-- Statistics Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6 mb-6">
-            <!-- Total Sales Count -->
-            <div class="stat-card bg-white rounded-xl shadow-sm border border-gray-100 p-4 lg:p-6">
-                <div class="flex items-center justify-between">
-                    <div class="flex-1 min-w-0">
-                        <p class="text-xs lg:text-sm font-medium text-gray-600 mb-1">Total Sales Count</p>
-                        <p class="text-2xl lg:text-3xl font-bold text-dark mt-1">{{ total_sales_count }}</p>
-                        <p class="text-xs text-accent font-medium mt-1">▲ {{ report_type|title }}</p>
-                    </div>
-                    <div class="p-3 lg:p-4 bg-blue-50 rounded-lg flex-shrink-0">
-                        <svg class="w-6 h-6 lg:w-8 lg:h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
-                        </svg>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Total Order Amount -->
-            <div class="stat-card bg-white rounded-xl shadow-sm border border-gray-100 p-4 lg:p-6">
-                <div class="flex items-center justify-between">
-                    <div class="flex-1 min-w-0">
-                        <p class="text-xs lg:text-sm font-medium text-gray-600 mb-1">Total Order Amount</p>
-                        <p class="text-2xl lg:text-3xl font-bold text-dark mt-1">${{ total_order_amount|floatformat:2 }}</p>
-                        <p class="text-xs text-accent font-medium mt-1">▲ Revenue</p>
-                    </div>
-                    <div class="p-3 lg:p-4 bg-green-50 rounded-lg flex-shrink-0">
-                        <svg class="w-6 h-6 lg:w-8 lg:h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
-                        </svg>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Total Discount -->
-            <div class="stat-card bg-white rounded-xl shadow-sm border border-gray-100 p-4 lg:p-6 md:col-span-2 lg:col-span-1">
-                <div class="flex items-center justify-between">
-                    <div class="flex-1 min-w-0">
-                        <p class="text-xs lg:text-sm font-medium text-gray-600 mb-1">Total Discount</p>
-                        <p class="text-2xl lg:text-3xl font-bold text-dark mt-1">${{ total_discount|floatformat:2 }}</p>
-                        <p class="text-xs text-red-600 font-medium mt-1">▼ Savings</p>
-                    </div>
-                    <div class="p-3 lg:p-4 bg-red-50 rounded-lg flex-shrink-0">
-                        <svg class="w-6 h-6 lg:w-8 lg:h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-                        </svg>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Export Buttons -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 lg:p-6 mb-6">
-            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <h3 class="text-base lg:text-lg font-semibold text-dark">Export Report</h3>
-                <div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-                    <a href="{% url 'download_sales_pdf' %}?report_type={{ report_type }}&start_date={{ start_date }}&end_date={{ end_date }}"
-                       class="flex items-center justify-center gap-2 px-4 lg:px-6 py-2.5 lg:py-3 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 transition shadow-sm">
-                        <svg class="w-4 h-4 lg:w-5 lg:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                        </svg>
-                        Download PDF
-                    </a>
-                </div>
-            </div>
-        </div>
-
-        <!-- Order Details Table -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-100">
-            <div class="p-4 lg:p-6 border-b border-gray-200">
-                <h3 class="text-base lg:text-lg font-semibold text-dark">Order Details</h3>
-            </div>
-
-            <div class="overflow-x-auto">
-                <table class="w-full">
-                    <thead class="bg-gray-50 border-b border-gray-200">
-                        <tr>
-                            <th class="px-4 lg:px-6 py-3 lg:py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Order ID</th>
-                            <th class="px-4 lg:px-6 py-3 lg:py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Date</th>
-                            <th class="px-4 lg:px-6 py-3 lg:py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Customer</th>
-                            <th class="px-4 lg:px-6 py-3 lg:py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Product Name</th>
-                            <th class="px-4 lg:px-6 py-3 lg:py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Qty</th>
-                            <th class="px-4 lg:px-6 py-3 lg:py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Price</th>
-                            <th class="px-4 lg:px-6 py-3 lg:py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Subtotal</th>
-                            <th class="px-4 lg:px-6 py-3 lg:py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Payment</th>
-                            <th class="px-4 lg:px-6 py-3 lg:py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Status</th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        {% if order_details %}
-                            {% for order in order_details %}
-                            <tr class="table-row">
-                                <td class="px-4 lg:px-6 py-3 lg:py-4 whitespace-nowrap text-xs lg:text-sm font-medium text-primary">{{ order.order_number }}</td>
-                                <td class="px-4 lg:px-6 py-3 lg:py-4 whitespace-nowrap text-xs lg:text-sm text-gray-900">{{ order.date|date:"Y-m-d" }}</td>
-                                <td class="px-4 lg:px-6 py-3 lg:py-4 text-xs lg:text-sm text-dark max-w-[120px] lg:max-w-[150px] truncate">{{ order.customer }}</td>
-                                <td class="px-4 lg:px-6 py-3 lg:py-4 text-xs lg:text-sm text-gray-900 max-w-[150px] lg:max-w-[200px] truncate">{{ order.product_name }}</td>
-                                <td class="px-4 lg:px-6 py-3 lg:py-4 whitespace-nowrap text-xs lg:text-sm text-gray-900">{{ order.quantity }}</td>
-                                <td class="px-4 lg:px-6 py-3 lg:py-4 whitespace-nowrap text-xs lg:text-sm text-gray-900">${{ order.price|floatformat:2 }}</td>
-                                <td class="px-4 lg:px-6 py-3 lg:py-4 whitespace-nowrap text-xs lg:text-sm font-semibold text-dark">${{ order.subtotal|floatformat:2 }}</td>
-                                <td class="px-4 lg:px-6 py-3 lg:py-4 whitespace-nowrap text-xs lg:text-sm text-gray-900">{{ order.payment_method|default:"—" }}</td>
-                                <td class="px-4 lg:px-6 py-3 lg:py-4 whitespace-nowrap">
-                                    <span class="inline-flex px-2 lg:px-2.5 py-0.5 lg:py-1 text-xs font-semibold rounded-full
-                                        {% if order.status == 'Delivered' %} bg-green-100 text-green-800
-                                        {% elif order.status == 'Shipped' %} bg-blue-100 text-blue-800
-                                        {% elif order.status == 'Confirmed' %} bg-purple-100 text-purple-800
-                                        {% else %} bg-gray-100 text-gray-800 {% endif %}">
-                                        {{ order.status|default:"Pending" }}
-                                    </span>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        {% else %}
-                            <tr>
-                                <td colspan="10" class="px-4 lg:px-6 py-12 lg:py-16 text-center text-gray-500">
-                                    <div class="flex flex-col items-center">
-                                        <svg class="w-12 h-12 lg:w-16 lg:h-16 text-gray-300 mb-3 lg:mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                        </svg>
-                                        <p class="text-base lg:text-lg font-medium text-gray-700">No orders found for the selected period</p>
-                                        <p class="text-xs lg:text-sm mt-1 lg:mt-2 text-gray-600">Try adjusting your filters to see more results</p>
-                                    </div>
-                                </td>
-                            </tr>
-                        {% endif %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
+  {# ── Page Header ────────────────────────────────────────────────────────── #}
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900 tracking-tight">Sales Report</h1>
+      <p class="text-sm text-gray-500 mt-0.5">{{ period_label }}</p>
     </div>
+    <a href="{% url 'download_sales_pdf' %}?report_type={{ report_type }}&start_date={{ start_date }}&end_date={{ end_date }}"
+       target="_blank"
+       class="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-700 hover:bg-blue-800
+              text-white text-sm font-medium rounded-lg transition-colors shadow-sm">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+      </svg>
+      Download PDF
+    </a>
+  </div>
+
+  {# ── Filters ────────────────────────────────────────────────────────────── #}
+  <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-4 mb-6">
+    <form method="GET" action="{% url 'sales_report' %}" id="filterForm">
+      <div class="flex flex-wrap gap-2 items-center">
+
+        
+
+        {% with types='daily,weekly,monthly,yearly,all' %}
+       
+        {% endwith %}
+
+        {# Quick buttons #}
+        
+
+        <button type="button" onclick="setType('daily')"
+          class="px-4 py-2 text-xs font-semibold rounded-lg border transition-colors
+          {% if report_type == 'daily' %}bg-blue-700 text-white border-blue-700{% else %}bg-white text-gray-600 border-gray-300 hover:bg-gray-50{% endif %}">
+          Today
+        </button>
+        <button type="button" onclick="setType('weekly')"
+          class="px-4 py-2 text-xs font-semibold rounded-lg border transition-colors
+          {% if report_type == 'weekly' %}bg-blue-700 text-white border-blue-700{% else %}bg-white text-gray-600 border-gray-300 hover:bg-gray-50{% endif %}">
+          This Week
+        </button>
+        <button type="button" onclick="setType('monthly')"
+          class="px-4 py-2 text-xs font-semibold rounded-lg border transition-colors
+          {% if report_type == 'monthly' %}bg-blue-700 text-white border-blue-700{% else %}bg-white text-gray-600 border-gray-300 hover:bg-gray-50{% endif %}">
+          This Month
+        </button>
+        <button type="button" onclick="setType('yearly')"
+          class="px-4 py-2 text-xs font-semibold rounded-lg border transition-colors
+          {% if report_type == 'yearly' %}bg-blue-700 text-white border-blue-700{% else %}bg-white text-gray-600 border-gray-300 hover:bg-gray-50{% endif %}">
+          This Year
+        </button>
+        <button type="button" onclick="setType('all')"
+          class="px-4 py-2 text-xs font-semibold rounded-lg border transition-colors
+          {% if report_type == 'all' %}bg-blue-700 text-white border-blue-700{% else %}bg-white text-gray-600 border-gray-300 hover:bg-gray-50{% endif %}">
+          All Time
+        </button>
+        <button type="button" onclick="toggleCustom()"
+          class="px-4 py-2 text-xs font-semibold rounded-lg border transition-colors
+          {% if report_type == 'custom' %}bg-blue-700 text-white border-blue-700{% else %}bg-white text-gray-600 border-gray-300 hover:bg-gray-50{% endif %}">
+          Custom Range
+        </button>
+
+        {# Custom date inputs – inline #}
+        <div id="customInputs"
+             class="{% if report_type == 'custom' %}flex{% else %}hidden{% endif %}
+                    flex-wrap items-end gap-2 ml-2">
+          <div>
+            
+            <input type="date" name="start_date" value="{{ start_date }}"
+              class="px-3 py-2 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-blue-600">
+          </div>
+          <div>
+            <input type="date" name="end_date" value="{{ end_date }}"
+              class="px-3 py-2 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-blue-600">
+          </div>
+          <button type="submit"
+            class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg transition-colors">
+            Apply
+          </button>
+        </div>
+
+        <input type="hidden" name="report_type" id="rtInput" value="{{ report_type }}">
+      </div>
+    </form>
+  </div>
+
+  {# ── Summary Cards ──────────────────────────────────────────────────────── #}
+  <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+
+    <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-5
+                transition-all hover:-translate-y-0.5 hover:shadow-md">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">Total Orders</p>
+          <p class="text-3xl font-bold text-gray-900">{{ total_sales_count }}</p>
+          <p class="text-xs text-emerald-600 font-medium mt-1">▲ {{ report_type|title }}</p>
+        </div>
+        <div class="p-3 bg-blue-50 rounded-xl">
+          <svg class="w-7 h-7 text-blue-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-5
+                transition-all hover:-translate-y-0.5 hover:shadow-md">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">Revenue</p>
+          <p class="text-3xl font-bold text-gray-900">₹{{ total_order_amount|floatformat:2 }}</p>
+          <p class="text-xs text-emerald-600 font-medium mt-1">▲ Total Amount</p>
+        </div>
+        <div class="p-3 bg-emerald-50 rounded-xl">
+          <svg class="w-7 h-7 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-5
+                transition-all hover:-translate-y-0.5 hover:shadow-md">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">Total Discount</p>
+          <p class="text-3xl font-bold text-gray-900">₹{{ total_discount|floatformat:2 }}</p>
+          <p class="text-xs text-red-500 font-medium mt-1">▼ Coupons + Offers</p>
+        </div>
+        <div class="p-3 bg-red-50 rounded-xl">
+          <svg class="w-7 h-7 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  {# ── Sales Chart ────────────────────────────────────────────────────────── #}
+  <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-5 mb-6">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="text-base font-semibold text-gray-900">
+        Sales Overview
+        <span class="ml-2 text-xs font-normal text-gray-400">{{ period_label }}</span>
+      </h3>
+    </div>
+    <div class="relative" style="height:220px">
+      <canvas id="salesChart"></canvas>
+    </div>
+    <div id="chartLabels" class="flex justify-between text-xs text-gray-400 mt-2 px-1 overflow-hidden"></div>
+  </div>
+
+  {# ── Best Sellers Row ───────────────────────────────────────────────────── #}
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+
+    {# Top Products #}
+    <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+      <h4 class="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-blue-600 inline-block"></span>
+        Top Products
+      </h4>
+      <ol class="space-y-2">
+        {% for p in top_products %}
+        <li class="flex items-center justify-between text-xs">
+          <div class="flex items-center gap-2 min-w-0">
+            <span class="w-5 h-5 flex-shrink-0 rounded-full bg-blue-50 text-blue-700 font-bold flex items-center justify-center text-[10px]">{{ forloop.counter }}</span>
+            <span class="text-gray-700 truncate">{{ p.product_name }}</span>
+          </div>
+          <span class="text-gray-500 flex-shrink-0 ml-2">×{{ p.total_qty }}</span>
+        </li>
+        {% empty %}
+        <li class="text-xs text-gray-400">No data</li>
+        {% endfor %}
+      </ol>
+    </div>
+
+    {# Top Categories #}
+    <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+      <h4 class="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-emerald-600 inline-block"></span>
+        Top Categories
+      </h4>
+      <ol class="space-y-2">
+        {% for c in top_categories %}
+        <li class="flex items-center justify-between text-xs">
+          <div class="flex items-center gap-2 min-w-0">
+            <span class="w-5 h-5 flex-shrink-0 rounded-full bg-emerald-50 text-emerald-700 font-bold flex items-center justify-center text-[10px]">{{ forloop.counter }}</span>
+            <span class="text-gray-700 truncate">{{ c.name }}</span>
+          </div>
+          <span class="text-gray-500 flex-shrink-0 ml-2">×{{ c.total_qty }}</span>
+        </li>
+        {% empty %}
+        <li class="text-xs text-gray-400">No data</li>
+        {% endfor %}
+      </ol>
+    </div>
+
+    {# Top Brands #}
+    <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+      <h4 class="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-violet-600 inline-block"></span>
+        Top Brands
+      </h4>
+      <ol class="space-y-2">
+        {% for b in top_brands %}
+        <li class="flex items-center justify-between text-xs">
+          <div class="flex items-center gap-2 min-w-0">
+            <span class="w-5 h-5 flex-shrink-0 rounded-full bg-violet-50 text-violet-700 font-bold flex items-center justify-center text-[10px]">{{ forloop.counter }}</span>
+            <span class="text-gray-700 truncate">{{ b.name }}</span>
+          </div>
+          <span class="text-gray-500 flex-shrink-0 ml-2">×{{ b.total_qty }}</span>
+        </li>
+        {% empty %}
+        <li class="text-xs text-gray-400">No data</li>
+        {% endfor %}
+      </ol>
+    </div>
+
+  </div>
+
+  {# ── Orders Table ───────────────────────────────────────────────────────── #}
+  <div class="bg-white rounded-xl border border-gray-100 shadow-sm">
+    <div class="px-5 py-4 border-b border-gray-100">
+      <h3 class="text-base font-semibold text-gray-900">Order Details</h3>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="bg-gray-50 text-left">
+            <th class="px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">Order ID</th>
+            <th class="px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">Customer</th>
+            <th class="px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Items</th>
+            <th class="px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">Amount</th>
+            <th class="px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">Discount</th>
+            <th class="px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">Payment</th>
+            <th class="px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">Status</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-50">
+          {% for o in order_rows %}
+          <tr class="hover:bg-gray-50 transition-colors">
+            <td class="px-5 py-3 font-mono text-xs text-blue-700 font-medium whitespace-nowrap">{{ o.order_number }}</td>
+            <td class="px-5 py-3 text-gray-800 font-medium whitespace-nowrap">{{ o.customer }}</td>
+            <td class="px-5 py-3 text-gray-500 text-xs max-w-xs truncate">{{ o.items }}</td>
+            <td class="px-5 py-3 text-gray-900 font-semibold whitespace-nowrap">₹{{ o.amount|floatformat:2 }}</td>
+            <td class="px-5 py-3 whitespace-nowrap">
+              {% if o.discount > 0 %}
+                <span class="text-red-600 font-medium text-xs">-₹{{ o.discount|floatformat:2 }}</span>
+              {% else %}
+                <span class="text-gray-400 text-xs">—</span>
+              {% endif %}
+            </td>
+            <td class="px-5 py-3 text-gray-600 text-xs whitespace-nowrap">{{ o.payment }}</td>
+            <td class="px-5 py-3 whitespace-nowrap">
+              {% if o.status_raw == 'delivered' %}
+                <span class="inline-flex px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800">Delivered</span>
+              {% elif o.status_raw == 'confirmed' %}
+                <span class="inline-flex px-2 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">Confirmed</span>
+              {% elif o.status_raw == 'shipped' %}
+                <span class="inline-flex px-2 py-0.5 rounded-full text-xs font-semibold bg-purple-100 text-purple-800">Shipped</span>
+              {% elif o.status_raw == 'out_for_delivery' %}
+                <span class="inline-flex px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-800">Out for Delivery</span>
+              {% elif o.status_raw == 'cancelled' %}
+                <span class="inline-flex px-2 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-800">Cancelled</span>
+              {% else %}
+                <span class="inline-flex px-2 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-700">{{ o.status }}</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="7" class="px-5 py-14 text-center">
+              <svg class="w-12 h-12 text-gray-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+              </svg>
+              <p class="text-sm text-gray-500 font-medium">No orders for this period</p>
+              <p class="text-xs text-gray-400 mt-1">Try a different filter</p>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
 </main>
 
+{# ── Chart Script ─────────────────────────────────────────────────────────── #}
 <script>
-    function setReportType(type) {
-        document.getElementById('reportTypeInput').value = type;
-        
-        if (type !== 'custom') {
-            document.getElementById('customDateInputs').classList.remove('flex');
-            document.getElementById('customDateInputs').classList.add('hidden');
-            document.getElementById('filterForm').submit();
-        }
-    }
+(function () {
+  const chartData = {{ chart_data|safe }};
+  const labels    = chartData.labels  || [];
+  const amounts   = chartData.amounts || [];
 
-    function toggleCustomDate() {
-        const customInputs = document.getElementById('customDateInputs');
-        const reportTypeInput = document.getElementById('reportTypeInput');
-        
-        if (customInputs.classList.contains('hidden')) {
-            customInputs.classList.remove('hidden');
-            customInputs.classList.add('flex');
-            reportTypeInput.value = 'custom';
-        } else {
-            customInputs.classList.add('hidden');
-            customInputs.classList.remove('flex');
-            reportTypeInput.value = 'daily';
-        }
-    }
+  const canvas = document.getElementById('salesChart');
+  if (!canvas || !labels.length) return;
+
+  const ctx  = canvas.getContext('2d');
+  const W    = canvas.parentElement.offsetWidth || 800;
+  const H    = 220;
+  canvas.width  = W;
+  canvas.height = H;
+
+  const PAD   = { top: 16, right: 16, bottom: 4, left: 56 };
+  const cW    = W - PAD.left - PAD.right;
+  const cH    = H - PAD.top  - PAD.bottom;
+  const maxV  = Math.max(...amounts, 1);
+
+  const xPos = i => PAD.left + (labels.length === 1 ? cW / 2 : (i / (labels.length - 1)) * cW);
+  const yPos = v => PAD.top  + cH - (v / maxV) * cH;
+
+  /* Grid */
+  const TICKS = 4;
+  ctx.textAlign   = 'right';
+  ctx.font        = '11px system-ui,sans-serif';
+  ctx.fillStyle   = '#9ca3af';
+
+  for (let i = 0; i <= TICKS; i++) {
+    const v = (maxV / TICKS) * i;
+    const y = yPos(v);
+    ctx.strokeStyle = '#f3f4f6';
+    ctx.lineWidth   = 1;
+    ctx.beginPath(); ctx.moveTo(PAD.left, y); ctx.lineTo(W - PAD.right, y); ctx.stroke();
+    const label = v >= 1000 ? '₹' + (v / 1000).toFixed(1) + 'k' : '₹' + v.toFixed(0);
+    ctx.fillText(label, PAD.left - 6, y + 4);
+  }
+
+  /* Area */
+  const grad = ctx.createLinearGradient(0, PAD.top, 0, PAD.top + cH);
+  grad.addColorStop(0, 'rgba(29,78,216,0.20)');
+  grad.addColorStop(1, 'rgba(29,78,216,0)');
+  ctx.beginPath();
+  amounts.forEach((a, i) => { const x = xPos(i), y = yPos(a); i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); });
+  ctx.lineTo(xPos(amounts.length - 1), PAD.top + cH);
+  ctx.lineTo(xPos(0), PAD.top + cH);
+  ctx.closePath();
+  ctx.fillStyle = grad;
+  ctx.fill();
+
+  /* Line */
+  ctx.beginPath();
+  ctx.strokeStyle = '#1d4ed8';
+  ctx.lineWidth   = 2.5;
+  ctx.lineJoin    = 'round';
+  amounts.forEach((a, i) => { const x = xPos(i), y = yPos(a); i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); });
+  ctx.stroke();
+
+  /* Dots */
+  amounts.forEach((a, i) => {
+    const x = xPos(i), y = yPos(a);
+    ctx.beginPath(); ctx.arc(x, y, 3.5, 0, Math.PI * 2);
+    ctx.fillStyle = '#1d4ed8'; ctx.fill();
+    ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
+  });
+
+  /* X Labels – sample to avoid overlap */
+  const labelEl = document.getElementById('chartLabels');
+  if (labelEl) {
+    const step = labels.length > 20 ? Math.ceil(labels.length / 12) : 1;
+    labelEl.innerHTML = labels
+      .filter((_, i) => i % step === 0 || i === labels.length - 1)
+      .map(l => `<span class="flex-1 text-center text-xs text-gray-400">${l}</span>`)
+      .join('');
+  }
+})();
+</script>
+
+{# ── Filter JS ────────────────────────────────────────────────────────────── #}
+<script>
+  function setType(t) {
+    document.getElementById('rtInput').value = t;
+    document.getElementById('customInputs').classList.replace('flex', 'hidden');
+    document.getElementById('filterForm').submit();
+  }
+  function toggleCustom() {
+    const el = document.getElementById('customInputs');
+    const showing = !el.classList.contains('hidden');
+    if (showing) { el.classList.replace('flex', 'hidden'); document.getElementById('rtInput').value = 'daily'; }
+    else         { el.classList.replace('hidden', 'flex'); document.getElementById('rtInput').value = 'custom'; }
+  }
 </script>
 {% endblock %}
