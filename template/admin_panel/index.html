@@ -2,285 +2,290 @@
 {% block title %}DINGDONG - Dashboard{% endblock %}
 {% load static %}
 
-{% block extra_css %}
-<style>
-    /* Custom CSS variables for consistent theming */
-    :root {
-        --color-primary: #1e40af;
-        --color-secondary: #7c3aed;
-        --color-accent: #059669;
-        --color-danger: #dc2626;
-        --color-dark: #1f2937;
-    }
-
-    .text-primary { color: var(--color-primary); }
-    .bg-primary { background-color: var(--color-primary); }
-    .text-secondary { color: var(--color-secondary); }
-    .bg-secondary { background-color: var(--color-secondary); }
-    .text-accent { color: var(--color-accent); }
-    .bg-accent { background-color: var(--color-accent); }
-    .text-danger { color: var(--color-danger); }
-    .bg-danger { background-color: var(--color-danger); }
-    .text-dark { color: var(--color-dark); }
-    .bg-dark { background-color: var(--color-dark); }
-
-    /* Always show scrollbar */
-    .overflow-x-auto {
-        scrollbar-gutter: stable;
-    }
-
-    .overflow-x-auto::-webkit-scrollbar {
-        height: 8px;
-    }
-    .overflow-x-auto::-webkit-scrollbar-thumb {
-        background: #d1d5db;
-        border-radius: 9999px;
-    }
-    .overflow-x-auto::-webkit-scrollbar-track {
-        background: #f3f4f6;
-    }
-
-    /* Navigation styles */
-    .nav-item {
-        transition: all 0.2s ease-in-out;
-    }
-    .active-nav {
-        background-color: var(--color-primary);
-        color: white;
-    }
-
-    /* Table row hover effect */
-    .table-row:hover {
-        background-color: #f9fafb;
-    }
-    
-    .stat-card {
-        transition: transform 0.2s ease-in-out;
-    }
-    
-    .stat-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-    }
-</style>
-{% endblock %}
-
 {% block content %}
-<body class="bg-gray-50 font-sans">
-    <!-- Main Content -->
-    <main class="flex-1 lg:ml-0">
-        <!-- Dashboard View -->
-        <div id="dashboardView" class="p-4 lg:p-6">
-            <!-- Statistics Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-6">
-                <!-- Today Sales -->
-                <div class="stat-card bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-sm font-medium text-gray-600 mb-1">Today Sales</p>
-                            <p class="text-2xl font-bold text-dark">${{ today_sales|floatformat:2 }}</p>
-                            <p class="text-xs text-accent font-medium mt-1">▲ Live Data</p>
-                        </div>
-                        <div class="p-3 bg-blue-50 rounded-lg">
-                            <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
-                            </svg>
-                        </div>
-                    </div>
-                </div>
+<main class="flex-1 lg:ml-0">
+  <div id="dashboardView" class="p-4 lg:p-6">
 
-                <!-- Today Orders -->
-                <div class="stat-card bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-sm font-medium text-gray-600 mb-1">Today Orders</p>
-                            <p class="text-2xl font-bold text-dark">{{ today_orders }}</p>
-                            <p class="text-xs text-accent font-medium mt-1">▲ Live Data</p>
-                        </div>
-                        <div class="p-3 bg-red-50 rounded-lg">
-                            <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13l2.5 5m6-5v6a2 2 0 01-2 2H9a2 2 0 01-2-2v-6"></path>
-                            </svg>
-                        </div>
-                    </div>
-                </div>
+     <!-- ── Stat Cards ───────────────────────────────────────────────────────────  -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-6">
 
-                <!-- Sales Report Link -->
-                <div class="stat-card bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl shadow-sm p-6 cursor-pointer" onclick="window.location.href='{% url 'sales_report' %}'">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-sm font-medium text-white mb-1">Sales Reports</p>
-                            <p class="text-2xl font-bold text-white">View Reports</p>
-                            <p class="text-xs text-white font-medium mt-1">→ Click to access</p>
-                        </div>
-                        <div class="p-3 bg-white bg-opacity-20 rounded-lg">
-                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                            </svg>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Total Revenue Placeholder -->
-                <div class="stat-card bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-sm font-medium text-gray-600 mb-1">Quick Access</p>
-                            <p class="text-2xl font-bold text-dark">Analytics</p>
-                            <p class="text-xs text-accent font-medium mt-1">▲ Coming Soon</p>
-                        </div>
-                        <div class="p-3 bg-purple-50 rounded-lg">
-                            <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-                            </svg>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Charts Section -->
-            <div class="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-6">
-                <!-- Sales Overview Chart -->
-                <div class="xl:col-span-2 bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                    <h3 class="text-lg font-semibold text-dark mb-4">Weekly Sales Overview</h3>
-                    <div class="h-64 flex items-end justify-between space-x-2">
-                        <!-- Chart Bars - Dynamic -->
-                        <div id="chartBars" class="flex items-end h-full space-x-2 w-full justify-around">
-                            <!-- Bars will be generated by JavaScript -->
-                        </div>
-                    </div>
-                    <div id="chartLabels" class="flex justify-between text-xs text-gray-500 mt-2">
-                        <!-- Labels will be generated by JavaScript -->
-                    </div>
-                </div>
-
-                <!-- Visited Customers Chart -->
-                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                    <h3 class="text-lg font-semibold text-dark mb-4">Order Status</h3>
-                    <div class="flex items-center justify-center mb-4">
-                        <div class="relative w-32 h-32">
-                            <svg class="w-32 h-32 transform -rotate-90" viewBox="0 0 36 36">
-                                <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#e5e7eb" stroke-width="2"/>
-                                <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#1e40af" stroke-width="2" stroke-dasharray="75, 100"/>
-                            </svg>
-                            <div class="absolute inset-0 flex items-center justify-center">
-                                <span class="text-xl font-bold text-dark">75%</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="space-y-3">
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center">
-                                <div class="w-3 h-3 bg-primary rounded-full mr-2"></div>
-                                <span class="text-sm text-gray-600">Delivered</span>
-                            </div>
-                            <span class="text-sm font-medium text-dark">75%</span>
-                        </div>
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center">
-                                <div class="w-3 h-3 bg-secondary rounded-full mr-2"></div>
-                                <span class="text-sm text-gray-600">Processing</span>
-                            </div>
-                            <span class="text-sm font-medium text-dark">15%</span>
-                        </div>
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center">
-                                <div class="w-3 h-3 bg-accent rounded-full mr-2"></div>
-                                <span class="text-sm text-gray-600">Pending</span>
-                            </div>
-                            <span class="text-sm font-medium text-dark">10%</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Recent Orders Table -->
-            <div class="bg-white rounded-xl shadow-sm border border-gray-100">
-                <div class="p-6 border-b border-gray-200">
-                    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                        <h3 class="text-lg font-semibold text-dark">Recent Orders</h3>
-                        <a href="{% url 'sales_report' %}" class="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors">
-                            View All Reports
-                        </a>
-                    </div>
-                </div>
-                
-                <!-- Table -->
-                <div class="overflow-x-auto">
-                    <table class="w-full">
-                        <thead class="bg-gray-50 border-b border-gray-200">
-                            <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product Name</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order ID</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Qty</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
-                            </tr>
-                        </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
-                            {% if recent_orders %}
-                                {% for order in recent_orders %}
-                                <tr class="table-row">
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-dark">{{ order.customer }}</td>
-                                    <td class="px-6 py-4 text-sm text-gray-900">
-                                        <div>{{ order.product_name }}</div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-primary font-medium">{{ order.order_number }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ order.quantity }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${{ order.price|floatformat:2 }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-dark">${{ order.subtotal|floatformat:2 }}</td>
-                                </tr>
-                                {% endfor %}
-                            {% else %}
-                                <tr>
-                                    <td colspan="6" class="px-6 py-8 text-center text-gray-500">
-                                        <p>No recent orders found</p>
-                                    </td>
-                                </tr>
-                            {% endif %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+      <!--  Today Sales  -->
+      <div class="group bg-white rounded-xl shadow-sm border border-gray-100 p-6
+                  transition-all duration-200 hover:-translate-y-1 hover:shadow-md">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-500 mb-1">Today Sales</p>
+            <p class="text-2xl font-bold text-gray-900">₹{{ today_sales|floatformat:2 }}</p>
+            <p class="text-xs text-emerald-600 font-medium mt-1">▲ Live Data</p>
+          </div>
+          <div class="p-3 bg-blue-50 rounded-lg">
+            <svg class="w-6 h-6 text-blue-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+            </svg>
+          </div>
         </div>
-    </main>
+      </div>
 
-    <script>
-        // Sales data from Django
-        const salesData = {{ daily_sales_data|safe }};
+      <!--  Today Orders  -->
+      <div class="group bg-white rounded-xl shadow-sm border border-gray-100 p-6
+                  transition-all duration-200 hover:-translate-y-1 hover:shadow-md">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-500 mb-1">Today Orders</p>
+            <p class="text-2xl font-bold text-gray-900">{{ today_orders }}</p>
+            <p class="text-xs text-emerald-600 font-medium mt-1">▲ Live Data</p>
+          </div>
+          <div class="p-3 bg-red-50 rounded-lg">
+            <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13l2.5 5m6-5v6a2 2 0 01-2 2H9a2 2 0 01-2-2v-6" />
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sales Report Link -->
+      <div class="group bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl shadow-sm p-6 cursor-pointer
+                  transition-all duration-200 hover:-translate-y-1 hover:shadow-md"
+           onclick="window.location.href='{% url 'sales_report' %}'">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-blue-100 mb-1">Sales Reports</p>
+            <p class="text-2xl font-bold text-white">View Reports</p>
+            <p class="text-xs text-blue-200 font-medium mt-1">→ Click to access</p>
+          </div>
+          <div class="p-3 bg-white bg-opacity-20 rounded-lg">
+            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Total Orders (all time) -->
+      <div class="group bg-white rounded-xl shadow-sm border border-gray-100 p-6
+                  transition-all duration-200 hover:-translate-y-1 hover:shadow-md">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-500 mb-1">Total Orders</p>
+            <p class="text-2xl font-bold text-gray-900">{{ total_orders }}</p>
+            <p class="text-xs text-purple-600 font-medium mt-1">All time</p>
+          </div>
+          <div class="p-3 bg-purple-50 rounded-lg">
+            <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!--  ── Charts Row ────────────────────────────────────────────────────────────  -->
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-6">
+
+      <!-- Yearly Line Chart -->
+      <div class="xl:col-span-2 bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <div class="flex items-center justify-between mb-6">
+          <h3 class="text-lg font-semibold text-gray-900">
+            Yearly Sales Overview
+            <span class="ml-2 text-sm font-normal text-gray-400">{{ current_year }}</span>
+          </h3>
+          <span class="text-xs bg-blue-50 text-blue-700 font-medium px-2 py-1 rounded-full">Monthly</span>
+        </div>
+
+        <!-- SVG Line Chart container -->
+        <div class="relative">
+          <canvas id="yearlyLineChart" class="w-full" style="height:220px;"></canvas>
+        </div>
+
+        <!-- Month labels -->
+        <div id="monthLabels"
+             class="flex justify-between text-xs text-gray-400 mt-2 px-2"></div>
+      </div>
+
+      <!-- Order Status Donut -->
+      <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Order Status</h3>
+
+        <!-- SVG Donut - drawn by JS -->
+        <div class="flex items-center justify-center mb-4">
+          <div class="relative w-36 h-36">
+            <svg id="donutSvg" class="w-36 h-36 -rotate-90" viewBox="0 0 36 36">
+              <circle cx="18" cy="18" r="15.9155" fill="none"
+                      stroke="#f3f4f6" stroke-width="3" />
+            <!-- segments injected by JS -->
+            </svg>
+            <div class="absolute inset-0 flex flex-col items-center justify-center">
+              <span class="text-xl font-bold text-gray-900" id="donutCenter">{{ total_orders }}</span>
+              <span class="text-xs text-gray-400">orders</span>
+            </div>
+          </div>
+        </div>
+
         
-        // Generate chart bars
-        const chartBarsContainer = document.getElementById('chartBars');
-        const chartLabelsContainer = document.getElementById('chartLabels');
-        
-        if (salesData && salesData.length > 0) {
-            // Find max value for scaling
-            const maxAmount = Math.max(...salesData.map(d => d.amount));
-            const maxHeight = 256; // h-64 = 256px
-            
-            salesData.forEach((data, index) => {
-                // Calculate bar height (min 16px for visibility)
-                const height = maxAmount > 0 ? Math.max((data.amount / maxAmount) * maxHeight, 16) : 16;
-                
-                // Create bar
-                const bar = document.createElement('div');
-                bar.className = index === 5 || index === 10 ? 'bg-secondary rounded-t' : 'bg-primary rounded-t';
-                bar.style.width = '16px';
-                bar.style.height = height + 'px';
-                bar.title = '$' + data.amount.toFixed(2);
-                chartBarsContainer.appendChild(bar);
-                
-                // Create label
-                const label = document.createElement('span');
-                label.textContent = data.date;
-                label.className = 'flex-1 text-center';
-                chartLabelsContainer.appendChild(label);
-            });
-        } else {
-            // Show placeholder if no data
-            chartBarsContainer.innerHTML = '<p class="text-gray-400 text-center w-full">No sales data available</p>';
-        }
-    </script>
-</body>
+        <div id="statusLegend" class="space-y-2 overflow-y-auto max-h-44"></div>
+      </div>
+
+    </div>
+
+  </div>
+</main>
+
+<script>
+  /* ── Data from Django ─────────────────────────────────────────────────────── */
+  const monthlySales   = {{ monthly_sales_data|safe }};
+  const statusData     = {{ order_status_data|safe }};
+
+  /* ═══════════════════════════════════════════════════════════════════════════
+     LINE CHART  (canvas-based, no external libs)
+  ═══════════════════════════════════════════════════════════════════════════ */
+  (function drawLineChart() {
+    const canvas  = document.getElementById('yearlyLineChart');
+    if (!canvas) return;
+    const ctx     = canvas.getContext('2d');
+    const W       = canvas.offsetWidth  || 600;
+    const H       = 220;
+    canvas.width  = W;
+    canvas.height = H;
+
+    const PAD = { top: 20, right: 20, bottom: 20, left: 52 };
+    const chartW = W - PAD.left - PAD.right;
+    const chartH = H - PAD.top  - PAD.bottom;
+
+    const amounts  = monthlySales.map(d => d.amount);
+    const maxVal   = Math.max(...amounts, 1);
+    const minVal   = 0;
+
+    /* helpers */
+    const xPos = i  => PAD.left + (i / (monthlySales.length - 1)) * chartW;
+    const yPos = v  => PAD.top  + chartH - ((v - minVal) / (maxVal - minVal)) * chartH;
+
+    /* Y-axis grid lines */
+    const ticks = 5;
+    ctx.strokeStyle = '#f3f4f6';
+    ctx.lineWidth   = 1;
+    ctx.fillStyle   = '#9ca3af';
+    ctx.font        = '11px system-ui, sans-serif';
+    ctx.textAlign   = 'right';
+
+    for (let i = 0; i <= ticks; i++) {
+      const v = (maxVal / ticks) * i;
+      const y = yPos(v);
+      ctx.beginPath();
+      ctx.moveTo(PAD.left, y);
+      ctx.lineTo(W - PAD.right, y);
+      ctx.stroke();
+      ctx.fillText('₹' + (v >= 1000 ? (v / 1000).toFixed(1) + 'k' : v.toFixed(0)), PAD.left - 6, y + 4);
+    }
+
+    /* Area fill */
+    const grad = ctx.createLinearGradient(0, PAD.top, 0, PAD.top + chartH);
+    grad.addColorStop(0,   'rgba(30,64,175,0.18)');
+    grad.addColorStop(1,   'rgba(30,64,175,0)');
+
+    ctx.beginPath();
+    monthlySales.forEach((d, i) => {
+      const x = xPos(i), y = yPos(d.amount);
+      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    });
+    ctx.lineTo(xPos(monthlySales.length - 1), PAD.top + chartH);
+    ctx.lineTo(xPos(0), PAD.top + chartH);
+    ctx.closePath();
+    ctx.fillStyle = grad;
+    ctx.fill();
+
+    /* Line */
+    ctx.beginPath();
+    ctx.strokeStyle = '#1e40af';
+    ctx.lineWidth   = 2.5;
+    ctx.lineJoin    = 'round';
+    monthlySales.forEach((d, i) => {
+      const x = xPos(i), y = yPos(d.amount);
+      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+
+    /* Dots */
+    monthlySales.forEach((d, i) => {
+      const x = xPos(i), y = yPos(d.amount);
+      ctx.beginPath();
+      ctx.arc(x, y, 4, 0, Math.PI * 2);
+      ctx.fillStyle   = '#1e40af';
+      ctx.fill();
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth   = 2;
+      ctx.stroke();
+    });
+
+    /* Month labels */
+    const labelsEl = document.getElementById('monthLabels');
+    if (labelsEl) {
+      labelsEl.innerHTML = monthlySales.map(d =>
+        `<span class="flex-1 text-center">${d.month}</span>`
+      ).join('');
+    }
+  })();
+
+
+  /* ═══════════════════════════════════════════════════════════════════════════
+     DONUT CHART  (inline SVG segments)
+  ═══════════════════════════════════════════════════════════════════════════ */
+  (function drawDonut() {
+    const svg    = document.getElementById('donutSvg');
+    const legend = document.getElementById('statusLegend');
+    if (!svg || !legend) return;
+
+    const r           = 15.9155;   /* radius matching viewBox */
+    const circumference = 2 * Math.PI * r;   /* ≈ 100 */
+    const total       = statusData.reduce((s, d) => s + d.count, 0) || 1;
+
+    let offset = 0;
+    const segments = [];
+
+    statusData.forEach(item => {
+      if (item.count === 0) return;
+      const pct  = item.count / total;
+      const dash = pct * circumference;
+      segments.push({ ...item, dash, offset });
+      offset += dash;
+    });
+
+    /* Remove old circles except the grey track (first child) */
+    while (svg.children.length > 1) svg.removeChild(svg.lastChild);
+
+    segments.forEach(seg => {
+      const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      circle.setAttribute('cx',              '18');
+      circle.setAttribute('cy',              '18');
+      circle.setAttribute('r',               r.toString());
+      circle.setAttribute('fill',            'none');
+      circle.setAttribute('stroke',          seg.color);
+      circle.setAttribute('stroke-width',    '3');
+      circle.setAttribute('stroke-dasharray',`${seg.dash} ${circumference - seg.dash}`);
+      circle.setAttribute('stroke-dashoffset', `${-seg.offset}`);
+      svg.appendChild(circle);
+    });
+
+    /* Legend */
+    legend.innerHTML = statusData
+      .filter(d => d.count > 0)
+      .map(d => `
+        <div class="flex items-center justify-between text-sm">
+          <div class="flex items-center gap-2 min-w-0">
+            <span class="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                  style="background:${d.color}"></span>
+            <span class="text-gray-600 truncate">${d.label}</span>
+          </div>
+          <div class="flex items-center gap-1 flex-shrink-0 ml-2">
+            <span class="font-semibold text-gray-800">${d.count}</span>
+            <span class="text-gray-400 text-xs">(${d.percent}%)</span>
+          </div>
+        </div>`)
+      .join('');
+  })();
+</script>
 {% endblock %}
