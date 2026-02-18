@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth.decorators import user_passes_test
 from django.views.decorators.cache import cache_control
 from django.contrib.auth import get_user_model
 from django.db.models import Sum, Count, F
@@ -12,20 +12,12 @@ import json
 from django.template.loader import render_to_string
 from django.http import HttpResponse
 import calendar
-
-# For PDF generation
 from weasyprint import HTML
-import tempfile
 
 User = get_user_model()
 ACTIVE_STATUSES = ['delivered', 'confirmed', 'shipped', 'out_for_delivery']
 
-
-# ═══════════════════════════════════════════════════════════════════════════
-# DASHBOARD VIEW
-# ═══════════════════════════════════════════════════════════════════════════
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
-@login_required(login_url="admin_login")
 @user_passes_test(lambda u: u.is_superuser, login_url="admin_login")
 def DashboardHomeView(request):
     today = timezone.now().date()
@@ -60,20 +52,34 @@ def DashboardHomeView(request):
     total_orders = sum(status_map.values()) or 1
 
     order_status_data = [
-        {"label": "Delivered", "count": status_map.get("delivered", 0),
-         "percent": round(status_map.get("delivered", 0) / total_orders * 100), "color": "#1e40af"},
-        {"label": "Confirmed", "count": status_map.get("confirmed", 0),
-         "percent": round(status_map.get("confirmed", 0) / total_orders * 100), "color": "#059669"},
-        {"label": "Shipped", "count": status_map.get("shipped", 0),
-         "percent": round(status_map.get("shipped", 0) / total_orders * 100), "color": "#7c3aed"},
-        {"label": "Out for Delivery", "count": status_map.get("out_for_delivery", 0),
-         "percent": round(status_map.get("out_for_delivery", 0) / total_orders * 100), "color": "#d97706"},
-        {"label": "Pending", "count": status_map.get("pending", 0),
-         "percent": round(status_map.get("pending", 0) / total_orders * 100), "color": "#6b7280"},
-        {"label": "Cancelled", "count": status_map.get("cancelled", 0),
-         "percent": round(status_map.get("cancelled", 0) / total_orders * 100), "color": "#dc2626"},
-        {"label": "Returned", "count": status_map.get("returned", 0),
-         "percent": round(status_map.get("returned", 0) / total_orders * 100), "color": "#f59e0b"},
+        {
+            "label": "Delivered", "count": status_map.get("delivered", 0),
+            "percent": round(status_map.get("delivered", 0) / total_orders * 100), "color": "#1e40af"
+        },
+        {
+            "label": "Confirmed", "count": status_map.get("confirmed", 0),
+            "percent": round(status_map.get("confirmed", 0) / total_orders * 100), "color": "#059669"
+        },
+        {
+            "label": "Shipped", "count": status_map.get("shipped", 0),
+            "percent": round(status_map.get("shipped", 0) / total_orders * 100), "color": "#7c3aed"
+        },
+        {
+            "label": "Out for Delivery", "count": status_map.get("out_for_delivery", 0),
+            "percent": round(status_map.get("out_for_delivery", 0) / total_orders * 100), "color": "#d97706"
+        },
+        {
+            "label": "Pending", "count": status_map.get("pending", 0),
+            "percent": round(status_map.get("pending", 0) / total_orders * 100), "color": "#6b7280"
+        },
+        {
+            "label": "Cancelled", "count": status_map.get("cancelled", 0),
+            "percent": round(status_map.get("cancelled", 0) / total_orders * 100), "color": "#dc2626"
+        },
+        {
+            "label": "Returned", "count": status_map.get("returned", 0),
+            "percent": round(status_map.get("returned", 0) / total_orders * 100), "color": "#f59e0b"
+        },
     ]
 
     context = {
@@ -88,10 +94,6 @@ def DashboardHomeView(request):
 
     return render(request, "admin_panel/index.html", context)
 
-
-# ═══════════════════════════════════════════════════════════════════════════
-# HELPER FUNCTIONS
-# ═══════════════════════════════════════════════════════════════════════════
 def _get_date_range(report_type, start_date_str, end_date_str, today):
     orders = Order.objects.filter(order_status__in=ACTIVE_STATUSES)
 
@@ -135,6 +137,7 @@ def _get_date_range(report_type, start_date_str, end_date_str, today):
         except ValueError:
             period_label = "Custom Report"
             chart_labels, chart_amounts = [], []
+            
     else:
         period_label = "All Time Report"
         MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
@@ -244,12 +247,7 @@ def _date_rows(orders, report_type, start_date_str, end_date_str, today):
 
     return rows
 
-
-# ═══════════════════════════════════════════════════════════════════════════
-# SALES REPORT VIEW
-# ═══════════════════════════════════════════════════════════════════════════
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
-@login_required(login_url="admin_login")
 @user_passes_test(lambda u: u.is_superuser, login_url="admin_login")
 def sales_report_view(request):
     report_type = request.GET.get('report_type', 'daily')
@@ -293,7 +291,6 @@ def sales_report_view(request):
     return render(request, 'admin_panel/sales_report.html', context)
 
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
-@login_required(login_url="admin_login")
 @user_passes_test(lambda u: u.is_superuser, login_url="admin_login")
 def download_sales_pdf(request):
     report_type = request.GET.get('report_type', 'daily')
@@ -320,14 +317,11 @@ def download_sales_pdf(request):
         'date_rows': _date_rows(orders, report_type, start_date, end_date, today),
     }
 
-    # Render HTML template
     html_string = render_to_string('admin_panel/sales_report_pdf.html', context, request=request)
     
-    # Convert HTML to PDF
     html = HTML(string=html_string, base_url=request.build_absolute_uri())
     pdf_file = html.write_pdf()
 
-    # Return as downloadable PDF
     response = HttpResponse(pdf_file, content_type='application/pdf')
     filename = f"sales_report_{report_type}_{timezone.now().strftime('%Y%m%d_%H%M%S')}.pdf"
     response['Content-Disposition'] = f'attachment; filename="{filename}"'

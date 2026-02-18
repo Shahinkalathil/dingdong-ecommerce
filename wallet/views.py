@@ -14,6 +14,7 @@ User = get_user_model()
 # Userside
 # -------------------------------------------
 # Wallet Listing
+
 @login_required
 def wallet_view(request):
     wallet, _ = Wallet.objects.get_or_create(user=request.user)
@@ -46,7 +47,9 @@ def wallet_view(request):
 
 @login_required
 def AdminPaymentListView(request):
-    """Admin view to list all payments (Orders + Wallet Transactions)"""
+    """
+    Admin view to list all payments (Orders + Wallet Transactions)
+    """
     search_query = request.GET.get('search', '')
     page_number = request.GET.get('page', 1)
 
@@ -135,7 +138,9 @@ def AdminPaymentListView(request):
 
 @login_required
 def AdminPaymentDetailView(request, payment_type, payment_id):
-    """Admin view to see detailed payment information"""
+    """
+    Admin view to see detailed payment information
+    """
     
     if payment_type == 'order':
         order = get_object_or_404(Order.objects.select_related('user', 'address'), id=payment_id)
