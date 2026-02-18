@@ -140,9 +140,7 @@
   const monthlySales   = {{ monthly_sales_data|safe }};
   const statusData     = {{ order_status_data|safe }};
 
-  /* ═══════════════════════════════════════════════════════════════════════════
-     LINE CHART  (canvas-based, no external libs)
-  ═══════════════════════════════════════════════════════════════════════════ */
+  /* LINE CHART */
   (function drawLineChart() {
     const canvas  = document.getElementById('yearlyLineChart');
     if (!canvas) return;
@@ -231,9 +229,7 @@
   })();
 
 
-  /* ═══════════════════════════════════════════════════════════════════════════
-     DONUT CHART  (inline SVG segments)
-  ═══════════════════════════════════════════════════════════════════════════ */
+  /* DONUT CHART  */
   (function drawDonut() {
     const svg    = document.getElementById('donutSvg');
     const legend = document.getElementById('statusLegend');
