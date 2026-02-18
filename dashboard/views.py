@@ -94,6 +94,91 @@ def DashboardHomeView(request):
 
     return render(request, "admin_panel/index.html", context)
 
+
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
+@user_passes_test(lambda u: u.is_superuser, login_url="admin_login")
+def sales_report_view(request):
+    report_type = request.GET.get('report_type', 'daily')
+    start_date = request.GET.get('start_date', '')
+    end_date = request.GET.get('end_date', '')
+    today = timezone.now().date()
+
+    orders, period_label, chart_data = _get_date_range(report_type, start_date, end_date, today)
+
+    totals = orders.aggregate(
+        total_count=Count('id'), total_amount=Sum('total_amount'),
+        total_discount=Sum('discount_amount'), total_coupon=Sum('coupon_discount'))
+
+    top_products, top_categories, top_brands = _best_sellers(orders)
+
+    order_rows = []
+    for order in orders.select_related('user').prefetch_related('items').order_by('-created_at'):
+        active_items = order.items.filter(item_status='active')
+        items_summary = ', '.join(f"{i.product_name} ×{i.quantity}" for i in active_items)
+        order_rows.append({
+            'order_number': order.order_number,
+            'customer': order.user.get_full_name() or order.user.username,
+            'items': items_summary,
+            'amount': order.total_amount,
+            'payment': order.get_payment_method_display(),
+            'status': order.get_order_status_display(),
+            'status_raw': order.order_status,
+            'discount': (order.discount_amount or 0) + (order.coupon_discount or 0),
+        })
+
+    total_discount = (totals['total_discount'] or Decimal('0')) + (totals['total_coupon'] or Decimal('0'))
+
+    context = {
+        'report_type': report_type, 'start_date': start_date, 'end_date': end_date,
+        'period_label': period_label, 'total_sales_count': totals['total_count'] or 0,
+        'total_order_amount': totals['total_amount'] or Decimal('0'),
+        'total_discount': total_discount, 'order_rows': order_rows,
+        'chart_data': chart_data, 'top_products': top_products,
+        'top_categories': top_categories, 'top_brands': top_brands,
+    }
+    return render(request, 'admin_panel/sales_report.html', context)
+
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
+@user_passes_test(lambda u: u.is_superuser, login_url="admin_login")
+def download_sales_pdf(request):
+    report_type = request.GET.get('report_type', 'daily')
+    start_date = request.GET.get('start_date', '')
+    end_date = request.GET.get('end_date', '')
+    today = timezone.now().date()
+
+    orders, period_label, _ = _get_date_range(report_type, start_date, end_date, today)
+
+    totals = orders.aggregate(
+        total_count=Count('id'), total_amount=Sum('total_amount'),
+        total_discount=Sum('discount_amount'), total_coupon=Sum('coupon_discount'))
+    
+    total_discount = (totals['total_discount'] or Decimal('0')) + (totals['total_coupon'] or Decimal('0'))
+
+    context = {
+        'report_type': report_type,
+        'period_label': period_label,
+        'generated_at': timezone.now(),
+        'total_sales_count': totals['total_count'] or 0,
+        'total_order_amount': totals['total_amount'] or Decimal('0'),
+        'total_discount': total_discount,
+        'payment_breakdown': _payment_breakdown(orders),
+        'date_rows': _date_rows(orders, report_type, start_date, end_date, today),
+    }
+
+    html_string = render_to_string('admin_panel/sales_report_pdf.html', context, request=request)
+    
+    html = HTML(string=html_string, base_url=request.build_absolute_uri())
+    pdf_file = html.write_pdf()
+
+    response = HttpResponse(pdf_file, content_type='application/pdf')
+    filename = f"sales_report_{report_type}_{timezone.now().strftime('%Y%m%d_%H%M%S')}.pdf"
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+    
+    return response
+
+
+
+
 def _get_date_range(report_type, start_date_str, end_date_str, today):
     orders = Order.objects.filter(order_status__in=ACTIVE_STATUSES)
 
@@ -246,84 +331,3 @@ def _date_rows(orders, report_type, start_date_str, end_date_str, today):
                        'discount': (r['discount'] or Decimal('0')) + (r['coupon'] or Decimal('0'))})
 
     return rows
-
-@cache_control(no_cache=True, must_revalidate=True, no_store=True)
-@user_passes_test(lambda u: u.is_superuser, login_url="admin_login")
-def sales_report_view(request):
-    report_type = request.GET.get('report_type', 'daily')
-    start_date = request.GET.get('start_date', '')
-    end_date = request.GET.get('end_date', '')
-    today = timezone.now().date()
-
-    orders, period_label, chart_data = _get_date_range(report_type, start_date, end_date, today)
-
-    totals = orders.aggregate(
-        total_count=Count('id'), total_amount=Sum('total_amount'),
-        total_discount=Sum('discount_amount'), total_coupon=Sum('coupon_discount'))
-
-    top_products, top_categories, top_brands = _best_sellers(orders)
-
-    order_rows = []
-    for order in orders.select_related('user').prefetch_related('items').order_by('-created_at'):
-        active_items = order.items.filter(item_status='active')
-        items_summary = ', '.join(f"{i.product_name} ×{i.quantity}" for i in active_items)
-        order_rows.append({
-            'order_number': order.order_number,
-            'customer': order.user.get_full_name() or order.user.username,
-            'items': items_summary,
-            'amount': order.total_amount,
-            'payment': order.get_payment_method_display(),
-            'status': order.get_order_status_display(),
-            'status_raw': order.order_status,
-            'discount': (order.discount_amount or 0) + (order.coupon_discount or 0),
-        })
-
-    total_discount = (totals['total_discount'] or Decimal('0')) + (totals['total_coupon'] or Decimal('0'))
-
-    context = {
-        'report_type': report_type, 'start_date': start_date, 'end_date': end_date,
-        'period_label': period_label, 'total_sales_count': totals['total_count'] or 0,
-        'total_order_amount': totals['total_amount'] or Decimal('0'),
-        'total_discount': total_discount, 'order_rows': order_rows,
-        'chart_data': chart_data, 'top_products': top_products,
-        'top_categories': top_categories, 'top_brands': top_brands,
-    }
-    return render(request, 'admin_panel/sales_report.html', context)
-
-@cache_control(no_cache=True, must_revalidate=True, no_store=True)
-@user_passes_test(lambda u: u.is_superuser, login_url="admin_login")
-def download_sales_pdf(request):
-    report_type = request.GET.get('report_type', 'daily')
-    start_date = request.GET.get('start_date', '')
-    end_date = request.GET.get('end_date', '')
-    today = timezone.now().date()
-
-    orders, period_label, _ = _get_date_range(report_type, start_date, end_date, today)
-
-    totals = orders.aggregate(
-        total_count=Count('id'), total_amount=Sum('total_amount'),
-        total_discount=Sum('discount_amount'), total_coupon=Sum('coupon_discount'))
-    
-    total_discount = (totals['total_discount'] or Decimal('0')) + (totals['total_coupon'] or Decimal('0'))
-
-    context = {
-        'report_type': report_type,
-        'period_label': period_label,
-        'generated_at': timezone.now(),
-        'total_sales_count': totals['total_count'] or 0,
-        'total_order_amount': totals['total_amount'] or Decimal('0'),
-        'total_discount': total_discount,
-        'payment_breakdown': _payment_breakdown(orders),
-        'date_rows': _date_rows(orders, report_type, start_date, end_date, today),
-    }
-
-    html_string = render_to_string('admin_panel/sales_report_pdf.html', context, request=request)
-    
-    html = HTML(string=html_string, base_url=request.build_absolute_uri())
-    pdf_file = html.write_pdf()
-
-    response = HttpResponse(pdf_file, content_type='application/pdf')
-    filename = f"sales_report_{report_type}_{timezone.now().strftime('%Y%m%d_%H%M%S')}.pdf"
-    response['Content-Disposition'] = f'attachment; filename="{filename}"'
-    
-    return response
