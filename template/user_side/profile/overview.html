@@ -729,7 +729,7 @@
         submitBtn.textContent = 'Saving...';
 
         // Prepare form data
-        const z = new FormData(passwordForm);
+        const formData = new FormData(passwordForm);
         const csrftoken = getCookie('csrftoken');
 
         try {
