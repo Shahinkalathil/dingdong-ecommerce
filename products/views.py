@@ -66,7 +66,7 @@ def products(request):
     else:
         products=products.order_by('-id')
 
-    paginator=Paginator(products.distinct(),15)
+    paginator=Paginator(products.distinct(),5)
     page_obj=paginator.get_page(request.GET.get('page'))
 
     product_display_data=[]

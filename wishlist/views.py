@@ -9,10 +9,6 @@ from offers.utils import get_best_offer_price
 
 @login_required
 def wishlist(request):
-    """
-    Display user's wishlist
-    Excludes items already in cart
-    """
     user = request.user
     try:
         user_cart = Cart.objects.get(user=user)
@@ -78,10 +74,6 @@ def remove_from_wishlist(request, variant_id):
 
 @login_required
 def toggle_wishlist(request, variant_id):
-    """
-    Toggle wishlist for a specific product variant
-    Redirects back to the same variant detail page
-    """
     if request.method != 'POST':
         return redirect('products')
     
