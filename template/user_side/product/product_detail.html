@@ -97,26 +97,26 @@
                 </div>
 
                 <!-- Wishlist Button -->
-                <form method="post" action="{% url 'toggle_wishlist' default_variant.id %}">
-                    {% csrf_token %}
-                    <button type="submit"
-                        class="wishlist-btn absolute top-4 right-4
-                            w-14 h-14 flex items-center justify-center
-                            bg-white rounded-full shadow-xl
-                            transition-all duration-300 hover:scale-110
-                            {% if is_in_wishlist %}
-                                text-red-500
-                            {% else %}
-                                text-gray-400 hover:text-red-500
-                            {% endif %}">
+                <button 
+                    type="button"
+                    data-variant-id="{{ default_variant.id }}"
+                    class="wishlist-btn absolute top-4 right-4
+                        w-14 h-14 flex items-center justify-center
+                        bg-white rounded-full shadow-xl
+                        transition-all duration-300 hover:scale-110
                         {% if is_in_wishlist %}
-                            <i class="fas fa-heart text-2xl"></i>
+                            text-red-500
                         {% else %}
-                            <i class="far fa-heart text-2xl"></i>
-                        {% endif %}
-                    </button>
-                </form>
-                
+                            text-gray-400 hover:text-red-500
+                        {% endif %}">
+                        
+                    {% if is_in_wishlist %}
+                        <i class="fas fa-heart text-2xl"></i>
+                    {% else %}
+                        <i class="far fa-heart text-2xl"></i>
+                    {% endif %}
+                </button>
+                                
                 <!-- Brand & Title -->
                 <div>
                     <p class="text-sm text-gray-500 uppercase tracking-wide">{{ product.brand.name }}</p>
@@ -533,6 +533,74 @@
     </div>
 
     <script>
+
+        // Wishlist Toggle Functionality
+        document.addEventListener("DOMContentLoaded", function () {
+
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== "") {
+                const cookies = document.cookie.split(";");
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + "=")) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        const csrftoken = getCookie("csrftoken");
+
+        document.querySelectorAll(".wishlist-btn").forEach(button => {
+
+            button.addEventListener("click", function () {
+
+                const variantId = this.dataset.variantId;
+                const icon = this.querySelector("i");
+
+                fetch(`/wishlist/toggle/${variantId}/`, {
+                    method: "POST",
+                    headers: {
+                        "X-CSRFToken": csrftoken,
+                        "X-Requested-With": "XMLHttpRequest"
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+
+                    if (data.success) {
+
+                        if (data.action === "added") {
+                            icon.classList.remove("far");
+                            icon.classList.add("fas");
+                            this.classList.remove("text-gray-400");
+                            this.classList.add("text-red-500");
+                        } else {
+                            icon.classList.remove("fas");
+                            icon.classList.add("far");
+                            this.classList.remove("text-red-500");
+                            this.classList.add("text-gray-400");
+                        }
+
+                        showToast(data.message, "success");
+
+                    } else {
+                        showToast(data.message, "error");
+                    }
+
+                })
+                .catch(error => {
+                    showToast("Something went wrong.", "error");
+                });
+
+            });
+
+        });
+
+    });
         // Toast Notification System
         function showToast(message, type = 'success') {
             const toastContainer = document.getElementById('toastContainer');
