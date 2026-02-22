@@ -6,7 +6,7 @@ def send_otp_email(email, otp):
     subject = "🔐 Verify Your Account – OTP Inside"
     message = (
             f"Hello,\n\n"
-            f"Your One-Time Password (OTP) is: **{otp}**\n"
+            f"Your One-Time Password (OTP) is: {otp}\n"
             f"This code is valid for only *5 minute*.\n\n"
             f"If you didn’t request this, please ignore this email.\n\n"
             f"Thank you,\n"
