@@ -3,9 +3,10 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from .models import WishlistItem
 from cart.models import CartItem, Cart
-from products.models import ProductImage, ProductVariant
+from products.models import ProductVariant
 from offers.utils import get_best_offer_price
-
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
 
 @login_required
 def wishlist(request):
@@ -71,41 +72,37 @@ def remove_from_wishlist(request, variant_id):
     
     return redirect('wishlist')
 
-
 @login_required
+@require_POST
 def toggle_wishlist(request, variant_id):
-    if request.method != 'POST':
-        return redirect('products')
-    
     try:
         variant = get_object_or_404(ProductVariant, id=variant_id, is_listed=True)
-        
-        if not variant.product.is_listed or not variant.product.category.is_listed or not variant.product.brand.is_listed:
-            messages.error(request, "Product not available.")
-            return redirect('products')
-        
-        try:
-            cart = Cart.objects.get(user=request.user)
-            if CartItem.objects.filter(cart=cart, variant=variant).exists():
-                messages.info(request, "Already in cart.")
-                return redirect('product_detail', variant_id=variant_id)
-        except Cart.DoesNotExist:
-            pass
 
-        wishlist_item = WishlistItem.objects.filter(user=request.user, variant=variant).first()
-        
+        wishlist_item = WishlistItem.objects.filter(
+            user=request.user,
+            variant=variant
+        ).first()
+
         if wishlist_item:
             wishlist_item.delete()
-            messages.success(request, "Removed from wishlist.")
+            return JsonResponse({
+                "success": True,
+                "action": "removed",
+                "message": "Removed from wishlist."
+            })
         else:
-            WishlistItem.objects.create(user=request.user, variant=variant)
-            messages.success(request, "Added to wishlist.")
-        return redirect('product_detail', variant_id=variant_id)
+            WishlistItem.objects.create(
+                user=request.user,
+                variant=variant
+            )
+            return JsonResponse({
+                "success": True,
+                "action": "added",
+                "message": "Added to wishlist."
+            })
 
-    except ProductVariant.DoesNotExist:
-        messages.error(request, "Product not found.")
-        return redirect('products')
     except Exception as e:
-        print(f"Error in toggle_wishlist: {e}")
-        messages.error(request, "Something went wrong.")
-        return redirect('products')
+        return JsonResponse({
+            "success": False,
+            "message": "Something went wrong."
+        }, status=400)
