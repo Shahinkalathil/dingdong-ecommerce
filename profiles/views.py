@@ -37,9 +37,6 @@ logger = logging.getLogger(__name__)
 @login_required
 @require_http_methods(["POST"])
 def ChangePasswordView(request):
-    """
-    Handle password change via AJAX request
-    """
     if not request.headers.get('x-requested-with') == 'XMLHttpRequest':
         return JsonResponse({
             'success': False, 
@@ -78,7 +75,6 @@ def ChangePasswordView(request):
             'errors': errors
         })
     try:
-
         request.user.set_password(new_password)
         request.user.save()
         update_session_auth_hash(request, request.user)
