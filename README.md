@@ -133,17 +133,34 @@ DINGDONG/
 
    Create a `.env` file in the root directory and add:
    ```env
-   SECRET_KEY=your_django_secret_key
-   DEBUG=True
-   DATABASE_NAME=your_db_name
-   DATABASE_USER=your_db_user
-   DATABASE_PASSWORD=your_db_password
-   DATABASE_HOST=localhost
-   DATABASE_PORT=5432
-   RAZORPAY_KEY_ID=your_razorpay_key
-   RAZORPAY_KEY_SECRET=your_razorpay_secret
-   EMAIL_HOST_USER=your_email@gmail.com
-   EMAIL_HOST_PASSWORD=your_email_app_password
+	SECRET_KEY=django-insecure-3oos!cdz=^^3@yb8(yt1+08k*^225eh@cuylm)&l8+0f_kjr0u
+
+	# Email Configuration
+	EMAIL_HOST_USER=shahinluttu@gmail.com
+	EMAIL_HOST_PASSWORD=jstz sivc nwls ytnw
+
+	# Database Configuration
+	DB_NAME=mydbdingdong
+	DB_USER=dong_user
+	DB_PASSWORD=shahin1212
+	DB_HOST=localhost
+	DB_PORT=5432
+
+	# Site Configuration
+	USE_NGROK=0
+	SITE_ID_LOCAL=6
+	SITE_ID_NGROK=5
+
+	# Google OAuth Configuration
+	GOOGLE_CLIENT_ID=803453159842-qenjn7nbfsflffdtgvfpm6jat3f37ca7.apps.googleusercontent.com
+	GOOGLE_CLIENT_SECRET=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
+	GOOGLE_REDIRECT_URI=http://localhost:8000/accounts/google/login/callback/
+	GOOGLE_REDIRECT_URI_NGROK=https://223bd8012b44.ngrok-free.app/accounts/google/login/callback/
+
+
+	# Razorpay TEST Configuration
+	RAZORPAY_KEY_ID=rzp_test_S44MxPSsgVJtze
+	RAZORPAY_KEY_SECRET=glnxh28zDOkfPiuuciBCKt84
    ```
 
 5. **Apply migrations**
@@ -207,7 +224,7 @@ python manage.py test orders
 
 ## 👨‍💻 Authors & Acknowledgments
 
-**Shahin Kalathi L**
+**Shahin KalathiL**
 - 📧 shahinoffical.se@gmail.com
 - 🌐 [www.shahinkalathi.l.com](http://www.shahinkalathi.l.com)
 - 🔗 [LinkedIn](https://www.linkedin.com/in/shahin-kalathi-l-b25664353/)
