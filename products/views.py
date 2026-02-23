@@ -7,6 +7,7 @@ from PIL import Image
 from wishlist.models import WishlistItem
 from .models import Category, Product, Brand, ProductVariant, ProductImage
 from django.http import JsonResponse
+from cart.models import Cart, CartItem
 from django.core.paginator import Paginator
 from django.db.models import Min,  Q, Max
 import random
@@ -107,20 +108,12 @@ def products(request):
 
 # Product Detail
 def product_detail(request, variant_id):
-    """
-    Product detail view that handles variant selection via URL parameter
-    """
     try:
-        # Get the variant directly from the URL
         default_variant = get_object_or_404(ProductVariant, id=variant_id, is_listed=True)
         product = default_variant.product
-        
-        # Check if product, category, and brand are listed
         if not product.is_listed or not product.category.is_listed or not product.brand.is_listed:
             messages.error(request, "This product is not available.")
             return redirect('products')
-        
-        # Get all listed variants for this product
         variants = ProductVariant.objects.filter(
             product=product, 
             is_listed=True
@@ -129,8 +122,6 @@ def product_detail(request, variant_id):
         if not variants.exists():
             messages.error(request, "No variants available for this product.")
             return redirect('products')
-        
-        # Get wishlist variant IDs for authenticated users
         wishlist_variants = []
         is_in_wishlist = False
         is_in_cart = False
@@ -143,7 +134,7 @@ def product_detail(request, variant_id):
             
             # Check if variant is in cart
             try:
-                from cart.models import Cart, CartItem
+                
                 user_cart = Cart.objects.get(user=request.user)
                 is_in_cart = CartItem.objects.filter(cart=user_cart, variant=default_variant).exists()
             except Cart.DoesNotExist:

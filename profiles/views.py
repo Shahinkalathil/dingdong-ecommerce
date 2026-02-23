@@ -472,9 +472,6 @@ def set_default_address(request, address_id):
 
 @login_required
 def AddressDeleteView(request, address_id):
-    """
-    Delete an address with proper handling of default address transfer
-    """
     address = get_object_or_404(Address, id=address_id, user=request.user)
     if Address.objects.filter(user=request.user).count() == 1:
         messages.warning(request, 'You cannot delete your only address. Please add another address first.')
