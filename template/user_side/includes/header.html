@@ -18,10 +18,16 @@
       <a href="{% url 'wishlist' %}" class="text-gray-600 hover:text-black transition-colors">
         <i class="far fa-heart"></i>
       </a>
-      <a href="{% url 'cart' %}" class="text-gray-600 hover:text-black transition-colors">
+      <a href="{% url 'cart' %}" class="relative text-gray-600 hover:text-black transition-colors">
         <i class="fas fa-shopping-cart"></i>
+        
+        {% if cart_count > 0 %}
+          <span class="absolute -top-2 -right-2 bg-red-600 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">
+            {{ cart_count }}
+          </span>
+        {% endif %}
       </a>
-      <a href="#" class="text-gray-600 hover:text-black transition-colors">
+      <a href="{% url 'order' %}" class="text-gray-600 hover:text-black transition-colors">
         <i class="far fa-bell"></i>
       </a>
       <div class="relative">
@@ -32,24 +38,10 @@
         <div id="userMenu" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
           {% if user.is_authenticated %}
             <a href="{% url 'profile' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Profile</a>
-            <a href="{% url 'order' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Orders</a>
             <hr class="my-1">
             <a href="{% url 'logout' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Logout</a>
           {% endif %}
         </div>
-      </div>
-    </div>
-  </div>
-  
-  <!-- Search Bar (Hidden by default) -->
-  <div id="searchBar" class="hidden bg-gray-50 border-t border-gray-200 py-3">
-    <div class="container mx-auto px-4">
-      <div class="relative max-w-md mx-auto">
-        <input type="text" placeholder="Search products..." 
-               class="w-full pl-4 pr-10 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500">
-        <button class="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600">
-          <i class="fas fa-search"></i>
-        </button>
       </div>
     </div>
   </div>

@@ -6,12 +6,10 @@ from django.contrib import messages
 from PIL import Image
 from wishlist.models import WishlistItem
 from .models import Category, Product, Brand, ProductVariant, ProductImage
-from django.http import JsonResponse
 from cart.models import Cart, CartItem
 from django.core.paginator import Paginator
-from django.db.models import Min,  Q, Max
+from django.db.models import Min,  Q, Max, Count
 import random
-from decimal import Decimal
 import base64
 import io
 from offers.models import ProductOffer
@@ -24,6 +22,8 @@ def products(request):
     products=Product.objects.filter(is_listed=True,category__is_listed=True,brand__is_listed=True,variants__is_listed=True
     ).prefetch_related("variants__images","variants"
     ).select_related("brand","category").distinct()
+
+    cart_count = CartItem.objects.filter(cart__user=request.user).aggregate(total=Count('id'))['total'] or 0
 
     categories=Category.objects.filter(is_listed=True)
     brands=Brand.objects.filter(is_listed=True)
@@ -94,6 +94,7 @@ def products(request):
                 })
     context={
         'page_obj':page_obj,
+        "cart_count" : cart_count,
         'product_display_data':product_display_data,
         'categories':categories,
         'brands':brands,
