@@ -7,37 +7,68 @@ from products.models import ProductVariant
 from django.contrib.auth.decorators import login_required
 from decimal import Decimal
 from offers.utils import get_offer_details
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
 
 @login_required
+@require_POST
 def add_to_cart(request, product_variant_id):
     try:
-        variant = get_object_or_404(ProductVariant, id=product_variant_id, is_listed=True)
-        
-        if not variant.product.is_listed or not variant.product.category.is_listed or not variant.product.brand.is_listed:
-            messages.error(request, 'Product not available.')
-            return redirect('products')
-        
+        variant = get_object_or_404(
+            ProductVariant, 
+            id=product_variant_id, 
+            is_listed=True
+        )
+
+        if not variant.product.is_listed or \
+           not variant.product.category.is_listed or \
+           not variant.product.brand.is_listed:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Product not available.'
+            })
+
         if variant.stock < 1:
-            messages.error(request, 'Out of stock.')
-            return redirect('product_detail', variant_id=variant.id)
-        
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Out of stock.'
+            })
+
         cart, _ = Cart.objects.get_or_create(user=request.user)
 
-        cart_item = CartItem.objects.filter(cart=cart, variant=variant).first()
-        
+        cart_item = CartItem.objects.filter(
+            cart=cart, 
+            variant=variant
+        ).first()
+
         if cart_item:
             if cart_item.quantity < variant.stock:
                 cart_item.quantity += 1
                 cart_item.save()
+                message = 'Quantity updated.'
+            else:
+                return JsonResponse({
+                    'status': 'error',
+                    'message': 'Stock limit reached.'
+                })
         else:
-            CartItem.objects.create(cart=cart, variant=variant, quantity=1)
-            messages.success(request, 'Added to cart.')
-        return redirect('product_detail', variant_id=variant.id)
-        
-    except ProductVariant.DoesNotExist:
-        return redirect('products')
-    except Exception as e:
-        return redirect('products')
+            CartItem.objects.create(
+                cart=cart, 
+                variant=variant, 
+                quantity=1
+            )
+            message = 'Added to cart.'
+
+        return JsonResponse({
+            'status': 'success',
+            'message': message
+        })
+
+    except Exception:
+        return JsonResponse({
+            'status': 'error',
+            'message': 'Something went wrong.'
+        })
 
 
 def cart(request):

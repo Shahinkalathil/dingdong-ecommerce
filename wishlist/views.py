@@ -2,43 +2,33 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from .models import WishlistItem
-from cart.models import CartItem, Cart
 from products.models import ProductVariant
 from offers.utils import get_best_offer_price
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
+from cart.models import Cart
 
 @login_required
 def wishlist(request):
     user = request.user
+    wishlist_items = WishlistItem.objects.filter(user=user).select_related(
+        "variant__product__brand", "variant__product__category"
+    ).prefetch_related("variant__images")
+    cart_variant_ids = set()
     try:
-        user_cart = Cart.objects.get(user=user)
-        cart_variant_ids = CartItem.objects.filter(cart=user_cart).values_list("variant_id", flat=True)
+        cart = Cart.objects.get(user=user)
+        cart_variant_ids = set(cart.items.values_list('variant_id', flat=True))
     except Cart.DoesNotExist:
-        cart_variant_ids = []
-    wishlist_items = WishlistItem.objects.filter(
-        user=user
-    ).exclude(
-        variant_id__in=cart_variant_ids
-    ).select_related(
-        "variant__product__brand",
-        "variant__product__category"
-    ).prefetch_related(
-        "variant__images"
-    )
-    
+        pass
+
     wishlist_data = []
     for item in wishlist_items:
         variant = item.variant
         product = variant.product
-        
         product_image = variant.images.first()
-
         original_price = variant.price
         final_price, discount_percentage = get_best_offer_price(product, original_price)
-
         in_stock = variant.stock > 0
-        
         wishlist_data.append({
             'wishlist_item': item,
             'product': product,
@@ -48,15 +38,14 @@ def wishlist(request):
             'price': final_price,
             'discount_percentage': discount_percentage,
             'in_stock': in_stock,
+            'is_in_cart': variant.id in cart_variant_ids, 
         })
-    
+
     context = {
         'wishlist_data': wishlist_data,
         'total_items': len(wishlist_data),
     }
-    
     return render(request, "user_side/wishlist/wishlist.html", context)
-
 
 @login_required
 def remove_from_wishlist(request, variant_id):

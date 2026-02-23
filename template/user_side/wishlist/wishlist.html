@@ -4,122 +4,141 @@
 {% block title %}Wishlist - DINGDONG{% endblock %}
 
 {% block content %}
-<div class="container mx-auto px-4 py-8">
-  <!-- Page Header -->
-  <div class="mb-8">
-    <div class="flex items-center justify-between">
-      <div>
-        <h1 class="text-3xl font-bold text-gray-900">My Wishlist</h1>
-        <p class="text-gray-600 mt-2">{{ total_items }} item{{ total_items|pluralize }} saved</p>
-      </div>
-      <a href="{% url 'products' %}" class="text-blue-600 hover:text-blue-800 font-semibold flex items-center">
-        <i class="fas fa-arrow-left mr-2"></i> Continue Shopping
-      </a>
-    </div>
-  </div>
+<!-- Toast Notification Container -->
+<div id="toastContainer" class="fixed top-20 right-4 z-50 space-y-2"></div>
 
-  {% if wishlist_data %}
-  <!-- Wishlist Items Grid -->
-  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
-    {% for item in wishlist_data %}
-    <div class="bg-white p-4 rounded-lg shadow hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 group relative">
-
-      <!-- Remove Button -->
-      <a href="javascript:void(0)"
-        onclick="openCancelItemModal('{{ item.variant.id }}', '{{ item.product.name }}')"
-        class="absolute top-2 right-2 bg-white rounded-full p-2 shadow-md hover:bg-red-50 transition-colors z-10">
-          <i class="fas fa-times text-red-500 text-sm"></i>
-      </a>
-
-      <!-- Product Image -->
-      <a href="{% url 'product_detail' item.variant.id %}" class="block">
-        <div class="relative">
-          {% if item.image %}
-          <img src="{{ item.image.image.url }}" alt="{{ item.product.name }}" class="w-full h-48 object-contain group-hover:scale-105 transition-transform duration-300">
-          {% else %}
-          <img src="{% static 'images/placeholder.jpg' %}" alt="{{ item.product.name }}" class="w-full h-48 object-contain">
-          {% endif %}
-          
-          <!-- Stock Badge -->
-          {% if not item.in_stock %}
-          <span class="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded">Out of Stock</span>
-          {% elif item.variant.stock < 10 %}
-          <span class="absolute top-2 left-2 bg-yellow-500 text-white text-xs px-2 py-1 rounded">Low Stock</span>
-          {% endif %}
-          
-          <!-- Discount Badge -->
-          {% if item.discount_percentage > 0 %}
-          <span class="absolute top-2 right-2 bg-green-500 text-white text-xs px-2 py-1 rounded font-bold">
-            {{ item.discount_percentage|floatformat:0 }}% OFF
-          </span>
-          {% endif %}
-        </div>
-        
-        <!-- Product Details -->
-        <div class="mt-4">
-          <h3 class="text-xs font-bold uppercase line-clamp-2 overflow-hidden hover:text-blue-600 transition-colors" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">
-            {{ item.product.name }}
-          </h3>
-          
-          <!-- Brand and Rating -->
-          <div class="flex items-center mt-2">
-            <p class="text-xs text-gray-600 font-medium">{{ item.product.brand.name }}</p>
-            <div class="flex text-yellow-400 ml-2">
-              <i class="fas fa-star text-xs"></i>
-              <i class="fas fa-star text-xs"></i>
-              <i class="fas fa-star text-xs"></i>
-              <i class="fas fa-star text-xs"></i>
-              <i class="far fa-star text-xs"></i>
-            </div>
-            <span class="text-xs text-gray-500 ml-1">(4.0)</span>
+    <div class="container mx-auto px-4 py-8">
+      <!-- Page Header -->
+      <div class="mb-8">
+        <div class="flex items-center justify-between">
+          <div>
+            <h1 class="text-3xl font-bold text-gray-900">My Wishlist</h1>
+            <p class="text-gray-600 mt-2">{{ total_items }} item{{ total_items|pluralize }} saved</p>
           </div>
-          
-          <!-- Color and Price -->
-          <div class="mt-2 flex items-center justify-between">
-            <div class="flex items-center space-x-2">
-              <div class="w-5 h-5 rounded-full border-2 border-gray-300" style="background-color: {{ item.variant.color_code }};"></div>
-              <span class="text-xs text-gray-600">{{ item.variant.color_name }}</span>
-            </div>
-            <div class="flex flex-col items-end">
-              <span class="font-bold text-lg">₹{{ item.price|floatformat:2 }}</span>
+          <a href="{% url 'products' %}" class="text-blue-600 hover:text-blue-800 font-semibold flex items-center">
+            <i class="fas fa-arrow-left mr-2"></i> Continue Shopping
+          </a>
+        </div>
+      </div>
+
+      {% if wishlist_data %}
+      <!-- Wishlist Items Grid -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
+        {% for item in wishlist_data %}
+        <div class="bg-white p-4 rounded-lg shadow hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 group relative">
+
+          <!-- Remove Button -->
+          <a href="javascript:void(0)"
+            onclick="openCancelItemModal('{{ item.variant.id }}', '{{ item.product.name }}')"
+            class="absolute top-2 right-2 bg-white rounded-full p-2 shadow-md hover:bg-red-50 transition-colors z-10">
+              <i class="fas fa-times text-red-500 text-sm"></i>
+          </a>
+
+          <!-- Product Image -->
+          <a href="{% url 'product_detail' item.variant.id %}" class="block">
+            <div class="relative">
+              {% if item.image %}
+              <img src="{{ item.image.image.url }}" alt="{{ item.product.name }}" class="w-full h-48 object-contain group-hover:scale-105 transition-transform duration-300">
+              {% else %}
+              <img src="{% static 'images/placeholder.jpg' %}" alt="{{ item.product.name }}" class="w-full h-48 object-contain">
+              {% endif %}
+              
+              <!-- Stock Badge -->
+              {% if not item.in_stock %}
+              <span class="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded">Out of Stock</span>
+              {% elif item.variant.stock < 10 %}
+              <span class="absolute top-2 left-2 bg-yellow-500 text-white text-xs px-2 py-1 rounded">Low Stock</span>
+              {% endif %}
+              
+              <!-- Discount Badge -->
               {% if item.discount_percentage > 0 %}
-              <span class="text-xs text-gray-500 line-through">₹{{ item.original_price|floatformat:2 }}</span>
+              <span class="absolute top-2 right-2 bg-green-500 text-white text-xs px-2 py-1 rounded font-bold">
+                {{ item.discount_percentage|floatformat:0 }}% OFF
+              </span>
               {% endif %}
             </div>
+            
+            <!-- Product Details -->
+            <div class="mt-4">
+              <h3 class="text-xs font-bold uppercase line-clamp-2 overflow-hidden hover:text-blue-600 transition-colors" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">
+                {{ item.product.name }}
+              </h3>
+              
+              <!-- Brand and Rating -->
+              <div class="flex items-center mt-2">
+                <p class="text-xs text-gray-600 font-medium">{{ item.product.brand.name }}</p>
+                <div class="flex text-yellow-400 ml-2">
+                  <i class="fas fa-star text-xs"></i>
+                  <i class="fas fa-star text-xs"></i>
+                  <i class="fas fa-star text-xs"></i>
+                  <i class="fas fa-star text-xs"></i>
+                  <i class="far fa-star text-xs"></i>
+                </div>
+                <span class="text-xs text-gray-500 ml-1">(4.0)</span>
+              </div>
+              
+                <!-- Color and Price -->
+                <div class="mt-2 flex items-center justify-between">
+                  <div class="flex items-center space-x-2">
+                    <div class="w-5 h-5 rounded-full border-2 border-gray-300" style="background-color: {{ item.variant.color_code }};"></div>
+                    <span class="text-xs text-gray-600">{{ item.variant.color_name }}</span>
+                  </div>
+                  <div class="flex flex-col items-end">
+                    <span class="font-bold text-lg">₹{{ item.price|floatformat:2 }}</span>
+                    {% if item.discount_percentage > 0 %}
+                    <span class="text-xs text-gray-500 line-through">₹{{ item.original_price|floatformat:2 }}</span>
+                    {% endif %}
+                  </div>
+                </div>
+            </div>
+          </a>
+          
+        <!-- Wishlist - Add to Cart -->
+          <div class="mt-3 pt-3 border-t border-gray-100">
+              {% if item.in_stock %}
+                {% if item.is_in_cart %}
+                  <a href="{% url 'cart' % }"
+                    class="w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded-md text-sm font-semibold text-center block">
+                    <i class="fas fa-check-circle text-xs mr-2"></i>
+                    GO TO CART
+                  </a>
+                {% else %}
+                  <button
+                    class="wishlistAddBtn w-full bg-black hover:bg-gray-800 text-white py-2 rounded-md text-sm font-semibold transition-all duration-300"
+                    data-variant-id="{{ item.variant.id }}">
+                    <span class="textWrap flex items-center justify-center">
+                      <i class="fas fa-shopping-cart text-xs mr-2"></i>
+                      ADD TO CART
+                    </span>
+                    <span class="loaderWrap hidden flex items-center justify-center">
+                      <i class="fas fa-spinner fa-spin text-xs mr-2"></i>
+                      Adding...
+                    </span>
+                  </button>
+                {% endif %}
+            {% else %}
+              <button class="w-full bg-gray-300 text-gray-600 py-2 rounded-md text-sm font-semibold cursor-not-allowed" disabled>
+                OUT OF STOCK
+              </button>
+            {% endif %}
           </div>
         </div>
-      </a>
-      
-      <!-- Action Button -->
-      <div class="mt-3 pt-3 border-t border-gray-100">
-        {% if item.in_stock %}
-        <a href="{% url 'add_to_cart' item.variant.id %}" class="block w-full bg-gray-900 text-white py-2 rounded-lg text-sm font-semibold hover:bg-gray-800 transition-colors text-center">
-          <i class="fas fa-shopping-cart text-xs mr-1"></i>
-          <span>Add to Cart</span>
-        </a>
-        {% else %}
-        <button class="w-full bg-gray-300 text-gray-600 py-2 rounded-lg text-sm font-semibold cursor-not-allowed" disabled>
-          Out of Stock
-        </button>
-        {% endif %}
+        {% endfor %}
       </div>
+      {% else %}
+      <!-- Empty Wishlist -->
+      <div class="text-center py-16">
+        <div class="mb-6">
+          <i class="far fa-heart text-8xl text-gray-300"></i>
+        </div>
+        <h2 class="text-2xl font-bold text-gray-900 mb-2">Your Wishlist is Empty</h2>
+        <p class="text-gray-600 mb-6">Start adding products you love to your wishlist!</p>
+        <a href="{% url 'products' %}" class="inline-block bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors">
+          Browse Products
+        </a>
+      </div>
+      {% endif %}
     </div>
-    {% endfor %}
-  </div>
-  {% else %}
-  <!-- Empty Wishlist -->
-  <div class="text-center py-16">
-    <div class="mb-6">
-      <i class="far fa-heart text-8xl text-gray-300"></i>
-    </div>
-    <h2 class="text-2xl font-bold text-gray-900 mb-2">Your Wishlist is Empty</h2>
-    <p class="text-gray-600 mb-6">Start adding products you love to your wishlist!</p>
-    <a href="{% url 'products' %}" class="inline-block bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors">
-      Browse Products
-    </a>
-  </div>
-  {% endif %}
-</div>
 
 <!-- Cancel Item Modal -->
 <div id="cancelItemModal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
@@ -151,6 +170,107 @@
   function closeCancelItemModal() {
       document.getElementById("cancelItemModal").classList.add("hidden");
   }
+
+        // Toast Notification System
+        function showToast(message, type = 'success') {
+            const toastContainer = document.getElementById('toastContainer');
+            
+            const toast = document.createElement('div');
+            toast.className = `transform transition-all duration-300 ease-in-out translate-x-full`;
+            
+            const bgColor = type === 'error' ? 'bg-red-500' : 
+                          type === 'warning' ? 'bg-yellow-500' : 
+                          type === 'info' ? 'bg-blue-500' :
+                          'bg-green-500';
+            
+            const icon = type === 'error' ? 'fa-exclamation-circle' : 
+                       type === 'warning' ? 'fa-exclamation-triangle' : 
+                       type === 'info' ? 'fa-info-circle' :
+                       'fa-check-circle';
+            
+            toast.innerHTML = `
+                <div class="${bgColor} text-white px-6 py-4 rounded-lg shadow-2xl flex items-center space-x-3 min-w-[320px] max-w-md">
+                    <i class="fas ${icon} text-xl"></i>
+                    <p class="flex-1 font-medium">${message}</p>
+                    <button onclick="this.parentElement.parentElement.remove()" class="text-white hover:text-gray-200">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
+            
+            toastContainer.appendChild(toast);
+            
+            // Slide in
+            setTimeout(() => {
+                toast.classList.remove('translate-x-full');
+            }, 10);
+            
+            // Auto remove after 4 seconds
+            setTimeout(() => {
+                toast.classList.add('translate-x-full');
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
+        }
+
+  // Add to Cart
+  document.addEventListener('DOMContentLoaded', function () {
+
+    document.addEventListener('click', function (e) {
+
+      const button = e.target.closest('.wishlistAddBtn');
+      if (!button) return;
+
+      const variantId = button.dataset.variantId;
+      const textWrap = button.querySelector('.textWrap');
+      const loaderWrap = button.querySelector('.loaderWrap');
+
+      // Show loader
+      textWrap.classList.add('hidden');
+      loaderWrap.classList.remove('hidden');
+      button.disabled = true;
+
+      fetch(`/cart/add/${variantId}/`, {
+        method: 'POST',
+        headers: {
+          'X-CSRFToken': '{{ csrf_token }}',
+          'Content-Type': 'application/json'
+        }
+      })
+      .then(res => res.json())
+      .then(data => {
+
+        if (data.status === 'success') {
+          showToast(data.message, 'success');
+
+          // Use insertAdjacentHTML instead of outerHTML to avoid losing reference issues
+          const wrapper = document.createElement('a');
+          wrapper.href = '/cart/';
+          wrapper.className = 'w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded-md text-sm font-semibold text-center block';
+          wrapper.innerHTML = '<i class="fas fa-check-circle text-xs mr-2"></i> GO TO CART';
+
+          button.replaceWith(wrapper);
+
+        } else {
+          reset();
+          showToast(data.message, 'error');
+        }
+
+      })
+      .catch(() => {
+        reset();
+        showToast('Something went wrong.', 'error');
+      });
+
+      function reset() {
+        textWrap.classList.remove('hidden');
+        loaderWrap.classList.add('hidden');
+        button.disabled = false;
+      }
+
+    });
+
+  });
 </script>
+
 
 {% endblock %}

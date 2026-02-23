@@ -47,10 +47,8 @@
 
 {% block content1 %}
  <!-- Main Content -->
-
     <section class="flex-1 p-6 lg:p-10">
         <div class="space-y-8">
-
 
                 <!-- Overview Section -->
                 <div id="overview" class="bg-white rounded-lg shadow-sm border p-6 mb-6">
@@ -211,18 +209,6 @@
                         </a>
                         
                     </div>
-                    <div>
-                        {% if messages %}
-                        <div class="p-4 rounded-md mt-4">
-                            {% for message in messages %}
-                                <p class="text-sm {% if message.tags == 'error' %}text-red-600{% else %}text-green-600{% endif %}">
-                                    {{ message }}
-                                </p>
-                            {% endfor %}
-                        </div>
-                        {% endif %}
-                    </div>
-                    
                     <div class="profile-card rounded-lg p-6">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div class="space-y-4">
