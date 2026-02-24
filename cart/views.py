@@ -14,15 +14,9 @@ from django.views.decorators.http import require_POST
 @require_POST
 def add_to_cart(request, product_variant_id):
     try:
-        variant = get_object_or_404(
-            ProductVariant, 
-            id=product_variant_id, 
-            is_listed=True
-        )
+        variant = get_object_or_404(ProductVariant, id=product_variant_id, is_listed=True)
 
-        if not variant.product.is_listed or \
-           not variant.product.category.is_listed or \
-           not variant.product.brand.is_listed:
+        if not variant.product.is_listed or not variant.product.category.is_listed or not variant.product.brand.is_listed:
             return JsonResponse({
                 'status': 'error',
                 'message': 'Product not available.'
@@ -35,12 +29,7 @@ def add_to_cart(request, product_variant_id):
             })
 
         cart, _ = Cart.objects.get_or_create(user=request.user)
-
-        cart_item = CartItem.objects.filter(
-            cart=cart, 
-            variant=variant
-        ).first()
-
+        cart_item = CartItem.objects.filter(cart=cart, variant=variant).first()
         if cart_item:
             if cart_item.quantity < variant.stock:
                 cart_item.quantity += 1
@@ -95,25 +84,21 @@ def cart(request):
             item.variant.product.category.is_listed and
             item.variant.product.brand.is_listed
         )
-        
-        # Get original price
+
         item.original_price = item.variant.price
         
-        # Get best offer price, discount, and type
         item.discounted_price, item.discount_percentage, item.offer_type = get_offer_details(
             item.variant.product, 
             item.original_price
         )
-        
-        # Calculate item discount and subtotal
+
         if item.discount_percentage > 0:
             discount_amount = item.original_price - item.discounted_price
             item.item_discount = discount_amount * item.quantity
             total_discount += item.item_discount
         else:
             item.item_discount = Decimal('0.00')
-        
-        # Item subtotal (after discount)
+
         item.item_subtotal = item.discounted_price * item.quantity
         subtotal += item.item_subtotal
         
@@ -122,7 +107,6 @@ def cart(request):
         if not item.is_available:
             has_unlisted = True
 
-    # Final total = subtotal + delivery
     total = subtotal 
     
     can_checkout = not (has_out_of_stock or has_unlisted) and cart_items.exists()

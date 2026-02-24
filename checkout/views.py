@@ -63,11 +63,11 @@ def checkout(request):
 
         subtotal_before_offer += item_subtotal_before
         subtotal_after_offer += item_subtotal_after
-        
+
         if discount_percentage > 0:
             has_offer = True
             total_offer_discount += item_offer_discount
-    
+
     subtotal = subtotal_after_offer
     delivery_charge = Decimal('0') if subtotal >= 500 else Decimal('40')
     free_delivery = max(Decimal('0'), Decimal('500') - subtotal)
@@ -114,7 +114,6 @@ def checkout(request):
 
 @require_POST
 def apply_coupon(request):
-    """Apply coupon code"""
     coupon_code = request.POST.get('coupon_code', '').strip().upper()
     
     if not coupon_code:
@@ -122,15 +121,20 @@ def apply_coupon(request):
     
     try:
         cart = Cart.objects.get(user=request.user)
-        cart_items = cart.items.select_related('variant__product__brand').all()
+        cart_items = cart.items.select_related(
+            'variant__product__brand'
+        ).prefetch_related('variant__product__product_offer', 'variant__product__brand__brand_offer').all()
+        
         now = timezone.now()
         coupon = Coupon.objects.get(
             code=coupon_code,
             is_active=True,
             valid_from__lte=now
         )
+        
         if coupon.valid_until and coupon.valid_until < now:
             return JsonResponse({'success': False, 'message': 'This coupon has expired'})
+        
         if CouponUsage.objects.filter(user=request.user, coupon=coupon).exists():
             return JsonResponse({'success': False, 'message': 'You have already used this coupon'})
 
@@ -139,39 +143,46 @@ def apply_coupon(request):
             if usage_count >= coupon.usage_limit:
                 return JsonResponse({'success': False, 'message': 'This coupon has reached its usage limit'})
         
-        subtotal = cart.get_total_price()
-        delivery_charge = Decimal('0') if subtotal >= 500 else Decimal('40')
-        total_before_discount = subtotal + delivery_charge
+        offer_adjusted_subtotal = Decimal('0')
+        for item in cart_items:
+            final_price, _, _ = get_offer_details(item.variant.product, item.variant.price)
+            offer_adjusted_subtotal += final_price * item.quantity
 
-        if subtotal < coupon.min_purchase_amount:
+        delivery_charge = Decimal('0') if offer_adjusted_subtotal >= 500 else Decimal('40')
+        total_before_discount = offer_adjusted_subtotal + delivery_charge
+
+        if offer_adjusted_subtotal < coupon.min_purchase_amount:
             return JsonResponse({
                 'success': False, 
                 'message': f'Minimum purchase of ₹{coupon.min_purchase_amount} required for this coupon'
             })
-
         discount_amount = (total_before_discount * Decimal(coupon.discount_percentage)) / Decimal('100')
         if coupon.max_discount_amount and discount_amount > coupon.max_discount_amount:
             discount_amount = coupon.max_discount_amount
+        discount_amount = min(discount_amount, total_before_discount)
+        discount_amount = max(discount_amount, Decimal('0'))
 
         request.session['coupon_code'] = coupon_code
-        request.session['coupon_discount'] = str(discount_amount)
+        request.session['coupon_discount'] = str(round(discount_amount, 2))
         request.session['coupon_id'] = coupon.id
         
         total = total_before_discount - discount_amount
-        
         return JsonResponse({
             'success': True,
             'message': f'Coupon "{coupon_code}" applied successfully!',
-            'discount': str(discount_amount),
-            'total': str(total),
-            'discount_percentage': coupon.discount_percentage
+            'discount_amount': str(round(discount_amount, 2)),
+            'total': str(round(total, 2)),
+            'total_before_discount': str(round(total_before_discount, 2)),
+            'delivery_charge': str(delivery_charge),
+            'discount_percentage': coupon.discount_percentage,
+            
         })
         
     except Coupon.DoesNotExist:
         return JsonResponse({'success': False, 'message': 'Invalid coupon code'})
     except Exception as e:
-        print(f"Coupon application error: {str(e)}")
         import traceback
+        print(f"Coupon application error: {str(e)}")
         print(traceback.format_exc())
         return JsonResponse({'success': False, 'message': 'An error occurred while applying the coupon'})
 
@@ -186,8 +197,11 @@ def remove_coupon(request):
 
         cart = Cart.objects.get(user=request.user)
 
+        # ✅ FIX: Use offer-adjusted prices here too
         subtotal = Decimal('0')
-        for item in cart.items.select_related('variant__product__brand').all():
+        for item in cart.items.select_related(
+            'variant__product__brand'
+        ).prefetch_related('variant__product__product_offer', 'variant__product__brand__brand_offer').all():
             final_price, _, _ = get_offer_details(item.variant.product, item.variant.price)
             subtotal += final_price * item.quantity
         
@@ -197,13 +211,13 @@ def remove_coupon(request):
         return JsonResponse({
             'success': True,
             'message': 'Coupon removed successfully',
-            'total': str(total)
+            'total': str(round(total, 2)),
+            'delivery_charge': str(delivery_charge),
+            'cod_disabled': total > 1000,
         })
     except Exception as e:
         print(f"Coupon removal error: {str(e)}")
         return JsonResponse({'success': False, 'message': 'An error occurred'})
-
-
 @require_POST
 @transaction.atomic
 def place_order(request):
