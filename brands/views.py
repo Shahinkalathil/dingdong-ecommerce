@@ -7,16 +7,22 @@ from products.models import Brand
 from offers.models import BrandOffer
 from django.utils import timezone
 from django.core.files.images import get_image_dimensions
-
+from django.core.paginator import Paginator
 
 # Create your views here.
+
 
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 @login_required(login_url="admin_login")
 def AdminBrandListView(request):
-    brands = Brand.objects.all().order_by('-id')
+    brand_list = Brand.objects.all().order_by('-id')
+
+    paginator = Paginator(brand_list, 5) 
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
     context = {
-        'brands': brands,
+        'brands': page_obj,
         'keyword': None
     }
     return render(request, 'admin_panel/brands/brand_management.html', context)

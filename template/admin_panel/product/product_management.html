@@ -224,7 +224,56 @@
                     </div>
                 </div>
             </div>
+
+            
         </div>
+         <!-- paginater -->
+        {% if products.has_other_pages %} 
+            <div class="flex items-center justify-center mt-8 space-x-2"> 
+                {% if products.has_previous %} 
+                <a href="?{% if keyword %}keyword={{ keyword }}&{% endif %}page={{ products.previous_page_number }}" 
+                class="p-2 hover:bg-gray-100 rounded-lg transition-colors duration-200"> 
+                    <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"> 
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/> 
+                    </svg> 
+                </a> 
+                {% else %} 
+                <span class="p-2 rounded-lg text-gray-400 cursor-not-allowed"> 
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"> 
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/> 
+                    </svg> 
+                </span> 
+                {% endif %} 
+                
+                {% for page_num in products.paginator.page_range %} 
+                    {% if page_num == products.number %} 
+                    <span class="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium shadow-sm"> 
+                        {{ page_num }} 
+                    </span> 
+                    {% else %} 
+                    <a href="?{% if keyword %}keyword={{ keyword }}&{% endif %}page={{ page_num }}" 
+                    class="px-4 py-2 hover:bg-gray-100 text-gray-700 rounded-lg font-medium transition-colors duration-200"> 
+                        {{ page_num }} 
+                    </a> 
+                    {% endif %} 
+                {% endfor %} 
+                
+                {% if products.has_next %} 
+                <a href="?{% if keyword %}keyword={{ keyword }}&{% endif %}page={{ products.next_page_number }}" 
+                class="p-2 hover:bg-gray-100 rounded-lg transition-colors duration-200"> 
+                    <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"> 
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/> 
+                    </svg> 
+                </a> 
+                {% else %} 
+                <span class="p-2 rounded-lg text-gray-400 cursor-not-allowed"> 
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"> 
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/> 
+                    </svg> 
+                </span> 
+                {% endif %} 
+            </div>
+        {% endif %}
     </div>
 </main>
 </div>
