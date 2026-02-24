@@ -6,12 +6,10 @@ from django.contrib import messages
 from PIL import Image
 from wishlist.models import WishlistItem
 from .models import Category, Product, Brand, ProductVariant, ProductImage
-from django.http import JsonResponse
 from cart.models import Cart, CartItem
 from django.core.paginator import Paginator
-from django.db.models import Min,  Q, Max
+from django.db.models import Min,  Q, Max, Count
 import random
-from decimal import Decimal
 import base64
 import io
 from offers.models import ProductOffer
@@ -24,6 +22,8 @@ def products(request):
     products=Product.objects.filter(is_listed=True,category__is_listed=True,brand__is_listed=True,variants__is_listed=True
     ).prefetch_related("variants__images","variants"
     ).select_related("brand","category").distinct()
+
+    cart_count = CartItem.objects.filter(cart__user=request.user).aggregate(total=Count('id'))['total'] or 0
 
     categories=Category.objects.filter(is_listed=True)
     brands=Brand.objects.filter(is_listed=True)
@@ -94,6 +94,7 @@ def products(request):
                 })
     context={
         'page_obj':page_obj,
+        "cart_count" : cart_count,
         'product_display_data':product_display_data,
         'categories':categories,
         'brands':brands,
@@ -213,10 +214,11 @@ def product_detail(request, variant_id):
         # Mock ratings and reviews
         rating = round(random.uniform(3.5, 5.0), 1)
         review_count = random.randint(50, 5000)
-        
+        cart_count = CartItem.objects.filter(cart__user=request.user).aggregate(total=Count('id'))['total'] or 0
         context = {
             'product': product,
             'variants': variants,
+            "cart_count" : cart_count,
             'variants_data': variants_data,
             'default_variant': default_variant,
             'wishlist_variants': wishlist_variants,
@@ -272,12 +274,15 @@ def product_detail(request, variant_id):
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 @user_passes_test(lambda u: u.is_superuser, login_url="admin_login")
 def AdminProductListView(request):
-    products = Product.objects.select_related("product_offer").prefetch_related("variants__images")
+    product_list = Product.objects.select_related("product_offer").prefetch_related("variants__images").order_by('-id')
+    paginator = Paginator(product_list, 5) 
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
 
     context = {
-        "products": products,
+        "products": page_obj,
     }
-    return render(request, 'admin_panel/product/product_management.html', context) # product page
+    return render(request, 'admin_panel/product/product_management.html', context) 
 
 # Product Detail
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
@@ -289,7 +294,7 @@ def AdminProductDetailView(request, id):
         "product": product,
         "variants": variants
     }
-    return render(request, "admin_panel/product/product_variant.html", context) #product listing page
+    return render(request, "admin_panel/product/product_variant.html", context) 
 
 # Product Search
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
@@ -439,9 +444,6 @@ def AdminProductCreateView(request):
     return render(request, 'admin_panel/product/product_add.html', context)
 
 def process_base64_image(base64_data, filename):
-    """
-    Process base64 image data and return a Django file object
-    """
     try:
         if ',' in base64_data:
             base64_data = base64_data.split(',')[1]
@@ -472,11 +474,6 @@ def process_base64_image(base64_data, filename):
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 @user_passes_test(lambda u: u.is_superuser, login_url="admin_login")
 def AdminProductUpdateView(request, product_id):
-    """
-    Combined view to handle:
-    1. Product and existing variant updates
-    2. New variant creation
-    """
     product = get_object_or_404(Product, id=product_id)
     variants = product.variants.prefetch_related("images").all()
     

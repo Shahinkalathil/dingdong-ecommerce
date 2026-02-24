@@ -139,11 +139,48 @@
                     {% endfor %}
                 </tbody>
             </table>
+                </div>
+            </div>
+                    <!-- paginator -->
+        {% if coupons.has_other_pages %}
+            <div class="flex items-center justify-center mt-8 space-x-2">
+
+                {% if coupons.has_previous %}
+                <a href="?page={{ coupons.previous_page_number }}"
+                class="p-2 hover:bg-gray-100 rounded-lg">
+                    ←
+                </a>
+                {% else %}
+                <span class="p-2 text-gray-400">←</span>
+                {% endif %}
+
+                {% for page_num in coupons.paginator.page_range %}
+                    {% if page_num == coupons.number %}
+                        <span class="px-4 py-2 bg-blue-600 text-white rounded-lg">
+                            {{ page_num }}
+                        </span>
+                    {% else %}
+                        <a href="?page={{ page_num }}"
+                        class="px-4 py-2 hover:bg-gray-100 rounded-lg">
+                            {{ page_num }}
+                        </a>
+                    {% endif %}
+                {% endfor %}
+
+                {% if coupons.has_next %}
+                <a href="?page={{ coupons.next_page_number }}"
+                class="p-2 hover:bg-gray-100 rounded-lg">
+                    →
+                </a>
+                {% else %}
+                <span class="p-2 text-gray-400">→</span>
+                {% endif %}
+
+            </div>
+        {% endif %}
         </div>
     </div>
-</div>
-    </div>
-</div>
+
 
 <!-- Coupon Detail Modal -->
 {% if selected_coupon %}

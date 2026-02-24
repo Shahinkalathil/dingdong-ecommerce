@@ -6,26 +6,31 @@ from django.contrib import messages
 from decimal import Decimal, InvalidOperation
 from .models import Coupon 
 from datetime import datetime
+from django.core.paginator import Paginator
 
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 @login_required(login_url="admin_login")
 def AdminCouponsListView(request):
-    """Display list of all coupons"""
-    coupons = Coupon.objects.all().order_by('-created_at')
+    coupon_list = Coupon.objects.all().order_by('-created_at')
+    paginator = Paginator(coupon_list, 3)  
+    page_number = request.GET.get('page')
+    coupons = paginator.get_page(page_number)
     view_coupon_id = request.GET.get('view_coupon')
     selected_coupon = None
+
     if view_coupon_id:
         try:
             selected_coupon = Coupon.objects.get(id=view_coupon_id)
         except Coupon.DoesNotExist:
             messages.error(request, "Coupon not found")
-    
+
     context = {
-        'coupons': coupons,
+        'coupons': coupons,   
         'now': timezone.now(),
         'selected_coupon': selected_coupon,
     }
-    return render(request, 'admin_panel/coupons/coupon_management.html', context)
+
+    return render(request,'admin_panel/coupons/coupon_management.html',context)
 
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 @login_required(login_url="admin_login")

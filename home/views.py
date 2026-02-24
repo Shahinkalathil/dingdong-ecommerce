@@ -7,7 +7,7 @@ from .models import Banner
 from django.core.paginator import Paginator
 from django.db.models import Min, Count, Q
 from offers.utils import get_best_offer_price
-
+from cart.models import CartItem
 
 
 @cache_control(no_cache=True, no_store=True, must_revalidate=True)  
@@ -40,6 +40,9 @@ def HomeView(request):
     ).annotate(
         min_price=Min('variants__price') 
     ).distinct().order_by('id')
+    
+    cart_count = CartItem.objects.filter(cart__user=request.user).aggregate(total=Count('id'))['total'] or 0
+
 
     products_data = []
 
@@ -88,6 +91,7 @@ def HomeView(request):
         products_page = paginator.page(paginator.num_pages)
 
     return render(request, 'user_side/index.html', {
+        "cart_count" : cart_count,
         'banners': banners,
         'categories': categories,
         'brands': brands,
