@@ -189,15 +189,12 @@ def apply_coupon(request):
 
 @require_POST
 def remove_coupon(request):
-    """Remove applied coupon"""
     try:
         request.session.pop('coupon_code', None)
         request.session.pop('coupon_discount', None)
         request.session.pop('coupon_id', None)
 
         cart = Cart.objects.get(user=request.user)
-
-        # ✅ FIX: Use offer-adjusted prices here too
         subtotal = Decimal('0')
         for item in cart.items.select_related(
             'variant__product__brand'
@@ -218,6 +215,7 @@ def remove_coupon(request):
     except Exception as e:
         print(f"Coupon removal error: {str(e)}")
         return JsonResponse({'success': False, 'message': 'An error occurred'})
+
 @require_POST
 @transaction.atomic
 def place_order(request):
@@ -486,7 +484,6 @@ def place_order(request):
 
 
 def razorpay_payment(request, order_id=None):
-    """Display Razorpay payment page"""
     if order_id:
         order = get_object_or_404(Order, id=order_id, user=request.user)
         razorpay_order_id = order.razorpay_order_id
@@ -511,7 +508,6 @@ def razorpay_payment(request, order_id=None):
 @require_POST
 @transaction.atomic
 def payment_success(request):
-    """Handle successful Razorpay payment"""
     try:
         razorpay_payment_id = request.POST.get('razorpay_payment_id')
         razorpay_order_id = request.POST.get('razorpay_order_id')
@@ -581,7 +577,6 @@ def payment_success(request):
 
 
 def payment_failed(request):
-    """Handle payment failure notification from frontend"""
     order_id = request.GET.get('order_id')
     if order_id:
         try:
@@ -599,7 +594,6 @@ def payment_failed(request):
 
 @transaction.atomic
 def retry_payment(request, order_id):
-    """Retry payment for a failed order"""
     order = get_object_or_404(Order, id=order_id, user=request.user)
     
     if order.payment_status == 'paid':
@@ -633,14 +627,48 @@ def retry_payment(request, order_id):
         return redirect('order_detail', order_id=order.order_number)
 
 
-def order_success(request, order_id):
-    """Display order success page"""
-    order = get_object_or_404(Order, id=order_id, user=request.user)
-    context = {
-        'order': order,
-    }
-    return render(request, 'user_side/checkout/order_success.html', context)
 
+def order_success(request, order_id):
+
+    order = get_object_or_404(
+        Order.objects.prefetch_related(
+            "items__variant__product__brand"
+        ),
+        id=order_id,
+        user=request.user
+    )
+
+    for item in order.items.all():
+
+        original_price = item.variant.price
+        final_price = item.price
+
+        discount_percentage = Decimal("0")
+        offer_type = None
+        discount_amount = Decimal("0")
+
+        if original_price > final_price:
+            discount_amount = original_price - final_price
+            discount_percentage = (
+                (discount_amount / original_price) * 100
+            )
+
+            _, _, offer_type = get_offer_details(
+                item.variant.product,
+                original_price
+            )
+
+        item.original_price = original_price
+        item.discount_percentage = discount_percentage
+        item.discount_amount = discount_amount * item.quantity
+        item.offer_type = offer_type
+        item.original_subtotal = original_price * item.quantity
+
+    return render(
+        request,
+        "user_side/checkout/order_success.html",
+        {"order": order}
+    )
 
 def set_default_address(request, address_id):
     """Set an address as default"""

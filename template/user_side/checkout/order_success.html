@@ -64,28 +64,144 @@
             </div>
         </div>
         
+
         <!-- Order Items Summary -->
-        <div class="bg-gray-50 rounded-2xl p-6 mb-6 text-left">
-            <h3 class="font-semibold text-gray-800 mb-3">Order Items</h3>
-            {% for item in order.items.all %}
-            <div class="flex justify-between items-center mb-2">
-                <span class="text-sm text-gray-600">{{ item.product_name }} ({{ item.color_name }}) x{{ item.quantity }}</span>
-                <span class="text-sm font-medium text-gray-800">₹{{ item.subtotal }}</span>
+        <div class="bg-white rounded-2xl shadow-md p-6 mb-6">
+            <h3 class="font-semibold text-gray-800 mb-5 text-lg">Order Items</h3>
+
+            <div class="space-y-5 max-h-72 overflow-y-auto pr-2 divide-y divide-gray-100">
+                {% for item in order.items.all %}
+                <div class="flex justify-between items-start pt-4 first:pt-0">
+
+                    <!-- LEFT: Product name + variant + quantity -->
+                    <div class="flex-1 pr-4">
+                        <p class="font-medium text-gray-900 leading-tight">
+                            {{ item.product_name }}
+                        </p>
+                        <p class="text-sm text-gray-500 mt-0.5">
+                            {{ item.color_name }}
+                            {% if item.size_name %} • {{ item.size_name }}{% endif %}
+                            • Qty: <strong>{{ item.quantity }}</strong>
+                        </p>
+                    </div>
+
+                    <!-- RIGHT: Pricing + savings (clean & prominent final price) -->
+                    <div class="text-right min-w-[160px]">
+
+                        {% if item.discount_percentage > 0 %}
+                            <!-- === Discounted item === -->
+                            <p class="font-bold text-green-600 text-xl leading-tight">
+                                ₹{{ item.price }}
+                            </p>
+
+                            <div class="flex items-center justify-end gap-2 mt-1">
+                                <span class="text-gray-400 line-through text-sm">
+                                    ₹{{ item.original_price }}
+                                </span>
+                                <span class="bg-green-100 text-green-700 text-xs px-2 py-0.5 rounded-full font-medium">
+                                    {{ item.discount_percentage|floatformat:0 }}% OFF
+                                </span>
+                            </div>
+
+                            {% if item.offer_type %}
+                            <p class="text-xs text-blue-600 font-medium mt-0.5">
+                                {{ item.offer_type|title }} Offer
+                            </p>
+                            {% endif %}
+
+                            <p class="text-xs text-gray-600 mt-1">
+                                Saved ₹{{ item.discount_amount }}
+                                {% if item.quantity > 1 %} (₹{{ item.discount_amount|floatformat:2 }} each){% endif %}
+                            </p>
+
+                        {% else %}
+                            <!-- === No discount === -->
+                            <p class="font-bold text-gray-900 text-xl leading-tight">
+                                ₹{{ item.price }}
+                            </p>
+
+                            {% if item.quantity > 1 %}
+                            <p class="text-sm text-gray-500 mt-1">
+                                (₹{{ item.price|floatformat:0 }} total for {{ item.quantity }} pcs)
+                            </p>
+                            {% endif %}
+                        {% endif %}
+
+                    </div>
+
+                </div>
+                {% endfor %}
             </div>
-            {% endfor %}
-            <div class="border-t border-gray-300 mt-3 pt-3">
-                <div class="flex justify-between items-center mb-1">
-                    <span class="text-sm text-gray-600">Subtotal:</span>
-                    <span class="text-sm text-gray-800">₹{{ order.subtotal }}</span>
+
+            <!-- Price Breakdown -->
+            <div class="border-t border-gray-200 mt-6 pt-5 space-y-3 text-sm">
+
+                <!-- Subtotal -->
+                <div class="flex justify-between text-gray-700 font-medium">
+                    <span>Subtotal ({{ order.items.count }} item{{ order.items.count|pluralize }})</span>
+                    <span>
+                        {% if order.offer_discount and order.offer_discount > 0 %}
+                            <span class="line-through text-gray-400 mr-2 text-xs">₹{{ order.subtotal_before_offer|floatformat:0 }}</span>
+                        {% endif %}
+                        ₹{{ order.subtotal|floatformat:0 }}
+                    </span>
                 </div>
-                <div class="flex justify-between items-center mb-2">
-                    <span class="text-sm text-gray-600">Delivery Charge:</span>
-                    <span class="text-sm text-gray-800">₹{{ order.delivery_charge }}</span>
+
+                <!-- Offer discount -->
+                {% if order.offer_discount and order.offer_discount > 0 %}
+                <div class="flex justify-between text-green-600">
+                    <span>Offer Discount</span>
+                    <span>-₹{{ order.offer_discount|floatformat:0 }}</span>
                 </div>
-                <div class="flex justify-between items-center font-bold">
-                    <span class="text-gray-800">Total:</span>
-                    <span class="text-green-600">₹{{ order.total_amount }}</span>
+                {% endif %}
+
+                <!-- Delivery -->
+                <div class="flex justify-between text-gray-700">
+                    <span>Delivery Charge</span>
+                    <span class="{% if order.delivery_charge == 0 %}text-green-600 font-medium{% endif %}">
+                        {% if order.delivery_charge == 0 %}FREE{% else %}₹{{ order.delivery_charge|floatformat:0 }}{% endif %}
+                    </span>
                 </div>
+
+                <!-- Coupon -->
+                {% if order.coupon_discount and order.coupon_discount > 0 %}
+                <div class="flex justify-between text-green-600">
+                    <span>
+                        Coupon
+                        {% if order.coupon_code %}
+                        <span class="ml-1.5 bg-green-50 text-green-700 text-xs px-2 py-0.5 rounded font-medium">
+                            {{ order.coupon_code }}
+                        </span>
+                        {% endif %}
+                    </span>
+                    <span>-₹{{ order.coupon_discount|floatformat:0 }}</span>
+                </div>
+                {% endif %}
+
+                <!-- Wallet -->
+                {% if order.wallet_deduction and order.wallet_deduction > 0 %}
+                <div class="flex justify-between text-blue-600">
+                    <span>Wallet Used</span>
+                    <span>-₹{{ order.wallet_deduction|floatformat:0 }}</span>
+                </div>
+                {% endif %}
+
+                <!-- Grand Total -->
+                <div class="flex justify-between items-center border-t border-gray-200 pt-4 mt-3 text-base font-bold">
+                    <span class="text-gray-900">Total Paid</span>
+                    <span class="text-green-700 text-2xl">₹{{ order.total_amount|floatformat:0 }}</span>
+                </div>
+
+                <!-- Savings highlight -->
+                {% with total_savings=order.offer_discount|default:0|add:order.coupon_discount|default:0 %}
+                {% if total_savings > 0 %}
+                <div class="bg-blue-50 border border-blue-100 rounded-lg p-3 mt-4 text-sm text-blue-800 flex items-center gap-2">
+                    <span class="text-xl">🎉</span>
+                    <span>You saved <strong>₹{{ total_savings|floatformat:0 }}</strong> on this order!</span>
+                </div>
+                {% endif %}
+                {% endwith %}
+
             </div>
         </div>
         
