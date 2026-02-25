@@ -626,10 +626,7 @@ def retry_payment(request, order_id):
         messages.error(request, 'Could not initiate retry. Please contact support.')
         return redirect('order_detail', order_id=order.order_number)
 
-
-
 def order_success(request, order_id):
-
     order = get_object_or_404(
         Order.objects.prefetch_related(
             "items__variant__product__brand"
@@ -637,38 +634,27 @@ def order_success(request, order_id):
         id=order_id,
         user=request.user
     )
-
     for item in order.items.all():
-
         original_price = item.variant.price
         final_price = item.price
-
         discount_percentage = Decimal("0")
         offer_type = None
         discount_amount = Decimal("0")
-
         if original_price > final_price:
             discount_amount = original_price - final_price
             discount_percentage = (
                 (discount_amount / original_price) * 100
             )
-
             _, _, offer_type = get_offer_details(
                 item.variant.product,
                 original_price
             )
-
         item.original_price = original_price
         item.discount_percentage = discount_percentage
         item.discount_amount = discount_amount * item.quantity
         item.offer_type = offer_type
         item.original_subtotal = original_price * item.quantity
-
-    return render(
-        request,
-        "user_side/checkout/order_success.html",
-        {"order": order}
-    )
+    return render(request, "user_side/checkout/order_success.html", {"order": order})
 
 def set_default_address(request, address_id):
     """Set an address as default"""

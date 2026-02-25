@@ -18,7 +18,7 @@
         <span class="text-gray-800 font-medium">{{ order.order_number }}</span>
     </div>
 
-    <!-- ORDER HEADER CARD -->
+    <!-- ═══════════════ ORDER HEADER ═══════════════ -->
     <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
         <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
@@ -34,7 +34,6 @@
                         Return Under Review
                     </span>
                     {% endif %}
-
                     {% if order.order_status == 'cancelled' %}
                     <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-700 border border-red-200">
                         <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
@@ -46,7 +45,6 @@
                     <span class="text-sm text-gray-500 mt-1">Reason: {{ order.cancellation_reason }}</span>
                     {% endif %}
                     {% endif %}
-
                     {% if order.order_status == 'returned' %}
                     <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-700 border border-purple-200">
                         <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
@@ -81,6 +79,7 @@
         </div>
     </div>
 
+    <!-- ═══════════════ MAIN GRID ═══════════════ -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
 
         <!-- LEFT: Active Order Items -->
@@ -96,6 +95,7 @@
                 {% for item in order.items.all %}
                 {% if not item.is_cancelled and not item.is_returned %}
                 <div class="flex items-start gap-4 {% if not forloop.last %}pb-6 border-b border-gray-100 mb-6{% endif %}" id="item-{{ item.id }}">
+
                     <!-- Product Image -->
                     <div class="w-20 h-20 bg-gray-50 rounded-xl flex items-center justify-center overflow-hidden flex-shrink-0 border border-gray-100">
                         {% if item.variant.images.first %}
@@ -106,34 +106,83 @@
                         </svg>
                         {% endif %}
                     </div>
+
                     <!-- Product Details -->
                     <div class="flex-1 min-w-0">
                         <h3 class="font-semibold text-gray-900 mb-1 text-sm leading-tight">{{ item.product_name }}</h3>
-                        <div class="flex items-center gap-2 mb-2">
+
+                        <!-- Color -->
+                        <div class="flex items-center gap-2 mb-1">
                             <span class="inline-block w-3.5 h-3.5 rounded-full border border-gray-300 flex-shrink-0" style="background-color: {{ item.color_code }};"></span>
                             <span class="text-xs text-gray-500">{{ item.color_name }}</span>
                             <span class="text-gray-300">·</span>
                             <span class="text-xs text-gray-400">{{ item.color_code }}</span>
                         </div>
-                        <p class="text-xs text-gray-500 mb-3">Qty: <span class="font-medium text-gray-700">{{ item.quantity }}</span></p>
-                        <div class="flex items-center justify-between flex-wrap gap-2">
-                            <span class="text-base font-bold text-gray-900">₹{{ item.subtotal|floatformat:2 }}</span>
-                            <div class="flex gap-2">
-                                {% if active_items_count > 1 %}
-                                    {% if can_cancel %}
-                                    <button onclick="openCancelItemModal({{ item.id }}, '{{ item.product_name|escapejs }}')"
-                                        class="px-3 py-1.5 text-xs text-red-600 border border-red-200 rounded-lg hover:bg-red-50 hover:border-red-400 transition-colors font-medium">
-                                        Cancel Item
-                                    </button>
-                                    {% endif %}
-                                    {% if can_return %}
-                                    <button onclick="openReturnItemModal({{ item.id }}, '{{ item.product_name|escapejs }}', {{ item.subtotal }})"
-                                        class="px-3 py-1.5 text-xs text-orange-600 border border-orange-200 rounded-lg hover:bg-orange-50 hover:border-orange-400 transition-colors font-medium">
-                                        Return Item
-                                    </button>
-                                    {% endif %}
+
+                        <!-- Qty -->
+                        <p class="text-xs text-gray-500 mb-2">Qty: <span class="font-medium text-gray-700">{{ item.quantity }}</span></p>
+
+                        <!-- Offer badge (from enriched context) -->
+                        {% if item.offer_discount_pct > 0 %}
+                        <div class="flex items-center gap-2 mb-2 flex-wrap">
+                            {% if item.offer_type == 'product' %}
+                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-700 border border-green-200">
+                                🏷️ Product Offer {{ item.offer_discount_pct|floatformat:0 }}% OFF
+                            </span>
+                            {% elif item.offer_type == 'brand' %}
+                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-700 border border-blue-200">
+                                🎯 Brand Offer {{ item.offer_discount_pct|floatformat:0 }}% OFF
+                            </span>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+
+                        <!-- Coupon discount (only if applied) -->
+                        {% if item.coupon_per_item > 0 %}
+                        <div class="flex items-center gap-2 mb-2 flex-wrap">
+                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-700 border border-green-200">
+                                <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M5 2a2 2 0 00-2 2v14l3.5-2 3.5 2 3.5-2 3.5 2V4a2 2 0 00-2-2H5zm4.707 3.707a1 1 0 00-1.414-1.414l-3 3a1 1 0 000 1.414l3 3a1 1 0 001.414-1.414L8.414 10l1.293-1.293zM11 6.5a1 1 0 112 0 1 1 0 01-2 0zm1 3a1 1 0 100 2 1 1 0 000-2z" clip-rule="evenodd"/>
+                                </svg>
+                                Coupon
+                                {% if coupon_code %}
+                                <code class="bg-green-100 text-green-800 px-1.5 py-0.5 rounded text-xs font-mono font-bold">{{ coupon_code }}</code>
                                 {% endif %}
-                            </div>
+                            </span>
+                            <span class="text-green-700 font-semibold text-xs">−₹{{ item.coupon_per_item|floatformat:2 }}</span>
+                        </div>
+                        {% endif %}
+
+
+                        <!-- Pricing row -->
+                        <div class="flex items-center gap-3 mb-3 flex-wrap">
+                            {% if item.offer_saving > 0 %}
+                            <span class="text-xs text-gray-400 line-through">₹{{ item.original_subtotal|floatformat:2 }}</span>
+                            {% endif %}
+                            <span class="text-base font-bold text-gray-900">₹{{ item.subtotal|floatformat:2 }}</span>
+                        </div>
+
+                        <!-- Per-unit price note -->
+                        {% if item.quantity > 1 %}
+                        <p class="text-xs text-gray-400 mb-2">₹{{ item.price|floatformat:2 }} × {{ item.quantity }} units</p>
+                        {% endif %}
+
+                        <!-- Action buttons -->
+                        <div class="flex gap-2 flex-wrap">
+                            {% if active_items_count > 1 %}
+                                {% if can_cancel %}
+                                <button onclick="openCancelItemModal({{ item.id }}, '{{ item.product_name|escapejs }}')"
+                                    class="px-3 py-1.5 text-xs text-red-600 border border-red-200 rounded-lg hover:bg-red-50 hover:border-red-400 transition-colors font-medium">
+                                    Cancel Item
+                                </button>
+                                {% endif %}
+                                {% if can_return %}
+                                <button onclick="openReturnItemModal({{ item.id }}, '{{ item.product_name|escapejs }}', {{ item.subtotal }})"
+                                    class="px-3 py-1.5 text-xs text-orange-600 border border-orange-200 rounded-lg hover:bg-orange-50 hover:border-orange-400 transition-colors font-medium">
+                                    Return Item
+                                </button>
+                                {% endif %}
+                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -157,7 +206,7 @@
         <!-- RIGHT: Order Summary + Return Entire Order -->
         <div class="lg:col-span-1 space-y-5">
 
-            <!-- Order Summary Card -->
+            <!-- ── Order Summary Card ───────────────────────────── -->
             <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                 <h3 class="text-base font-semibold text-gray-900 mb-5 flex items-center gap-2">
                     <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -165,33 +214,92 @@
                     </svg>
                     Order Summary
                 </h3>
+
                 <div class="space-y-3 text-sm">
+
+                    <!-- MRP / original subtotal -->
+                    {% if total_offer_savings > 0 %}
                     <div class="flex justify-between items-center">
-                        <span class="text-gray-500">Subtotal</span>
-                        <span class="text-gray-900 font-medium">₹{{ order.subtotal|floatformat:2 }}</span>
-                    </div>
-                    <div class="flex justify-between items-center">
-                        <span class="text-gray-500">Delivery Charges</span>
-                        <span class="{% if order.subtotal >= 500 %}text-green-600 font-medium{% else %}text-gray-900 font-medium{% endif %}">
-                            {% if order.subtotal >= 500 %}
-                            <span class="inline-flex items-center gap-1">
-                                <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></path></svg>
-                                Free
-                            </span>
-                            {% else %}₹40{% endif %}
+                        <span class="text-gray-500">MRP Total</span>
+                        <span class="text-gray-400 line-through">
+                            ₹{% with orig=order.subtotal|add:total_offer_savings %}{{ orig|floatformat:2 }}{% endwith %}
                         </span>
                     </div>
+                    {% endif %}
+
+                    <!-- Subtotal (after offers) -->
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-500">Subtotal (after offers)</span>
+                        <span class="text-gray-900 font-medium">₹{{ order.subtotal|floatformat:2 }}</span>
+                    </div>
+
+                    <!-- Offer savings line -->
+                    {% if total_offer_savings > 0 %}
+                    <div class="flex justify-between items-center">
+                        <span class="text-green-600 text-xs flex items-center gap-1">
+                            🏷️ Offer Savings
+                        </span>
+                        <span class="text-green-600 font-medium text-xs">−₹{{ total_offer_savings|floatformat:2 }}</span>
+                    </div>
+                    {% endif %}
+
+                    <!-- Delivery -->
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-500">Delivery Charges</span>
+                        <span class="{% if order.delivery_charge == 0 %}text-green-600 font-medium{% else %}text-gray-900 font-medium{% endif %}">
+                            {% if order.delivery_charge == 0 %}
+                            <span class="inline-flex items-center gap-1">
+                                <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                </svg>
+                                Free
+                            </span>
+                            {% else %}
+                            ₹{{ order.delivery_charge|floatformat:2 }}
+                            {% endif %}
+                        </span>
+                    </div>
+
+                    <!-- Coupon discount (only if applied) -->
+                    {% if coupon_discount > 0 %}
+                    <div class="flex justify-between items-center bg-green-50 rounded-lg px-3 py-2 -mx-1">
+                        <span class="text-green-700 text-xs flex items-center gap-1.5">
+                            <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M5 2a2 2 0 00-2 2v14l3.5-2 3.5 2 3.5-2 3.5 2V4a2 2 0 00-2-2H5zm4.707 3.707a1 1 0 00-1.414-1.414l-3 3a1 1 0 000 1.414l3 3a1 1 0 001.414-1.414L8.414 10l1.293-1.293zM11 6.5a1 1 0 112 0 1 1 0 01-2 0zm1 3a1 1 0 100 2 1 1 0 000-2z" clip-rule="evenodd"/>
+                            </svg>
+                            Coupon
+                            {% if coupon_code %}
+                            <code class="bg-green-100 text-green-800 px-1.5 py-0.5 rounded text-xs font-mono font-bold">{{ coupon_code }}</code>
+                            {% endif %}
+                        </span>
+                        <span class="text-green-700 font-semibold text-xs">−₹{{ coupon_discount|floatformat:2 }}</span>
+                    </div>
+                    {% endif %}
+
+                    <!-- Divider -->
                     <div class="border-t border-gray-100 pt-3 mt-3">
                         <div class="flex justify-between items-center">
-                            <span class="font-semibold text-gray-900">Total</span>
+                            <span class="font-semibold text-gray-900">Total Paid</span>
                             <span class="text-xl font-bold text-gray-900">₹{{ order.total_amount|floatformat:2 }}</span>
                         </div>
                     </div>
+
+                    <!-- Total savings summary -->
+                    {% if total_offer_savings > 0 or coupon_discount > 0 %}
+                    <div class="bg-green-50 border border-green-100 rounded-lg px-3 py-2 text-center">
+                        <p class="text-xs text-green-700 font-medium">
+                            🎉 You saved
+                            ₹{% with total_saved=total_offer_savings|add:coupon_discount %}{{ total_saved|floatformat:2 }}{% endwith %}
+                            on this order!
+                        </p>
+                    </div>
+                    {% endif %}
+
                     <p class="text-xs text-gray-400">Inclusive of all taxes and charges</p>
                 </div>
             </div>
 
-            <!-- Return Entire Order Section -->
+            <!-- ── Return Entire Order Section ─────────────────── -->
             {% if can_return %}
                 {% if order.return_request %}
                 <!-- Return Request Status Card -->
@@ -211,10 +319,10 @@
                             <div class="w-2 h-2 rounded-full bg-yellow-400 animate-pulse"></div>
                             <span class="text-sm font-semibold text-yellow-800">Return Request Under Review</span>
                             {% elif order.return_request.return_status == 'approved' %}
-                            <svg class="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></path></svg>
+                            <svg class="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
                             <span class="text-sm font-semibold text-green-800">Return Approved</span>
                             {% else %}
-                            <svg class="w-4 h-4 text-red-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/></path></svg>
+                            <svg class="w-4 h-4 text-red-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/></svg>
                             <span class="text-sm font-semibold text-red-800">Return Rejected</span>
                             {% endif %}
                         </div>
@@ -223,7 +331,7 @@
                             {% elif order.return_request.return_status == 'approved' %}text-green-700
                             {% else %}text-red-700{% endif %}">
                             {% if order.return_request.return_status == 'pending' %}Your return request is being reviewed by our team.
-                            {% elif order.return_request.return_status == 'approved' %}Your return has been approved. Refund will be processed to your wallet soon.
+                            {% elif order.return_request.return_status == 'approved' %}Your return has been approved. Refund will be processed to your wallet.
                             {% elif order.return_request.return_status == 'rejected' %}Unfortunately, your return request was not approved.
                             {% endif %}
                         </p>
@@ -289,7 +397,9 @@
                             <svg class="w-4 h-4 text-amber-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/>
                             </svg>
-                            <p class="text-xs text-amber-800"><strong>{{ return_days_left }} day{{ return_days_left|pluralize }}</strong> left to return this order</p>
+                            <p class="text-xs text-amber-800">
+                                <strong>{{ return_days_left }} day{{ return_days_left|pluralize }}</strong> left to return this order
+                            </p>
                         </div>
                         <button onclick="openReturnModal()"
                             class="w-full bg-red-600 hover:bg-red-700 active:bg-red-800 text-white font-semibold py-2.5 px-4 rounded-lg transition-colors flex items-center justify-center gap-2 text-sm">
@@ -302,21 +412,21 @@
                             <svg class="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
                             </svg>
-                            <p class="text-xs text-blue-800"><strong>Return Policy:</strong> Refund will be credited to your wallet after admin approval.</p>
+                            <p class="text-xs text-blue-800">
+                                <strong>Return Policy:</strong> Refund will be credited to your wallet after admin approval.
+                            </p>
                         </div>
                     </div>
                 </div>
                 {% endif %}
             {% endif %}
 
-        </div>
-        <!-- END RIGHT SIDEBAR -->
-    </div>
-
+        </div><!-- END RIGHT SIDEBAR -->
+    </div><!-- END MAIN GRID -->
 
 
     <!-- ═══════════════════════════════════════════
-         SECTION 2: CANCELLED ITEMS (Full Width, below main grid)
+         SECTION 2: CANCELLED ITEMS
     ═══════════════════════════════════════════ -->
     {% for item in order.items.all %}{% if item.is_cancelled %}{% if forloop.first %}
     <div class="bg-white rounded-xl shadow-sm border border-red-200 p-6 mb-6">
@@ -332,7 +442,6 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
     {% endif %}
 
-        <!-- Cancelled Item Card -->
         <div class="flex items-start gap-3 p-4 bg-red-50 rounded-xl border border-red-100">
             <div class="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0 relative">
                 {% if item.variant.images.first %}
@@ -363,14 +472,14 @@
         </div>
 
     {% if forloop.last %}
-        </div><!-- end grid -->
-    </div><!-- end cancelled items box -->
+        </div>
+    </div>
     {% endif %}
     {% endif %}{% endfor %}
 
 
     <!-- ═══════════════════════════════════════════
-         SECTION 3: RETURNED ITEMS (Full Width, below cancelled)
+         SECTION 3: RETURNED ITEMS
     ═══════════════════════════════════════════ -->
     {% for item in order.items.all %}{% if item.is_returned %}{% if forloop.first %}
     <div class="bg-white rounded-xl shadow-sm border border-purple-200 p-6 mb-6">
@@ -386,7 +495,6 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
     {% endif %}
 
-        <!-- Returned Item Card -->
         <div class="flex items-start gap-3 p-4 bg-purple-50 rounded-xl border border-purple-100">
             <div class="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0 relative">
                 {% if item.variant.images.first %}
@@ -413,7 +521,6 @@
                     <span class="text-xs text-gray-400">{{ item.returned_at|date:"d M Y" }}</span>
                     {% endif %}
                 </div>
-                <!-- Return Status Badge -->
                 {% if item.return_request %}
                 <div class="flex flex-wrap gap-1.5">
                     <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium
@@ -426,7 +533,7 @@
                     </span>
                     {% if item.return_request.return_status == 'approved' %}
                     <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">
-                        💰 ₹{{ item.return_request.refund_amount|floatformat:2 }}
+                        💰 Refunded ₹{{ item.return_request.refund_amount|floatformat:2 }}
                     </span>
                     {% endif %}
                 </div>
@@ -442,14 +549,14 @@
         </div>
 
     {% if forloop.last %}
-        </div><!-- end grid -->
-    </div><!-- end returned items box -->
+        </div>
+    </div>
     {% endif %}
     {% endif %}{% endfor %}
 
 
     <!-- ═══════════════════════════════════════════
-         SECTION 4: SHIPPING ADDRESS + PAYMENT INFO (Bottom)
+         SECTION 4: SHIPPING + PAYMENT (Bottom)
     ═══════════════════════════════════════════ -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
@@ -490,7 +597,6 @@
                 Payment Info
             </h3>
             <div class="bg-gray-50 rounded-lg p-4 space-y-4">
-                <!-- Method -->
                 <div class="flex items-center gap-3">
                     <div class="w-9 h-9 bg-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
                         <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -502,7 +608,6 @@
                         <p class="text-sm font-semibold text-gray-900">{{ order.get_payment_method_display }}</p>
                     </div>
                 </div>
-                <!-- Status -->
                 <div class="flex items-center justify-between border-t border-gray-200 pt-3">
                     <p class="text-sm text-gray-500">Payment Status</p>
                     <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold
@@ -511,12 +616,11 @@
                         {% elif order.payment_status == 'refunded' %}text-purple-700 bg-purple-100 border border-purple-200
                         {% else %}text-yellow-700 bg-yellow-100 border border-yellow-200{% endif %}">
                         {% if order.payment_status == 'paid' %}
-                        <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></path></svg>
+                        <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
                         {% endif %}
                         {{ order.get_payment_status_display }}
                     </span>
                 </div>
-                <!-- Retry Payment -->
                 {% if order.payment_method == 'online' and order.payment_status == 'failed' %}
                 <div class="border-t border-red-100 pt-3">
                     <p class="text-xs text-red-600 mb-3">Payment failed. Please retry to confirm your order.</p>
@@ -532,11 +636,9 @@
             </div>
         </div>
 
-    </div>
-    <!-- END SECTION 4 -->
+    </div><!-- END SECTION 4 -->
 
-</div>
-<!-- END PAGE WRAPPER -->
+</div><!-- END PAGE WRAPPER -->
 
 
 <!-- ═══════════════════════════════════════════════════════
@@ -620,8 +722,16 @@
                     placeholder="Describe the issue..."></textarea>
             </div>
         </div>
+        <!-- Shows the proportional refund note -->
         <div class="bg-green-50 border border-green-200 rounded-xl p-3 mb-5">
-            <p class="text-xs text-green-800"><strong>✓ Instant Refund:</strong> ₹<span id="returnItemAmount" class="font-bold"></span> will be credited to your wallet immediately</p>
+            <p class="text-xs text-green-800">
+                <strong>✓ Instant Refund:</strong>
+                ₹<span id="returnItemAmount" class="font-bold"></span>
+                will be credited to your wallet immediately
+                <span id="returnItemCouponNote" class="text-green-700 block mt-0.5 hidden">
+                    (includes proportional coupon discount applied to this item)
+                </span>
+            </p>
         </div>
         <div class="flex gap-3">
             <button type="button" onclick="closeReturnItemModal()" class="flex-1 py-2.5 px-4 border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 font-medium text-sm transition-colors">
@@ -706,6 +816,10 @@
     let currentItemId = null;
     let currentReturnItemId = null;
 
+    // ── Pass coupon discount from Django to JS ──
+    const orderCouponDiscount = parseFloat("{{ coupon_discount|default:'0' }}");
+    const orderSubtotal = parseFloat("{{ order.subtotal|default:'0' }}");
+
     // ── Cancel Order Modal ──
     function openCancelOrderModal() {
         document.getElementById('cancelOrderModal').classList.remove('hidden');
@@ -789,10 +903,28 @@
     }
 
     // ── Return Item Modal ──
-    function openReturnItemModal(itemId, itemName, itemAmount) {
+    // itemSubtotal = item.subtotal (offer-adjusted, pre-coupon)
+    function openReturnItemModal(itemId, itemName, itemSubtotal) {
         currentReturnItemId = itemId;
+
+        // Calculate proportional refund to show user (mirrors _proportional_refund helper)
+        let refund = itemSubtotal;
+        if (orderSubtotal > 0 && orderCouponDiscount > 0) {
+            const itemCouponShare = (itemSubtotal / orderSubtotal) * orderCouponDiscount;
+            refund = itemSubtotal - itemCouponShare;
+        }
+
         document.getElementById('returnItemName').textContent = itemName;
-        document.getElementById('returnItemAmount').textContent = itemAmount.toFixed(2);
+        document.getElementById('returnItemAmount').textContent = refund.toFixed(2);
+
+        // Show coupon note if coupon was used
+        const couponNote = document.getElementById('returnItemCouponNote');
+        if (orderCouponDiscount > 0) {
+            couponNote.classList.remove('hidden');
+        } else {
+            couponNote.classList.add('hidden');
+        }
+
         document.getElementById('returnItemModal').classList.remove('hidden');
     }
     function closeReturnItemModal() {
@@ -824,8 +956,13 @@
     ['cancelOrderModal', 'cancelItemModal', 'returnModal', 'returnItemModal'].forEach(id => {
         document.getElementById(id).addEventListener('click', function(e) {
             if (e.target === this) {
-                const fnName = 'close' + id.charAt(0).toUpperCase() + id.slice(1, -5) + 'Modal';
-                if (typeof window[fnName] === 'function') window[fnName]();
+                const fnMap = {
+                    cancelOrderModal: closeCancelOrderModal,
+                    cancelItemModal:  closeCancelItemModal,
+                    returnModal:      closeReturnModal,
+                    returnItemModal:  closeReturnItemModal,
+                };
+                if (fnMap[id]) fnMap[id]();
             }
         });
     });
