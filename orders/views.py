@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 import json
-
+from offers.utils import get_offer_details
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
@@ -71,68 +71,114 @@ def order(request):
     return render(request, 'user_side/profile/order.html', context)
 
 
+# ─────────────────────────────────────────────
+# ORDER DETAIL
+# ─────────────────────────────────────────────
 @login_required
 def order_detail(request, order_number):
-    """Display detailed order information"""
+    """Display detailed order information with offer and coupon breakdown."""
     order = get_object_or_404(
         Order.objects.prefetch_related(
             'items__variant__images',
+            'items__variant__product__brand',
             'items__variant__product',
             'items__return_request'
         ).select_related('delivery_address', 'user', 'return_request'),
         order_number=order_number,
         user=request.user
     )
-    
-    discount = 0
-    if hasattr(order, 'discount_amount'):
-        discount = order.discount_amount
-    
-    order_savings = discount
-    
+
+    # ── Per-item offer enrichment ──────────────────────────────────────────
+    # We need the ORIGINAL (non-offer) price for each item to show savings.
+    # item.price is the offer-adjusted price stored at order time.
+    # item.variant.price is the current base price — use it for display only.
+    active_subtotal = Decimal('0.00')  # sum of active (non-cancelled, non-returned) items
+    total_offer_savings = Decimal('0.00')
+
+    active_subtotal = Decimal('0.00')
+    total_offer_savings = Decimal('0.00')
+
+    for item in order.items.all():
+        variant = item.variant
+        if variant:
+            base_price = variant.price
+            _, discount_pct, offer_type = get_offer_details(variant.product, base_price)
+            item.original_price = base_price
+            item.offer_type = offer_type
+            item.offer_discount_pct = discount_pct
+            item.offer_saving = max((base_price - item.price) * item.quantity, Decimal('0.00'))
+            item.original_subtotal = base_price * item.quantity
+        else:
+            item.original_price = item.price
+            item.offer_type = None
+            item.offer_discount_pct = Decimal('0')
+            item.offer_saving = Decimal('0.00')
+            item.original_subtotal = item.subtotal
+
+        if not item.is_cancelled and not item.is_returned:
+            active_subtotal += item.subtotal
+            total_offer_savings += item.offer_saving
+
+    # ── Second pass: attach proportional coupon discount per item ─────────────
+    coupon_discount = order.coupon_discount or Decimal('0.00')
+
+    for item in order.items.all():
+        if not item.is_cancelled and not item.is_returned and active_subtotal > 0 and coupon_discount > 0:
+            item.coupon_per_item = ((item.subtotal / active_subtotal) * coupon_discount).quantize(Decimal('0.01'))
+        else:
+            item.coupon_per_item = Decimal('0.00')
+
+    # ── Coupon info ────────────────────────────────────────────────────────
+    coupon_discount = order.coupon_discount or Decimal('0.00')
+    coupon_code = order.coupon_code or ''
+
+    # ── Return eligibility ─────────────────────────────────────────────────
     can_cancel = order.order_status in ['pending', 'confirmed']
-    
     can_download_invoice = order.order_status == 'delivered'
-    
+
     can_return = False
     return_days_left = 0
-    
+
     if order.order_status == 'delivered':
-        delivery_date = order.updated_at  
-        days_since_delivery = (timezone.now() - delivery_date).days
+        days_since_delivery = (timezone.now() - order.updated_at).days
         return_days_left = 7 - days_since_delivery
-        
         if return_days_left > 0 and not hasattr(order, 'return_request'):
             can_return = True
 
     active_items_count = order.items.filter(is_cancelled=False, is_returned=False).count()
 
     status_steps = {
-        'confirmed': order.order_status in ['confirmed', 'shipped', 'out_for_delivery', 'delivered'],
-        'shipped': order.order_status in ['shipped', 'out_for_delivery', 'delivered'],
-        'out_for_delivery': order.order_status in ['out_for_delivery', 'delivered'],
-        'delivered': order.order_status == 'delivered',
+        'confirmed':       order.order_status in ['confirmed', 'shipped', 'out_for_delivery', 'delivered'],
+        'shipped':         order.order_status in ['shipped', 'out_for_delivery', 'delivered'],
+        'out_for_delivery':order.order_status in ['out_for_delivery', 'delivered'],
+        'delivered':       order.order_status == 'delivered',
     }
     
+
     context = {
         'order': order,
         'can_cancel': can_cancel,
         'can_return': can_return,
         'can_download_invoice': can_download_invoice,
         'status_steps': status_steps,
-        'discount': discount,
-        'order_savings': order_savings,
+        'coupon_discount': coupon_discount,
+        'coupon_code': coupon_code,
+        'total_offer_savings': total_offer_savings,
         'return_days_left': return_days_left if return_days_left > 0 else 0,
         'active_items_count': active_items_count,
+        'active_subtotal': active_subtotal,
     }
-    
+
     return render(request, 'user_side/profile/order_detail.html', context)
 
 
+# ─────────────────────────────────────────────
+# CANCEL ENTIRE ORDER
+# ─────────────────────────────────────────────
 @login_required
 @require_POST
 def cancel_order(request, order_number):
-    """Cancel entire order and refund to wallet"""
+    """Cancel entire order and refund to wallet."""
     try:
         order = get_object_or_404(
             Order.objects.prefetch_related('items__variant'),
@@ -141,71 +187,71 @@ def cancel_order(request, order_number):
         )
 
         if order.order_status not in ['pending', 'confirmed']:
-            return JsonResponse({
-                'success': False,
-                'message': 'Order cannot be cancelled at this stage.'
-            }, status=400)
+            return JsonResponse({'success': False, 'message': 'Order cannot be cancelled at this stage.'}, status=400)
 
         data = json.loads(request.body)
         cancel_reason = data.get('reason', 'No reason provided')
-        
+
         with transaction.atomic():
             for item in order.items.all():
                 if item.variant and not item.is_cancelled:
                     item.variant.stock += item.quantity
                     item.variant.save()
-                
                 item.is_cancelled = True
                 item.cancelled_at = timezone.now()
                 item.item_status = 'cancelled'
                 item.save()
+
             order.order_status = 'cancelled'
             order.cancellation_reason = cancel_reason
             order.cancelled_at = timezone.now()
+
             refund_amount = Decimal('0.00')
             if order.is_paid or order.payment_status == 'paid':
                 refund_amount = order.total_amount
                 order.payment_status = 'refunded'
                 order.is_paid = False
-                
-                wallet, created = Wallet.objects.get_or_create(user=request.user)
+
+                wallet, _ = Wallet.objects.get_or_create(user=request.user)
                 wallet.balance += refund_amount
                 wallet.save()
                 WalletTransaction.objects.create(
-                    wallet=wallet,
-                    order=order,
-                    amount=refund_amount,
-                    transaction_type='credit'
+                    wallet=wallet, order=order,
+                    amount=refund_amount, transaction_type='credit'
                 )
             else:
                 order.payment_status = 'failed'
                 order.is_paid = False
-            
+
             order.save()
-        
-        if refund_amount > 0:
-            messages.success(request, f'Order {order_number} has been cancelled and ₹{refund_amount} has been refunded to your wallet.')
-        else:
-            messages.success(request, f'Order {order_number} has been cancelled successfully.')
-        
+
+        msg = (f'Order {order_number} cancelled. ₹{refund_amount} refunded to your wallet.'
+               if refund_amount > 0 else f'Order {order_number} cancelled successfully.')
+        messages.success(request, msg)
+
         return JsonResponse({
             'success': True,
             'message': 'Order cancelled successfully',
             'refund_amount': float(refund_amount),
             'redirect_url': '/orders/list/'
         })
-        
+
     except Exception as e:
-        return JsonResponse({
-            'success': False,
-            'message': f'Error cancelling order: {str(e)}'
-        }, status=500)
+        return JsonResponse({'success': False, 'message': f'Error cancelling order: {str(e)}'}, status=500)
 
 
+# ─────────────────────────────────────────────
+# CANCEL SINGLE ITEM
+# ─────────────────────────────────────────────
 @login_required
 @require_POST
 def cancel_order_item(request, order_number, item_id):
-    """Cancel individual order item and refund proportionate amount"""
+    """
+    Cancel one item and refund the proportional amount the customer paid for it.
+
+    Refund = item.subtotal − item's proportional share of coupon_discount
+           + delivery_charge if this was the last active item
+    """
     try:
         order = get_object_or_404(
             Order.objects.prefetch_related('items__variant'),
@@ -214,75 +260,94 @@ def cancel_order_item(request, order_number, item_id):
         )
 
         if order.order_status not in ['pending', 'confirmed']:
-            return JsonResponse({
-                'success': False,
-                'message': 'Order items cannot be cancelled at this stage.'
-            }, status=400)
-        
+            return JsonResponse({'success': False, 'message': 'Order items cannot be cancelled at this stage.'}, status=400)
+
         item = get_object_or_404(OrderItem, id=item_id, order=order)
 
         if item.is_cancelled:
-            return JsonResponse({
-                'success': False,
-                'message': 'This item has already been cancelled.'
-            }, status=400)
-        
+            return JsonResponse({'success': False, 'message': 'This item has already been cancelled.'}, status=400)
+
         with transaction.atomic():
+            # ── Stock restore ──────────────────────────────────────────────
             if item.variant:
                 item.variant.stock += item.quantity
                 item.variant.save()
 
-            item.is_cancelled = True
-            item.cancelled_at = timezone.now()
-            item.item_status = 'pending'
-            item.save()
+            # ── Proportional refund calculation ────────────────────────────
+            # Use the sum of all non-cancelled/returned items' subtotals
+            # (including the current item) as the base for coupon proportion.
+            original_active_subtotal = order.items.filter(
+                is_cancelled=False, is_returned=False
+            ).aggregate(total=Sum('subtotal'))['total'] or Decimal('0.00')
 
+            if original_active_subtotal > 0 and order.coupon_discount > 0:
+                # What fraction of the basket does this item represent?
+                item_proportion = item.subtotal / original_active_subtotal
+                item_coupon_share = (item_proportion * order.coupon_discount).quantize(Decimal('0.01'))
+            else:
+                item_coupon_share = Decimal('0.00')
+
+            # item.subtotal already reflects product/brand offer price
+            item_refund_base = item.subtotal - item_coupon_share
+
+            # ── Update order totals ────────────────────────────────────────
             order.subtotal -= item.subtotal
-  
-            active_items_count = order.items.filter(is_cancelled=False, is_returned=False).count()
 
-            if active_items_count == 0:
-                order.delivery_charge = Decimal('0.00')
-
-            order.total_amount = order.subtotal + order.delivery_charge - order.coupon_discount
+            active_items_count = order.items.filter(
+                is_cancelled=False, is_returned=False
+            ).exclude(id=item.id).count()
 
             refund_amount = Decimal('0.00')
-            if order.is_paid or order.payment_status == 'paid':
-                if active_items_count == 0:
-                    refund_amount = item.subtotal + order.delivery_charge
-                else:
-                    refund_amount = item.subtotal
 
-                wallet, created = Wallet.objects.get_or_create(user=request.user)
+            if active_items_count == 0:
+                # Last item — refund everything remaining and zero out the order
+                if order.is_paid or order.payment_status == 'paid':
+                    refund_amount = item_refund_base + order.delivery_charge
+                order.delivery_charge = Decimal('0.00')
+                order.coupon_discount = Decimal('0.00')
+                order.total_amount = Decimal('0.00')
+            else:
+                # Reduce coupon_discount proportionally so future cancellations
+                # still calculate correctly against the remaining basket.
+                order.coupon_discount -= item_coupon_share
+                order.total_amount = order.subtotal + order.delivery_charge - order.coupon_discount
+                if order.is_paid or order.payment_status == 'paid':
+                    refund_amount = item_refund_base
+
+            # ── Mark item cancelled ────────────────────────────────────────
+            item.is_cancelled = True
+            item.cancelled_at = timezone.now()
+            item.item_status = 'cancelled'
+            item.save()
+
+            # ── Wallet refund if paid ──────────────────────────────────────
+            if refund_amount > 0:
+                wallet, _ = Wallet.objects.get_or_create(user=request.user)
                 wallet.balance += refund_amount
                 wallet.save()
-                
                 WalletTransaction.objects.create(
-                    wallet=wallet,
-                    order=order,
-                    amount=refund_amount,
-                    transaction_type='credit'
+                    wallet=wallet, order=order,
+                    amount=refund_amount, transaction_type='credit'
                 )
 
+            # ── Cancel whole order if last item ───────────────────────────
             if active_items_count == 0:
                 order.order_status = 'cancelled'
                 order.cancellation_reason = 'All items cancelled'
                 order.cancelled_at = timezone.now()
-
                 if order.is_paid or order.payment_status == 'paid':
                     order.payment_status = 'refunded'
                     order.is_paid = False
                 else:
                     order.payment_status = 'failed'
                     order.is_paid = False
-            
+
             order.save()
-        
-        if refund_amount > 0:
-            messages.success(request, f'Item cancelled successfully. ₹{refund_amount} has been refunded to your wallet.')
-        else:
-            messages.success(request, 'Item cancelled successfully.')
-        
+
+        msg = (f'Item cancelled. ₹{refund_amount} refunded to your wallet.'
+               if refund_amount > 0 else 'Item cancelled successfully.')
+        messages.success(request, msg)
+
         return JsonResponse({
             'success': True,
             'message': 'Item cancelled successfully',
@@ -292,186 +357,168 @@ def cancel_order_item(request, order_number, item_id):
             'active_items_count': active_items_count,
             'order_cancelled': active_items_count == 0
         })
-        
+
     except Exception as e:
-        return JsonResponse({
-            'success': False,
-            'message': f'Error cancelling item: {str(e)}'
-        }, status=500)
+        return JsonResponse({'success': False, 'message': f'Error cancelling item: {str(e)}'}, status=500)
 
-
+# ─────────────────────────────────────────────
+# RETURN ENTIRE ORDER (admin approval required)
+# ─────────────────────────────────────────────
 @login_required
 @require_http_methods(["POST"])
 def request_return(request, order_number):
-    """Request return for entire order - NO wallet refund until admin approves"""
+    """Request return for entire order — NO wallet refund until admin approves."""
     try:
         order = get_object_or_404(Order, order_number=order_number, user=request.user)
-        
+
         if order.order_status != 'delivered':
-            return JsonResponse({
-                'success': False,
-                'message': 'Only delivered orders can be returned.'
-            })
+            return JsonResponse({'success': False, 'message': 'Only delivered orders can be returned.'})
 
         if hasattr(order, 'return_request'):
-            return JsonResponse({
-                'success': False,
-                'message': 'Return request already exists for this order.'
-            })
- 
-        delivery_date = order.updated_at  
-        days_since_delivery = (timezone.now() - delivery_date).days
-        
+            return JsonResponse({'success': False, 'message': 'Return request already exists for this order.'})
+
+        days_since_delivery = (timezone.now() - order.updated_at).days
         if days_since_delivery > 7:
-            return JsonResponse({
-                'success': False,
-                'message': 'Return period has expired. Returns are only valid within 7 days of delivery.'
-            })
-        
+            return JsonResponse({'success': False, 'message': 'Return period has expired (7 days).'})
+
         data = json.loads(request.body)
         return_reason = data.get('reason')
         description = data.get('description', '')
-        
+
         if not return_reason:
-            return JsonResponse({
-                'success': False,
-                'message': 'Please select a reason for return.'
-            })
-        
+            return JsonResponse({'success': False, 'message': 'Please select a reason for return.'})
+
         with transaction.atomic():
-            order_return = OrderReturn.objects.create(
+            OrderReturn.objects.create(
                 order=order,
                 return_reason=return_reason,
                 description=description[:500],
-                refund_amount=order.total_amount,
+                refund_amount=order.total_amount,  # full amount customer paid
                 return_status='pending'
             )
-            
             order.order_status = 'returned_checking'
             order.save()
-        
+
         return JsonResponse({
             'success': True,
-            'message': 'Return request submitted successfully! Admin is reviewing your request.',
+            'message': 'Return request submitted! Our team is reviewing it.',
             'redirect_url': f'/orders/detail/{order_number}/'
         })
-        
+
     except Exception as e:
-        return JsonResponse({
-            'success': False,
-            'message': f'Error processing return request: {str(e)}'
-        })
+        return JsonResponse({'success': False, 'message': f'Error processing return: {str(e)}'})
 
-
+# ─────────────────────────────────────────────
+# RETURN SINGLE ITEM
+# ─────────────────────────────────────────────
 @login_required
 @require_http_methods(["POST"])
 def request_item_return(request, order_number, item_id):
-    """Request return for individual item - Immediate stock restore and wallet refund"""
+    """
+    Return one item — instant stock restore and proportional wallet refund.
+
+    Refund = item.subtotal − item's proportional share of coupon_discount
+    """
     try:
         order = get_object_or_404(Order, order_number=order_number, user=request.user)
-        
+
         if order.order_status != 'delivered':
-            return JsonResponse({
-                'success': False,
-                'message': 'Only delivered orders can have items returned.'
-            })
-        
+            return JsonResponse({'success': False, 'message': 'Only delivered orders can have items returned.'})
+
         item = get_object_or_404(OrderItem, id=item_id, order=order)
-        
+
         if item.is_cancelled:
-            return JsonResponse({
-                'success': False,
-                'message': 'Cannot return a cancelled item.'
-            })
-        
+            return JsonResponse({'success': False, 'message': 'Cannot return a cancelled item.'})
         if item.is_returned:
-            return JsonResponse({
-                'success': False,
-                'message': 'This item has already been returned.'
-            })
-        
+            return JsonResponse({'success': False, 'message': 'This item has already been returned.'})
         if hasattr(item, 'return_request'):
-            return JsonResponse({
-                'success': False,
-                'message': 'Return request already exists for this item.'
-            })
-        
-        delivery_date = order.updated_at
-        days_since_delivery = (timezone.now() - delivery_date).days
-        
+            return JsonResponse({'success': False, 'message': 'Return request already exists for this item.'})
+
+        days_since_delivery = (timezone.now() - order.updated_at).days
         if days_since_delivery > 7:
-            return JsonResponse({
-                'success': False,
-                'message': 'Return period has expired. Returns are only valid within 7 days of delivery.'
-            })
-        
+            return JsonResponse({'success': False, 'message': 'Return period has expired (7 days).'})
+
         data = json.loads(request.body)
         return_reason = data.get('reason')
         description = data.get('description', '')
-        
+
         if not return_reason:
-            return JsonResponse({
-                'success': False,
-                'message': 'Please select a reason for return.'
-            })
-        
+            return JsonResponse({'success': False, 'message': 'Please select a reason for return.'})
+
         with transaction.atomic():
-            item_return = OrderItemReturn.objects.create(
+            # ── Proportional refund calculation ────────────────────────────
+            # Sum active (non-cancelled, non-returned) items including this one
+            original_active_subtotal = order.items.filter(is_cancelled=False, is_returned=False).aggregate(total=Sum('subtotal'))['total'] or Decimal('0.00')
+
+            if original_active_subtotal > 0 and order.coupon_discount > 0:
+                item_proportion = item.subtotal / original_active_subtotal
+                item_coupon_share = (item_proportion * order.coupon_discount).quantize(Decimal('0.01'))
+            else:
+                item_coupon_share = Decimal('0.00')
+
+            # item.subtotal already reflects product/brand offer price
+            refund_amount = item.subtotal - item_coupon_share
+
+            # ── Create return record ───────────────────────────────────────
+            OrderItemReturn.objects.create(
                 order_item=item,
                 order=order,
                 return_reason=return_reason,
                 description=description[:500],
-                refund_amount=item.subtotal,
+                refund_amount=refund_amount,
                 return_status='approved'
             )
-            
+
+            # ── Mark item returned ─────────────────────────────────────────
             item.is_returned = True
             item.returned_at = timezone.now()
             item.save()
-            
+
+            # ── Stock restore ──────────────────────────────────────────────
             if item.variant:
                 item.variant.stock += item.quantity
                 item.variant.save()
-            wallet, created = Wallet.objects.get_or_create(user=request.user)
-            wallet.balance += item.subtotal
-            wallet.save()
 
+            # ── Wallet refund ──────────────────────────────────────────────
+            wallet, _ = Wallet.objects.get_or_create(user=request.user)
+            wallet.balance += refund_amount
+            wallet.save()
             WalletTransaction.objects.create(
-                wallet=wallet,
-                order=order,
-                amount=item.subtotal,
-                transaction_type='credit'
+                wallet=wallet, order=order,
+                amount=refund_amount, transaction_type='credit'
             )
 
+            # ── Update order totals ────────────────────────────────────────
             order.subtotal -= item.subtotal
+            # Reduce stored coupon_discount so next return calculates correctly
+            order.coupon_discount -= item_coupon_share
             order.total_amount = order.subtotal + order.delivery_charge - order.coupon_discount
-            
-            active_items_count = order.items.filter(is_cancelled=False, is_returned=False).count()
-            
+
+            active_items_count = order.items.filter(
+                is_cancelled=False, is_returned=False
+            ).count()
+
             if active_items_count == 0:
-                OrderReturn.objects.create(
-                    order=order,
-                    return_reason=return_reason,
-                    description=f"Last item returned: {description[:450]}" if description else "All items returned",
-                    refund_amount=Decimal('0.00'),  
-                    return_status='pending'
-                )
+                if not hasattr(order, 'return_request'):
+                    OrderReturn.objects.create(
+                        order=order,
+                        return_reason=return_reason,
+                        description=f"Last item returned: {description[:450]}" if description else "All items returned",
+                        refund_amount=Decimal('0.00'),
+                        return_status='pending'
+                    )
                 order.order_status = 'returned_checking'
-            
+
             order.save()
-        
+
         return JsonResponse({
             'success': True,
-            'message': f'Item returned successfully! ₹{item.subtotal} has been refunded to your wallet.',
+            'message': f'Item returned! ₹{refund_amount:.2f} refunded to your wallet.',
             'redirect_url': f'/orders/detail/{order_number}/'
         })
-        
-    except Exception as e:
-        return JsonResponse({
-            'success': False,
-            'message': f'Error processing item return: {str(e)}'
-        })
 
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': f'Error processing return: {str(e)}'})
 
 @login_required
 def download_invoice(request, order_number):
