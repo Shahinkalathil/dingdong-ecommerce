@@ -70,13 +70,8 @@ def order(request):
     
     return render(request, 'user_side/profile/order.html', context)
 
-
-# ─────────────────────────────────────────────
-# ORDER DETAIL
-# ─────────────────────────────────────────────
 @login_required
 def order_detail(request, order_number):
-    """Display detailed order information with offer and coupon breakdown."""
     order = get_object_or_404(
         Order.objects.prefetch_related(
             'items__variant__images',
@@ -87,12 +82,7 @@ def order_detail(request, order_number):
         order_number=order_number,
         user=request.user
     )
-
-    # ── Per-item offer enrichment ──────────────────────────────────────────
-    # We need the ORIGINAL (non-offer) price for each item to show savings.
-    # item.price is the offer-adjusted price stored at order time.
-    # item.variant.price is the current base price — use it for display only.
-    active_subtotal = Decimal('0.00')  # sum of active (non-cancelled, non-returned) items
+    active_subtotal = Decimal('0.00')  
     total_offer_savings = Decimal('0.00')
 
     active_subtotal = Decimal('0.00')
@@ -119,7 +109,6 @@ def order_detail(request, order_number):
             active_subtotal += item.subtotal
             total_offer_savings += item.offer_saving
 
-    # ── Second pass: attach proportional coupon discount per item ─────────────
     coupon_discount = order.coupon_discount or Decimal('0.00')
 
     for item in order.items.all():
@@ -127,12 +116,8 @@ def order_detail(request, order_number):
             item.coupon_per_item = ((item.subtotal / active_subtotal) * coupon_discount).quantize(Decimal('0.01'))
         else:
             item.coupon_per_item = Decimal('0.00')
-
-    # ── Coupon info ────────────────────────────────────────────────────────
     coupon_discount = order.coupon_discount or Decimal('0.00')
     coupon_code = order.coupon_code or ''
-
-    # ── Return eligibility ─────────────────────────────────────────────────
     can_cancel = order.order_status in ['pending', 'confirmed']
     can_download_invoice = order.order_status == 'delivered'
 
@@ -171,14 +156,9 @@ def order_detail(request, order_number):
 
     return render(request, 'user_side/profile/order_detail.html', context)
 
-
-# ─────────────────────────────────────────────
-# CANCEL ENTIRE ORDER
-# ─────────────────────────────────────────────
 @login_required
 @require_POST
 def cancel_order(request, order_number):
-    """Cancel entire order and refund to wallet."""
     try:
         order = get_object_or_404(
             Order.objects.prefetch_related('items__variant'),
@@ -239,19 +219,9 @@ def cancel_order(request, order_number):
     except Exception as e:
         return JsonResponse({'success': False, 'message': f'Error cancelling order: {str(e)}'}, status=500)
 
-
-# ─────────────────────────────────────────────
-# CANCEL SINGLE ITEM
-# ─────────────────────────────────────────────
 @login_required
 @require_POST
 def cancel_order_item(request, order_number, item_id):
-    """
-    Cancel one item and refund the proportional amount the customer paid for it.
-
-    Refund = item.subtotal − item's proportional share of coupon_discount
-           + delivery_charge if this was the last active item
-    """
     try:
         order = get_object_or_404(
             Order.objects.prefetch_related('items__variant'),
@@ -268,29 +238,20 @@ def cancel_order_item(request, order_number, item_id):
             return JsonResponse({'success': False, 'message': 'This item has already been cancelled.'}, status=400)
 
         with transaction.atomic():
-            # ── Stock restore ──────────────────────────────────────────────
             if item.variant:
                 item.variant.stock += item.quantity
                 item.variant.save()
-
-            # ── Proportional refund calculation ────────────────────────────
-            # Use the sum of all non-cancelled/returned items' subtotals
-            # (including the current item) as the base for coupon proportion.
             original_active_subtotal = order.items.filter(
                 is_cancelled=False, is_returned=False
             ).aggregate(total=Sum('subtotal'))['total'] or Decimal('0.00')
 
             if original_active_subtotal > 0 and order.coupon_discount > 0:
-                # What fraction of the basket does this item represent?
                 item_proportion = item.subtotal / original_active_subtotal
                 item_coupon_share = (item_proportion * order.coupon_discount).quantize(Decimal('0.01'))
             else:
                 item_coupon_share = Decimal('0.00')
 
-            # item.subtotal already reflects product/brand offer price
             item_refund_base = item.subtotal - item_coupon_share
-
-            # ── Update order totals ────────────────────────────────────────
             order.subtotal -= item.subtotal
 
             active_items_count = order.items.filter(
@@ -300,27 +261,20 @@ def cancel_order_item(request, order_number, item_id):
             refund_amount = Decimal('0.00')
 
             if active_items_count == 0:
-                # Last item — refund everything remaining and zero out the order
                 if order.is_paid or order.payment_status == 'paid':
                     refund_amount = item_refund_base + order.delivery_charge
                 order.delivery_charge = Decimal('0.00')
                 order.coupon_discount = Decimal('0.00')
                 order.total_amount = Decimal('0.00')
             else:
-                # Reduce coupon_discount proportionally so future cancellations
-                # still calculate correctly against the remaining basket.
                 order.coupon_discount -= item_coupon_share
                 order.total_amount = order.subtotal + order.delivery_charge - order.coupon_discount
                 if order.is_paid or order.payment_status == 'paid':
                     refund_amount = item_refund_base
-
-            # ── Mark item cancelled ────────────────────────────────────────
             item.is_cancelled = True
             item.cancelled_at = timezone.now()
             item.item_status = 'cancelled'
             item.save()
-
-            # ── Wallet refund if paid ──────────────────────────────────────
             if refund_amount > 0:
                 wallet, _ = Wallet.objects.get_or_create(user=request.user)
                 wallet.balance += refund_amount
@@ -329,8 +283,6 @@ def cancel_order_item(request, order_number, item_id):
                     wallet=wallet, order=order,
                     amount=refund_amount, transaction_type='credit'
                 )
-
-            # ── Cancel whole order if last item ───────────────────────────
             if active_items_count == 0:
                 order.order_status = 'cancelled'
                 order.cancellation_reason = 'All items cancelled'
@@ -360,14 +312,10 @@ def cancel_order_item(request, order_number, item_id):
 
     except Exception as e:
         return JsonResponse({'success': False, 'message': f'Error cancelling item: {str(e)}'}, status=500)
-
-# ─────────────────────────────────────────────
-# RETURN ENTIRE ORDER (admin approval required)
-# ─────────────────────────────────────────────
+    
 @login_required
 @require_http_methods(["POST"])
 def request_return(request, order_number):
-    """Request return for entire order — NO wallet refund until admin approves."""
     try:
         order = get_object_or_404(Order, order_number=order_number, user=request.user)
 
@@ -393,7 +341,7 @@ def request_return(request, order_number):
                 order=order,
                 return_reason=return_reason,
                 description=description[:500],
-                refund_amount=order.total_amount,  # full amount customer paid
+                refund_amount=order.total_amount,  
                 return_status='pending'
             )
             order.order_status = 'returned_checking'
@@ -408,17 +356,9 @@ def request_return(request, order_number):
     except Exception as e:
         return JsonResponse({'success': False, 'message': f'Error processing return: {str(e)}'})
 
-# ─────────────────────────────────────────────
-# RETURN SINGLE ITEM
-# ─────────────────────────────────────────────
 @login_required
 @require_http_methods(["POST"])
 def request_item_return(request, order_number, item_id):
-    """
-    Return one item — instant stock restore and proportional wallet refund.
-
-    Refund = item.subtotal − item's proportional share of coupon_discount
-    """
     try:
         order = get_object_or_404(Order, order_number=order_number, user=request.user)
 
@@ -446,8 +386,6 @@ def request_item_return(request, order_number, item_id):
             return JsonResponse({'success': False, 'message': 'Please select a reason for return.'})
 
         with transaction.atomic():
-            # ── Proportional refund calculation ────────────────────────────
-            # Sum active (non-cancelled, non-returned) items including this one
             original_active_subtotal = order.items.filter(is_cancelled=False, is_returned=False).aggregate(total=Sum('subtotal'))['total'] or Decimal('0.00')
 
             if original_active_subtotal > 0 and order.coupon_discount > 0:
@@ -455,11 +393,7 @@ def request_item_return(request, order_number, item_id):
                 item_coupon_share = (item_proportion * order.coupon_discount).quantize(Decimal('0.01'))
             else:
                 item_coupon_share = Decimal('0.00')
-
-            # item.subtotal already reflects product/brand offer price
             refund_amount = item.subtotal - item_coupon_share
-
-            # ── Create return record ───────────────────────────────────────
             OrderItemReturn.objects.create(
                 order_item=item,
                 order=order,
@@ -468,18 +402,12 @@ def request_item_return(request, order_number, item_id):
                 refund_amount=refund_amount,
                 return_status='approved'
             )
-
-            # ── Mark item returned ─────────────────────────────────────────
             item.is_returned = True
             item.returned_at = timezone.now()
             item.save()
-
-            # ── Stock restore ──────────────────────────────────────────────
             if item.variant:
                 item.variant.stock += item.quantity
                 item.variant.save()
-
-            # ── Wallet refund ──────────────────────────────────────────────
             wallet, _ = Wallet.objects.get_or_create(user=request.user)
             wallet.balance += refund_amount
             wallet.save()
@@ -487,10 +415,7 @@ def request_item_return(request, order_number, item_id):
                 wallet=wallet, order=order,
                 amount=refund_amount, transaction_type='credit'
             )
-
-            # ── Update order totals ────────────────────────────────────────
             order.subtotal -= item.subtotal
-            # Reduce stored coupon_discount so next return calculates correctly
             order.coupon_discount -= item_coupon_share
             order.total_amount = order.subtotal + order.delivery_charge - order.coupon_discount
 
@@ -535,7 +460,6 @@ def download_invoice(request, order_number):
 
 @login_required
 def generate_pdf(request, order_number):
-    """Generate and download PDF invoice"""
     order = get_object_or_404(Order, order_number=order_number, user=request.user)
     
     context = {
@@ -705,7 +629,6 @@ def AdminOrderUpdateStatusView(request, order_id):
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 @user_passes_test(lambda u: u.is_superuser, login_url="admin_login")
 def AdminHandleReturnView(request, order_id):
-    """Handle approve/reject return requests"""
     if request.method == 'POST':
         try:
             order = get_object_or_404(Order, id=order_id)
