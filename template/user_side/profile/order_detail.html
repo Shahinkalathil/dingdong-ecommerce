@@ -18,7 +18,7 @@
         <span class="text-gray-800 font-medium">{{ order.order_number }}</span>
     </div>
 
-    <!-- ═══════════════ ORDER HEADER ═══════════════ -->
+    <!-- ORDER HEADER -->
     <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
         <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
@@ -79,7 +79,7 @@
         </div>
     </div>
 
-    <!-- ═══════════════ MAIN GRID ═══════════════ -->
+    <!--  MAIN GRID  -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
 
         <!-- LEFT: Active Order Items -->
@@ -421,13 +421,11 @@
                 {% endif %}
             {% endif %}
 
-        </div><!-- END RIGHT SIDEBAR -->
-    </div><!-- END MAIN GRID -->
+        </div>
+    </div>
 
 
-    <!-- ═══════════════════════════════════════════
-         SECTION 2: CANCELLED ITEMS
-    ═══════════════════════════════════════════ -->
+    <!--  SECTION 2: CANCELLED ITEMS-->
     {% for item in order.items.all %}{% if item.is_cancelled %}{% if forloop.first %}
     <div class="bg-white rounded-xl shadow-sm border border-red-200 p-6 mb-6">
         <div class="flex items-center gap-3 mb-6">
@@ -478,9 +476,7 @@
     {% endif %}{% endfor %}
 
 
-    <!-- ═══════════════════════════════════════════
-         SECTION 3: RETURNED ITEMS
-    ═══════════════════════════════════════════ -->
+    <!--  SECTION 3: RETURNED ITEMS-->
     {% for item in order.items.all %}{% if item.is_returned %}{% if forloop.first %}
     <div class="bg-white rounded-xl shadow-sm border border-purple-200 p-6 mb-6">
         <div class="flex items-center gap-3 mb-6">
@@ -555,9 +551,7 @@
     {% endif %}{% endfor %}
 
 
-    <!-- ═══════════════════════════════════════════
-         SECTION 4: SHIPPING + PAYMENT (Bottom)
-    ═══════════════════════════════════════════ -->
+    <!--  SECTION 4: SHIPPING + PAYMENT (Bottom) -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
         <!-- Shipping Address -->
@@ -641,9 +635,7 @@
 </div><!-- END PAGE WRAPPER -->
 
 
-<!-- ═══════════════════════════════════════════════════════
-     MODALS
-═══════════════════════════════════════════════════════ -->
+<!-- MODALS -->
 
 <!-- Return Confirmation Modal -->
 <div id="returnModal" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
@@ -809,9 +801,7 @@
 </div>
 
 
-<!-- ═══════════════════════════════════════════════════════
-     JAVASCRIPT
-═══════════════════════════════════════════════════════ -->
+<!--JAVASCRIPT-->
 <script>
     let currentItemId = null;
     let currentReturnItemId = null;

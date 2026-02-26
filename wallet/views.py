@@ -1,4 +1,4 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q, Sum
 from django.core.paginator import Paginator
@@ -47,9 +47,6 @@ def wallet_view(request):
 
 @login_required
 def AdminPaymentListView(request):
-    """
-    Admin view to list all payments (Orders + Wallet Transactions)
-    """
     search_query = request.GET.get('search', '')
     page_number = request.GET.get('page', 1)
 
@@ -138,33 +135,30 @@ def AdminPaymentListView(request):
 
 @login_required
 def AdminPaymentDetailView(request, payment_type, payment_id):
-    """
-    Admin view to see detailed payment information
-    """
-    
     if payment_type == 'order':
-        order = get_object_or_404(Order.objects.select_related('user', 'address'), id=payment_id)
-        
+        order = get_object_or_404(
+            Order.objects.select_related('user', 'address'),
+            id=payment_id
+        )
         context = {
             'payment_type': 'order',
             'order': order,
-            'items': order.items.all(),
+            'items': order.items.prefetch_related('return_request').all(),
             'transaction_id': f"PAY-{order.created_at.year}-{str(order.id).zfill(6)}",
         }
-        
         return render(request, 'admin_panel/payment/payment_detail.html', context)
-    
+
     elif payment_type == 'wallet':
         transaction = get_object_or_404(
-            WalletTransaction.objects.select_related('wallet__user', 'order'), 
+            WalletTransaction.objects.select_related('wallet__user', 'order'),
             id=payment_id
         )
-        
+        linked_order = transaction.order if hasattr(transaction, 'order') and transaction.order else None
         context = {
             'payment_type': 'wallet',
             'transaction': transaction,
             'wallet': transaction.wallet,
+            'linked_order': linked_order,
             'transaction_id': f"WAL-{transaction.created_at.year}-{str(transaction.id).zfill(6)}",
         }
-        
         return render(request, 'admin_panel/payment/payment_detail.html', context)
