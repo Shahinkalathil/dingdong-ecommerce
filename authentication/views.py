@@ -48,9 +48,6 @@ def sign_up(request):
             is_valid = False
             errors["password"] = "Please enter a password"
             messages.error(request, errors["password"])
-        
-        for m in messages.get_messages(request):
-            print(f"[{m.level_tag.upper()}] {m.message}")
 
         # valid
         if not is_valid:
@@ -186,25 +183,25 @@ def otp(request):
     except CustomUser.DoesNotExist:
         messages.error(request, "User not found. Please sign up again.")
         return redirect("sign_up")
-    
 
     otp_expiry = user.otp_expiry
-    otp = user.otp
+
     if request.method == "POST":
         entered_otp = request.POST.get("otp")
         if entered_otp != user.otp:
-            user.save()
             messages.error(request, "Invalid OTP")
-            return redirect("otp")
+            return render(request, "user_side/auth/otp.html", {
+                "otp_expiry": otp_expiry,
+                "user": user,
+            })
         else:
             user.is_active = True
             user.otp = None  
             user.save()
-
             login(request, user, backend="django.contrib.auth.backends.ModelBackend")
             return redirect("home")
 
-    return render(request, "user_side/auth/otp.html", {"otp_expiry": otp_expiry, "user": user, "otp":otp})
+    return render(request, "user_side/auth/otp.html", {"otp_expiry": otp_expiry, "user": user})
 
 @redirect_authenticated
 @never_cache
@@ -291,11 +288,6 @@ def user_logout(request):
     return redirect('sign_in')
 
 def check(request):
-    """
-    Comprehensive request inspector view
-    Collects all request data and displays it in a terminal-style interface
-    """
-    
     context = {
         # Basic Request Info
         'method': request.method,
