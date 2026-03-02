@@ -17,6 +17,7 @@ from wallet.models import Wallet, WalletTransaction
 from weasyprint import HTML
 from .models import Order, OrderItem, OrderReturn, OrderItemReturn
 from wallet.models import Wallet, WalletTransaction
+from cart.models import CartItem
 
 
 # userside
@@ -60,8 +61,9 @@ def order(request):
         orders_page = paginator.page(1)
     except EmptyPage:
         orders_page = paginator.page(paginator.num_pages)
-    
+    cart_count = CartItem.objects.filter(cart__user=request.user).aggregate(total=Count('id'))['total'] or 0
     context = {
+        "cart_count": cart_count,
         'orders': orders_page,
         'search_query': search_query,
         'status_filter': status_filter,

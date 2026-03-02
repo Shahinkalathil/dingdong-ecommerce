@@ -71,6 +71,7 @@ def cart(request):
     
     subtotal = Decimal('0.00')
     total_discount = Decimal('0.00')
+    original_total_price = Decimal('0.00')
     total_items = cart.get_total_items()
     has_out_of_stock = False
     has_unlisted = False
@@ -86,6 +87,8 @@ def cart(request):
         )
 
         item.original_price = item.variant.price
+        item.original_total_price = item.original_price * item.quantity
+        original_total_price += item.original_total_price
         
         item.discounted_price, item.discount_percentage, item.offer_type = get_offer_details(
             item.variant.product, 
@@ -106,7 +109,8 @@ def cart(request):
             has_out_of_stock = True
         if not item.is_available:
             has_unlisted = True
-
+            
+    print(original_total_price)
     total = subtotal 
     
     can_checkout = not (has_out_of_stock or has_unlisted) and cart_items.exists()
@@ -114,6 +118,7 @@ def cart(request):
     context = {
         'cart': cart,
         'cart_items': cart_items,
+        "original_total_price": original_total_price,
         'subtotal': subtotal,
         'total_discount': total_discount,
         'total': total,
