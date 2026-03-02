@@ -16,7 +16,7 @@ from wallet.models import Wallet
 def OverView(request):
     user = request.user
     addresses = user.addresses.all()
-    total_orders = Order.objects.count()
+    total_orders = Order.objects.filter(user=request.user).count()
     recent_orders = Order.objects.filter(user=user).prefetch_related(
         'items__variant__images'
     ).select_related('delivery_address')[:4]
