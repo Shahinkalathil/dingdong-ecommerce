@@ -101,19 +101,26 @@ def HomeView(request):
 
 
 def RepairServiceView(request):
-    return render(request, 'user_side/about/Repair_and_Service.html')
+    cart_count = CartItem.objects.filter(cart__user=request.user).aggregate(total=Count('id'))['total'] or 0
+    context = {
+        'cart_count': cart_count,
+    }
+    return render(request, 'user_side/about/Repair_and_Service.html', context)
 
 def brands(request):
     brands = Brand.objects.filter(is_listed=True).order_by('name')
-    
+    cart_count = CartItem.objects.filter(cart__user=request.user).aggregate(total=Count('id'))['total'] or 0
     context = {
         'brands': brands,
+        'cart_count': cart_count,
     }
     return render(request, 'user_side/brands/brands.html', context)
 
 def categories(request):
     categories = Category.objects.filter(is_listed=True).order_by('name')
+    cart_count = CartItem.objects.filter(cart__user=request.user).aggregate(total=Count('id'))['total'] or 0
     context = {
         'categories': categories,
+        'cart_count': cart_count,
     }
     return render(request, 'user_side/brands/category.html', context)

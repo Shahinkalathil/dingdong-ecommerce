@@ -11,6 +11,8 @@ import re
 import logging
 from django.views.decorators.http import require_http_methods
 from wallet.models import Wallet
+from cart.models import CartItem
+from django.db.models import Count
 
 @login_required
 def OverView(request):
@@ -21,10 +23,12 @@ def OverView(request):
         'items__variant__images'
     ).select_related('delivery_address')[:4]
     wallet, _ = Wallet.objects.get_or_create(user=request.user)
-    
+    cart_count = CartItem.objects.filter(cart__user=request.user).aggregate(total=Count('id'))['total'] or 0
+
     context = {
         "show_sidebar": True,
         "user": user,
+        "cart_count": cart_count,
         "last_login": user.last_login,
         "addresses": addresses,
         "total_orders": total_orders,
