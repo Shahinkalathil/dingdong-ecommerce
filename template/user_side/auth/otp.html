@@ -18,6 +18,7 @@
         <div class="text-center mb-8">
             <h1 class="text-3xl font-bold text-black">DINGDONG</h1>
         </div>
+
         <!-- Main Content -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
             
@@ -31,8 +32,6 @@
                     Enter the OTP sent to <span class="font-medium">{{ user.email }}</span>
                 </p>
 
-                
-
                 <!-- OTP Input Form -->
                 <form id="otpForm" method="POST" class="space-y-6">
                     {% csrf_token %}
@@ -40,18 +39,19 @@
                     <!-- OTP Boxes -->
                     <div class="flex justify-center lg:justify-start space-x-2 lg:space-x-3">
                         {% for i in "123456" %}
-                            <input type="text" maxlength="1"
-                                   class="otp-input w-12 h-12 lg:w-14 lg:h-14 text-center text-xl font-bold border-2 border-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-black transition-all"
+                            <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]*"
+                                   class="otp-input w-12 h-12 lg:w-14 lg:h-14 text-center text-xl font-bold border-2 border-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-black transition-all bg-white"
                                    data-index="{{ forloop.counter0 }}">
                         {% endfor %}
                     </div>
-                    <!-- Django Messages -->
-                    {% if messages %}
-                    <div class="mb-4">
+
+                    <!-- Error Messages — only shown after a POST attempt -->
+                    {% if messages and request.method == 'POST' %}
+                    <div>
                         {% for message in messages %}
-                            <div class="p-2 rounded text-sm 
-                                {% if message.tags == 'error' %} bg-red-100 text-red-600 
-                                {% elif message.tags == 'success' %} bg-green-100 text-green-600 
+                            <div class="p-2 rounded text-sm
+                                {% if message.tags == 'error' %} bg-red-100 text-red-600
+                                {% elif message.tags == 'success' %} bg-green-100 text-green-600
                                 {% else %} bg-gray-100 text-gray-700 {% endif %}">
                                 {{ message }}
                             </div>
@@ -65,18 +65,19 @@
                     <!-- Timer + Resend -->
                     <div class="flex flex-col sm:flex-row justify-between items-center gap-2 sm:gap-4">
                         <div class="text-sm text-gray-600 text-center sm:text-left">
-                            Didn’t receive the code? 
-                            <a id="resendBtn" href="{% url 'resend_otp' %}" 
-                               class="text-gray-400 font-medium ml-1 pointer-events-none">
+                            Didn't receive the code?
+                            <a id="resendBtn" href="{% url 'resend_otp' %}"
+                               class="font-medium ml-1 text-gray-400 pointer-events-none cursor-not-allowed transition-colors duration-300"
+                               onclick="return false;">
                                 Re-send
                             </a>
                         </div>
-                        <span class="text-gray-600 text-sm" id="timer">05:00 sec</span>
+                        <span class="text-gray-600 text-sm font-mono" id="timer">05:00</span>
                     </div>
 
                     <!-- Submit + Back -->
                     <div class="flex flex-col sm:flex-row gap-4 justify-between items-center">
-                        <button type="submit" 
+                        <button type="submit"
                                 class="w-full sm:w-auto bg-black text-white py-3 px-8 rounded-lg font-medium hover:bg-gray-800 transition-colors duration-300">
                             Submit
                         </button>
@@ -87,7 +88,7 @@
                 </form>
             </div>
             
-            <!-- Right Side - Product Card (optional illustration) -->
+            <!-- Right Side - Image -->
             <div class="order-1 lg:order-2 flex justify-center">
                 <div class="bg-white rounded-2xl max-w-xs w-full overflow-hidden">
                     <img src="{% static '/images/reset_password_image.jpg' %}" 
@@ -98,15 +99,21 @@
         </div>
     </div>
 
-    <!-- OTP + Timer Script -->
     <script>
     document.addEventListener("DOMContentLoaded", function () {
+        // ── OTP input behaviour ──────────────────────────────────────────
         const otpInputs = document.querySelectorAll(".otp-input");
         const completeOtp = document.getElementById("complete_otp");
 
-        // auto move between inputs
         otpInputs.forEach((input, index) => {
+            // Only allow numeric input
+            input.addEventListener("keypress", (e) => {
+                if (!/[0-9]/.test(e.key)) e.preventDefault();
+            });
+
             input.addEventListener("input", (e) => {
+                // Strip non-numeric characters in case they sneak in
+                e.target.value = e.target.value.replace(/[^0-9]/g, '');
                 if (e.target.value.length === 1 && index < otpInputs.length - 1) {
                     otpInputs[index + 1].focus();
                 }
@@ -123,52 +130,49 @@
         // Allow pasting full 6-digit OTP
         otpInputs[0].addEventListener("paste", function (e) {
             e.preventDefault();
-            const pasteData = (e.clipboardData || window.clipboardData).getData("text");
-            if (pasteData.length === otpInputs.length && /^\d+$/.test(pasteData)) {
-                otpInputs.forEach((input, i) => {
-                    input.value = pasteData[i];
-                });
+            const pasteData = (e.clipboardData || window.clipboardData).getData("text").trim();
+            if (/^\d{6}$/.test(pasteData)) {
+                otpInputs.forEach((input, i) => { input.value = pasteData[i]; });
                 updateOtp();
                 otpInputs[otpInputs.length - 1].focus();
             }
         });
 
         function updateOtp() {
-            let otpValue = "";
-            otpInputs.forEach(inp => otpValue += inp.value);
-            completeOtp.value = otpValue;
+            completeOtp.value = Array.from(otpInputs).map(i => i.value).join("");
         }
 
-        // Timer + Resend
-        let timerEl = document.getElementById("timer");
-        let resendBtn = document.getElementById("resendBtn");
+        // Auto-focus first input
+        otpInputs[0].focus();
+        const timerEl  = document.getElementById("timer");
+        const resendBtn = document.getElementById("resendBtn");
+        const expiryRaw = "{{ otp_expiry|date:'c' }}";
+        const expiryTime = new Date(expiryRaw).getTime();
 
-        let totalDuration = 300; // seconds
-        let expiryTime = localStorage.getItem("otp_expiry");
+        function startTimer() {
+            if (isNaN(expiryTime)) {
+                timerEl.textContent = "00:00";
+                enableResend();
+                return;
+            }
 
-        // If no expiry exists, create a new one
-        if (!expiryTime) {
-            expiryTime = Date.now() + totalDuration * 1000;
-            localStorage.setItem("otp_expiry", expiryTime);
-        }
-
-    function startTimer() {
             const interval = setInterval(() => {
-                const now = Date.now();
-                const remainingSeconds = Math.max(0, Math.floor((expiryTime - now) / 1000));
+                const remaining = Math.max(0, Math.floor((expiryTime - Date.now()) / 1000));
+                const minutes = String(Math.floor(remaining / 60)).padStart(2, '0');
+                const seconds = String(remaining % 60).padStart(2, '0');
+                timerEl.textContent = `${minutes}:${seconds}`;
 
-                if (remainingSeconds > 0) {
-                    const minutes = String(Math.floor(remainingSeconds / 60)).padStart(2, '0');
-                    const seconds = String(remainingSeconds % 60).padStart(2, '0');
-                    timerEl.textContent = `${minutes}:${seconds}`;
-                } else {
+                if (remaining === 0) {
                     clearInterval(interval);
-                    timerEl.textContent = "00:00";
-                    resendBtn.classList.remove("text-gray-400", "pointer-events-none");
-                    resendBtn.classList.add("text-black", "hover:underline");
-                    localStorage.removeItem("otp_expiry");
+                    enableResend();
                 }
             }, 1000);
+        }
+
+        function enableResend() {
+            resendBtn.classList.remove("text-gray-400", "pointer-events-none", "cursor-not-allowed");
+            resendBtn.classList.add("text-black", "hover:underline", "cursor-pointer");
+            resendBtn.onclick = null; // re-enable the href click
         }
 
         startTimer();
