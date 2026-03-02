@@ -133,34 +133,34 @@ DINGDONG/
 
    Create a `.env` file in the root directory and add:
    ```env
-	SECRET_KEY=django-insecure-3oos!cdz=^^3@yb8(yt1+08k*^225eh@cuylm)&l8+0f_kjr0u
+   # Django Secret Key
+   SECRET_KEY=your-django-secret-key
 
-	# Email Configuration
-	EMAIL_HOST_USER=shahinluttu@gmail.com
-	EMAIL_HOST_PASSWORD=jstz sivc nwls ytnw
+   # Email Configuration
+   EMAIL_HOST_USER=your-email@example.com
+   EMAIL_HOST_PASSWORD=your-email-app-password
 
-	# Database Configuration
-	DB_NAME=mydbdingdong
-	DB_USER=dong_user
-	DB_PASSWORD=shahin1212
-	DB_HOST=localhost
-	DB_PORT=5432
+   # Database Configuration
+   DB_NAME=your-database-name
+   DB_USER=your-database-user
+   DB_PASSWORD=your-database-password
+   DB_HOST=localhost
+   DB_PORT=5432
 
-	# Site Configuration
-	USE_NGROK=0
-	SITE_ID_LOCAL=6
-	SITE_ID_NGROK=5
+   # Site Configuration
+   USE_NGROK=0
+   SITE_ID_LOCAL=your-local-site-id
+   SITE_ID_NGROK=your-ngrok-site-id
 
-	# Google OAuth Configuration
-	GOOGLE_CLIENT_ID=803453159842-qenjn7nbfsflffdtgvfpm6jat3f37ca7.apps.googleusercontent.com
-	GOOGLE_CLIENT_SECRET=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
-	GOOGLE_REDIRECT_URI=http://localhost:8000/accounts/google/login/callback/
-	GOOGLE_REDIRECT_URI_NGROK=https://223bd8012b44.ngrok-free.app/accounts/google/login/callback/
+   # Google OAuth Configuration
+   GOOGLE_CLIENT_ID=your-google-client-id
+   GOOGLE_CLIENT_SECRET=your-google-client-secret
+   GOOGLE_REDIRECT_URI=http://localhost:8000/accounts/google/login/callback/
+   GOOGLE_REDIRECT_URI_NGROK=https://your-ngrok-url.ngrok-free.app/accounts/google/login/callback/
 
-
-	# Razorpay TEST Configuration
-	RAZORPAY_KEY_ID=rzp_test_S44MxPSsgVJtze
-	RAZORPAY_KEY_SECRET=glnxh28zDOkfPiuuciBCKt84
+   # Razorpay Configuration
+   RAZORPAY_KEY_ID=your-razorpay-key-id
+   RAZORPAY_KEY_SECRET=your-razorpay-key-secret
    ```
 
 5. **Apply migrations**
