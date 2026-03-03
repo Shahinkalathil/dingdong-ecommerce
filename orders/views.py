@@ -18,6 +18,7 @@ from weasyprint import HTML
 from .models import Order, OrderItem, OrderReturn, OrderItemReturn
 from wallet.models import Wallet, WalletTransaction
 from cart.models import CartItem
+from products.models import Product, Review
 
 
 # userside
@@ -140,7 +141,16 @@ def order_detail(request, order_number):
         'out_for_delivery':order.order_status in ['out_for_delivery', 'delivered'],
         'delivered':       order.order_status == 'delivered',
     }
-    
+    is_delivered = order.order_status == 'delivered'
+
+    reviewed_products = set(
+        Review.objects.filter(
+            user=request.user,
+            product_id__in=order.items.filter(
+                is_cancelled=False, is_returned=False
+            ).values_list('variant__product_id', flat=True)
+        ).values_list('product_id', flat=True)
+    ) if is_delivered else set()
 
     context = {
         'order': order,
@@ -154,6 +164,8 @@ def order_detail(request, order_number):
         'return_days_left': return_days_left if return_days_left > 0 else 0,
         'active_items_count': active_items_count,
         'active_subtotal': active_subtotal,
+        'is_delivered': is_delivered,          
+        'reviewed_products': reviewed_products
     }
 
     return render(request, 'user_side/profile/order_detail.html', context)
@@ -520,13 +532,11 @@ def _get_invoice_context(order):
         **totals,
     }
 
-
 @login_required
 def download_invoice(request, order_number):
     order   = get_object_or_404(Order, order_number=order_number, user=request.user)
     context = _get_invoice_context(order)
     return render(request, "user_side/profile/order_pdf.html", context)
-
 
 @login_required
 def generate_pdf(request, order_number):
@@ -541,6 +551,60 @@ def generate_pdf(request, order_number):
     response.write(result)
     return response
     
+
+@login_required
+@require_POST
+def submit_order_review(request, order_number):
+    try:
+        data = json.loads(request.body)
+        product_id = data.get('product_id')
+        rating = data.get('rating')
+        description = data.get('description', '').strip()
+
+        # Validate
+        if not product_id or not rating:
+            return JsonResponse({'success': False, 'message': 'Rating is required.'})
+
+        try:
+            rating = int(rating)
+        except (ValueError, TypeError):
+            return JsonResponse({'success': False, 'message': 'Invalid rating.'})
+
+        if not (1 <= rating <= 5):
+            return JsonResponse({'success': False, 'message': 'Rating must be between 1 and 5.'})
+
+        # Check order belongs to user and is delivered
+        order = get_object_or_404(Order, order_number=order_number, user=request.user)
+        if order.order_status != 'delivered':
+            return JsonResponse({'success': False, 'message': 'You can only review delivered orders.'})
+
+        # Check product was actually in this order
+        product = get_object_or_404(Product, id=product_id)
+        ordered_product_ids = order.items.filter(
+            is_cancelled=False, is_returned=False
+        ).values_list('variant__product_id', flat=True)
+
+        if product_id not in list(ordered_product_ids):
+            return JsonResponse({'success': False, 'message': 'This product was not in your order.'})
+
+        # Create or update
+        review, created = Review.objects.update_or_create(
+            user=request.user,
+            product=product,
+            defaults={'rating': rating, 'description': description or None}
+        )
+
+        return JsonResponse({
+            'success': True,
+            'message': 'Review submitted!' if created else 'Review updated!'
+        })
+
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'message': 'Invalid request.'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': 'Something went wrong.'})
+    
+
 # Admin
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 @user_passes_test(lambda u: u.is_superuser, login_url="admin_login")
