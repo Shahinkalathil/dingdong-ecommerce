@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>500 – Server Error | DINGDONG</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Space Mono', monospace;
+            background-color: #0d0608;
+            background: radial-gradient(ellipse at 50% -10%, #5c1a22, #0d0608) fixed;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        .brand-bar { font-family: 'Syne', sans-serif; letter-spacing: .25em; }
+
+        /* ── Scanlines ── */
+        body::after {
+            content: '';
+            position: fixed; inset: 0;
+            background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,.07) 2px, rgba(0,0,0,.07) 4px);
+            pointer-events: none; z-index: 50;
+        }
+
+        /* ── Grain ── */
+        .grain {
+            position: fixed; inset: 0; pointer-events: none; z-index: 40; opacity: .05;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+            background-size: 256px;
+        }
+
+        /* ── Glitch 500 ── */
+        .glitch {
+            position: relative;
+            font-family: 'Syne', sans-serif;
+        }
+        .glitch::before, .glitch::after {
+            content: attr(data-text);
+            position: absolute; inset: 0;
+            font-family: 'Syne', sans-serif;
+        }
+        .glitch::before {
+            color: #ff2d2d;
+            clip-path: polygon(0 20%, 100% 20%, 100% 40%, 0 40%);
+            animation: g1 1.8s infinite;
+        }
+        .glitch::after {
+            color: #FFCA51;
+            clip-path: polygon(0 60%, 100% 60%, 100% 75%, 0 75%);
+            animation: g2 1.8s infinite;
+        }
+        @keyframes g1 {
+            0%,85%,100% { transform:translate(0); opacity:0; }
+            86% { transform:translate(-6px,3px); opacity:.9; }
+            88% { transform:translate(6px,-3px); opacity:.7; }
+            90% { transform:translate(-3px,1px); opacity:.85; }
+            92% { transform:translate(3px,-1px); opacity:.6; }
+        }
+        @keyframes g2 {
+            0%,82%,100% { transform:translate(0); opacity:0; }
+            83% { transform:translate(5px,-2px); opacity:.8; }
+            86% { transform:translate(-4px,3px); opacity:.6; }
+            89% { transform:translate(3px,-3px); opacity:.9; }
+        }
+
+        /* ── Flame flicker ── */
+        @keyframes flicker {
+            0%,100% { opacity:1; transform:scaleY(1) scaleX(1); }
+            25%      { opacity:.85; transform:scaleY(1.04) scaleX(.97); }
+            50%      { opacity:.9; transform:scaleY(.97) scaleX(1.03); }
+            75%      { opacity:.8; transform:scaleY(1.06) scaleX(.96); }
+        }
+        .flame { animation: flicker 0.4s ease-in-out infinite; transform-origin: bottom center; }
+
+        /* ── Ember particles ── */
+        .ember {
+            position: absolute;
+            width: 4px; height: 4px;
+            border-radius: 50%;
+            background: #ff6b35;
+            animation: rise linear infinite;
+        }
+        @keyframes rise {
+            0%   { transform: translateY(0) translateX(0) scale(1); opacity: 1; }
+            100% { transform: translateY(-120px) translateX(var(--dx)) scale(0); opacity: 0; }
+        }
+
+        /* ── Red warning pulse ring ── */
+        @keyframes pulseRing {
+            0%   { transform: scale(1);   opacity: .6; }
+            100% { transform: scale(1.8); opacity: 0; }
+        }
+        .pulse-ring {
+            position: absolute; inset: -12px;
+            border: 2px solid #ff2d2d;
+            border-radius: 50%;
+            animation: pulseRing 1.4s ease-out infinite;
+        }
+        .pulse-ring-2 { animation-delay: .7s; }
+
+        /* ── Home button ── */
+        .home-btn { position: relative; overflow: hidden; transition: color .3s; }
+        .home-btn::before {
+            content: ''; position: absolute; inset: 0;
+            background: #ff2d2d;
+            transform: translateX(-101%);
+            transition: transform .35s cubic-bezier(.77,0,.175,1); z-index: -1;
+        }
+        .home-btn:hover::before { transform: translateX(0); }
+        .home-btn:hover { color: #fff; }
+
+        /* ── Ticker ── */
+        .ticker-wrap { overflow: hidden; white-space: nowrap; border-top: 1px solid rgba(255,45,45,.15); border-bottom: 1px solid rgba(255,45,45,.15); }
+        .ticker-inner { display: inline-flex; animation: ticker 16s linear infinite; gap: 3rem; }
+        @keyframes ticker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+        /* ── Terminal blink ── */
+        .cursor { animation: blink .8s step-end infinite; }
+        @keyframes blink { 0%,100% { opacity:1; } 50% { opacity:0; } }
+
+        /* ── Code lines ── */
+        .code-line { opacity: 0; }
+
+        /* ── Smoke ── */
+        @keyframes smoke {
+            0%   { transform: translateY(0) scale(1); opacity: .5; }
+            100% { transform: translateY(-80px) scale(2.5); opacity: 0; }
+        }
+        .smoke-puff {
+            position: absolute;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(80,20,20,.6), transparent);
+            animation: smoke ease-out infinite;
+        }
+
+        #text-block, #illustration { opacity: 0; }
+
+        /* ── Warning stripes ── */
+        .stripes {
+            background: repeating-linear-gradient(
+                -45deg,
+                transparent,
+                transparent 8px,
+                rgba(255,45,45,.08) 8px,
+                rgba(255,45,45,.08) 16px
+            );
+        }
+    </style>
+</head>
+<body class="text-white select-none">
+    <div class="grain"></div>
+
+    <!-- HEADER -->
+    <header class="relative z-20 flex items-center justify-between px-8 py-5 border-b border-red-900/40">
+        <a href="{% url 'home' %}" class="brand-bar text-xl font-extrabold tracking-widest text-white hover:text-red-400 transition-colors duration-300">DINGDONG</a>
+        <div class="flex items-center gap-2">
+            <span class="relative flex h-2.5 w-2.5">
+                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
+                <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-600"></span>
+            </span>
+            <span class="text-red-400/70 text-xs tracking-widest uppercase">System Error</span>
+        </div>
+    </header>
+
+    <!-- WARNING STRIPE BAR -->
+    <div class="stripes h-1.5 w-full"></div>
+
+    <!-- MAIN -->
+    <main class="relative z-10 flex flex-col lg:flex-row items-center justify-center min-h-[calc(100vh-80px-56px)] px-6 py-10 gap-10 max-w-7xl mx-auto">
+
+        <!-- LEFT: Text + terminal -->
+        <div class="flex-1 flex flex-col items-start justify-center max-w-lg" id="text-block">
+
+            <!-- Error badge -->
+            <div class="flex items-center gap-3 mb-5" id="label-row">
+                <span class="inline-block w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
+                <span class="text-red-400 text-xs tracking-[.3em] uppercase">Internal Server Error</span>
+            </div>
+
+            <!-- Giant glitch 500 -->
+            <div class="overflow-visible mb-3">
+                <h1 class="glitch font-extrabold leading-none text-white"
+                    data-text="500"
+                    style="font-family:'Syne',sans-serif; font-size:clamp(7rem,18vw,13rem); line-height:.85;">500</h1>
+            </div>
+
+            <div id="msg-block" class="mt-4 mb-6">
+                <h2 class="text-2xl lg:text-3xl font-bold mb-3" style="font-family:'Syne',sans-serif;">
+                    Something exploded on our end.
+                </h2>
+                <p class="text-white/45 text-sm leading-relaxed max-w-sm">
+                    Our servers are having a meltdown. This is entirely our fault — not yours.
+                    Our team has been notified. Please try again in a moment.
+                </p>
+            </div>
+
+            <!-- Terminal block -->
+            <div id="terminal" class="w-full max-w-sm bg-black/60 border border-red-900/50 rounded-sm mb-8 overflow-hidden">
+                <div class="flex items-center gap-1.5 px-4 py-2.5 bg-red-950/60 border-b border-red-900/40">
+                    <span class="w-2.5 h-2.5 rounded-full bg-red-500"></span>
+                    <span class="w-2.5 h-2.5 rounded-full bg-yellow-500/70"></span>
+                    <span class="w-2.5 h-2.5 rounded-full bg-green-500/40"></span>
+                    <span class="ml-2 text-red-400/60 text-xs tracking-wider">error.log</span>
+                </div>
+                <div class="px-4 py-3 text-xs leading-relaxed font-mono">
+                    <p class="code-line text-red-400/70" id="c1"><span class="text-white/30">[SYS]</span> Internal exception raised</p>
+                    <p class="code-line text-red-400/70 mt-1" id="c2"><span class="text-white/30">[ERR]</span> HTTP 500 — Unexpected server failure</p>
+                    <p class="code-line text-yellow-400/70 mt-1" id="c3"><span class="text-white/30">[INF]</span> Incident logged automatically</p>
+                    <p class="code-line text-green-400/70 mt-1" id="c4"><span class="text-white/30">[INF]</span> Team has been notified</p>
+                    <p class="mt-2 text-white/30">$ <span class="text-white/60">retry_request</span><span class="cursor text-red-400">_</span></p>
+                </div>
+            </div>
+
+            <!-- Buttons -->
+            <div class="flex flex-wrap gap-4" id="btn-row">
+                <a href="{% url 'home' %}"
+                   class="home-btn relative z-0 inline-flex items-center gap-2 border border-red-700/50 px-7 py-3 text-sm font-bold tracking-widest uppercase text-white transition-all duration-300">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l9-9 9 9M5 10v9a1 1 0 001 1h4v-5h4v5h4a1 1 0 001-1v-9"/>
+                    </svg>
+                    Back to Home
+                </a>
+                <button onclick="window.location.reload()"
+                   class="inline-flex items-center gap-2 bg-red-600 text-white px-7 py-3 text-sm font-bold tracking-widest uppercase hover:bg-red-500 transition-colors duration-300">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                    </svg>
+                    Try Again
+                </button>
+            </div>
+        </div>
+
+        <!-- RIGHT: Fire illustration -->
+        <div class="flex-1 flex items-center justify-center max-w-md w-full" id="illustration">
+            <div class="relative flex flex-col items-center justify-end" style="width:320px; height:340px;">
+
+                <!-- Glow base -->
+                <div class="absolute bottom-16 left-1/2 -translate-x-1/2 w-48 h-16 rounded-full"
+                     style="background:radial-gradient(ellipse, rgba(255,80,20,.35), transparent 70%); filter:blur(12px);"></div>
+
+                <!-- Server rack SVG -->
+                <svg id="server-svg" viewBox="0 0 200 200" class="relative z-10" width="220" height="220">
+                    <!-- server body -->
+                    <rect x="40" y="60" width="120" height="120" rx="4" fill="#1a0a0a" stroke="#3d1515" stroke-width="1.5"/>
+                    <!-- rack units -->
+                    <rect x="48" y="70" width="104" height="18" rx="2" fill="#0f0505" stroke="#2a1010" stroke-width="1"/>
+                    <rect x="48" y="94" width="104" height="18" rx="2" fill="#0f0505" stroke="#2a1010" stroke-width="1"/>
+                    <rect x="48" y="118" width="104" height="18" rx="2" fill="#0f0505" stroke="#2a1010" stroke-width="1"/>
+                    <rect x="48" y="142" width="104" height="18" rx="2" fill="#0f0505" stroke="#2a1010" stroke-width="1"/>
+                    <!-- LEDs row 1 - red errors -->
+                    <circle cx="60" cy="79" r="3" fill="#ff2d2d"><animate attributeName="opacity" values="1;0.2;1" dur="0.6s" repeatCount="indefinite"/></circle>
+                    <circle cx="72" cy="79" r="3" fill="#ff2d2d"><animate attributeName="opacity" values="0.2;1;0.2" dur="0.6s" repeatCount="indefinite"/></circle>
+                    <circle cx="84" cy="79" r="3" fill="#ff6600"><animate attributeName="opacity" values="1;0.3;1" dur="0.8s" repeatCount="indefinite"/></circle>
+                    <circle cx="148" cy="79" r="3" fill="#ff2d2d"><animate attributeName="opacity" values="0.5;1;0.5" dur="0.4s" repeatCount="indefinite"/></circle>
+                    <!-- LEDs row 2 -->
+                    <circle cx="60" cy="103" r="3" fill="#ff2d2d"><animate attributeName="opacity" values="1;0.1;1" dur="0.5s" repeatCount="indefinite"/></circle>
+                    <circle cx="72" cy="103" r="3" fill="#ff6600"><animate attributeName="opacity" values="0.3;1;0.3" dur="0.7s" repeatCount="indefinite"/></circle>
+                    <circle cx="84" cy="103" r="3" fill="#ff2d2d"><animate attributeName="opacity" values="1;0.4;1" dur="0.9s" repeatCount="indefinite"/></circle>
+                    <circle cx="148" cy="103" r="3" fill="#ff2d2d"><animate attributeName="opacity" values="0.2;1;0.2" dur="0.5s" repeatCount="indefinite"/></circle>
+                    <!-- LEDs row 3 - normal green turning red -->
+                    <circle cx="60" cy="127" r="3" fill="#ff2d2d"><animate attributeName="opacity" values="1;0.2;1" dur="1s" repeatCount="indefinite"/></circle>
+                    <circle cx="72" cy="127" r="3" fill="#ff2d2d"><animate attributeName="opacity" values="0.4;1;0.4" dur="0.6s" repeatCount="indefinite"/></circle>
+                    <circle cx="84" cy="127" r="3" fill="#ff6600"><animate attributeName="opacity" values="1;0.5;1" dur="0.7s" repeatCount="indefinite"/></circle>
+                    <circle cx="148" cy="127" r="3" fill="#ff2d2d"><animate attributeName="opacity" values="0.6;1;0.6" dur="0.8s" repeatCount="indefinite"/></circle>
+                    <!-- LEDs row 4 -->
+                    <circle cx="60" cy="151" r="3" fill="#ff2d2d"><animate attributeName="opacity" values="1;0.1;1" dur="0.45s" repeatCount="indefinite"/></circle>
+                    <circle cx="72" cy="151" r="3" fill="#ff6600"><animate attributeName="opacity" values="0.2;1;0.2" dur="0.55s" repeatCount="indefinite"/></circle>
+                    <circle cx="84" cy="151" r="3" fill="#ff2d2d"><animate attributeName="opacity" values="1;0.3;1" dur="0.65s" repeatCount="indefinite"/></circle>
+                    <circle cx="148" cy="151" r="3" fill="#ff2d2d"><animate attributeName="opacity" values="0.8;1;0.8" dur="0.35s" repeatCount="indefinite"/></circle>
+                    <!-- vent lines -->
+                    <line x1="95" y1="73" x2="140" y2="73" stroke="#2a1010" stroke-width="1"/>
+                    <line x1="95" y1="76" x2="140" y2="76" stroke="#2a1010" stroke-width="1"/>
+                    <line x1="95" y1="79" x2="140" y2="79" stroke="#2a1010" stroke-width="1"/>
+                    <line x1="95" y1="97" x2="140" y2="97" stroke="#2a1010" stroke-width="1"/>
+                    <line x1="95" y1="100" x2="140" y2="100" stroke="#2a1010" stroke-width="1"/>
+                    <line x1="95" y1="103" x2="140" y2="103" stroke="#2a1010" stroke-width="1"/>
+                    <!-- crack in server -->
+                    <path d="M100 60 L95 80 L103 90 L98 110" stroke="#ff2d2d" stroke-width="1.5" fill="none" opacity="0.6"/>
+                    <!-- fire coming from top of server -->
+                    <!-- outer flame -->
+                    <path class="flame" d="M100 62 C88 50 78 38 85 22 C78 30 72 20 80 10 C72 18 66 8 74 0 C62 12 58 28 68 44 C55 34 52 18 60 8 C50 20 50 36 60 50 C50 42 48 28 55 18 C44 32 46 50 58 60 C52 68 100 62 100 62Z"
+                          fill="url(#flameOuter)" transform="translate(0, 0)"/>
+                    <!-- mid flame -->
+                    <path class="flame" d="M100 62 C92 52 88 42 93 30 C88 36 84 28 90 20 C84 26 80 18 86 10 C78 20 78 34 86 46 C80 38 80 26 86 18 C78 28 80 42 90 52 C86 58 100 62 100 62Z"
+                          fill="url(#flameMid)" style="animation-delay:.15s"/>
+                    <!-- inner flame -->
+                    <path class="flame" d="M100 62 C96 54 94 46 97 36 C94 40 91 34 95 26 C91 32 89 24 93 16 C88 24 88 36 94 46 C90 40 90 32 94 24 C90 32 90 44 96 54 C94 58 100 62 100 62Z"
+                          fill="url(#flameInner)" style="animation-delay:.3s"/>
+                    <defs>
+                        <linearGradient id="flameOuter" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stop-color="#ff6b00" stop-opacity="0"/>
+                            <stop offset="40%" stop-color="#ff4500" stop-opacity=".7"/>
+                            <stop offset="100%" stop-color="#ff2d00" stop-opacity="1"/>
+                        </linearGradient>
+                        <linearGradient id="flameMid" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stop-color="#ffaa00" stop-opacity="0"/>
+                            <stop offset="50%" stop-color="#ff6600" stop-opacity=".8"/>
+                            <stop offset="100%" stop-color="#ff3300" stop-opacity="1"/>
+                        </linearGradient>
+                        <linearGradient id="flameInner" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stop-color="#ffee00" stop-opacity="0"/>
+                            <stop offset="60%" stop-color="#ffaa00" stop-opacity=".9"/>
+                            <stop offset="100%" stop-color="#ff6600" stop-opacity="1"/>
+                        </linearGradient>
+                    </defs>
+                </svg>
+
+                <!-- Ember particles (JS-driven via CSS vars) -->
+                <div id="embers" class="absolute inset-0 overflow-hidden pointer-events-none"></div>
+
+                <!-- Smoke puffs -->
+                <div id="smokes" class="absolute inset-0 overflow-hidden pointer-events-none"></div>
+
+                <!-- Warning icon with pulse rings -->
+                <div class="absolute bottom-4 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2">
+                    <div class="relative flex items-center justify-center w-10 h-10">
+                        <div class="pulse-ring"></div>
+                        <div class="pulse-ring pulse-ring-2"></div>
+                        <svg class="w-6 h-6 text-red-500 relative z-10" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                        </svg>
+                    </div>
+                    <span class="text-red-400/70 text-xs tracking-widest uppercase font-mono">Critical</span>
+                </div>
+
+                <!-- Red ambient light glow -->
+                <div class="absolute inset-0 pointer-events-none rounded-full"
+                     style="background:radial-gradient(ellipse at 50% 60%, rgba(255,45,0,.12), transparent 70%);"></div>
+            </div>
+        </div>
+    </main>
+
+    <!-- TICKER -->
+    <div class="ticker-wrap py-3 text-red-900/60 text-xs tracking-widest uppercase" aria-hidden="true">
+        <div class="ticker-inner">
+            <span>500 Server Error</span><span class="text-red-600 mx-4">⚠</span>
+            <span>Internal Failure</span><span class="text-yellow-600/70 mx-4">⚠</span>
+            <span>DINGDONG Systems</span><span class="text-red-600 mx-4">⚠</span>
+            <span>We're on it</span><span class="text-yellow-600/70 mx-4">⚠</span>
+            <span>500 Server Error</span><span class="text-red-600 mx-4">⚠</span>
+            <span>Internal Failure</span><span class="text-yellow-600/70 mx-4">⚠</span>
+            <span>DINGDONG Systems</span><span class="text-red-600 mx-4">⚠</span>
+            <span>We're on it</span><span class="text-yellow-600/70 mx-4">⚠</span>
+            <span>500 Server Error</span><span class="text-red-600 mx-4">⚠</span>
+            <span>Internal Failure</span><span class="text-yellow-600/70 mx-4">⚠</span>
+        </div>
+    </div>
+
+    <script>
+        // ── Ember particles ──
+        const emberContainer = document.getElementById('embers');
+        const emberColors = ['#ff6b35','#ff4500','#ffaa00','#ff2d00','#ffcc00'];
+        for (let i = 0; i < 18; i++) {
+            const e = document.createElement('div');
+            e.className = 'ember';
+            const size = 2 + Math.random() * 3;
+            e.style.cssText = `
+                width:${size}px; height:${size}px;
+                left:${38 + Math.random() * 24}%;
+                bottom:${42 + Math.random() * 15}%;
+                --dx:${(Math.random() - .5) * 60}px;
+                background:${emberColors[Math.floor(Math.random()*emberColors.length)]};
+                animation-duration:${0.8 + Math.random() * 1.4}s;
+                animation-delay:${Math.random() * 1.5}s;
+                box-shadow:0 0 4px ${emberColors[0]};
+            `;
+            emberContainer.appendChild(e);
+        }
+
+        // ── Smoke puffs ──
+        const smokeContainer = document.getElementById('smokes');
+        for (let i = 0; i < 6; i++) {
+            const s = document.createElement('div');
+            s.className = 'smoke-puff';
+            const sz = 20 + Math.random() * 30;
+            s.style.cssText = `
+                width:${sz}px; height:${sz}px;
+                left:${36 + Math.random() * 28}%;
+                bottom:${50 + Math.random() * 10}%;
+                animation-duration:${1.5 + Math.random() * 1.5}s;
+                animation-delay:${Math.random() * 2}s;
+            `;
+            smokeContainer.appendChild(s);
+        }
+
+        // ── Entrance animations ──
+        anime.timeline({ easing: 'easeOutExpo' })
+            .add({ targets: '#text-block',   opacity:[0,1], translateX:[-40,0], duration:800 })
+            .add({ targets: '#illustration', opacity:[0,1], translateX:[60,0],  duration:800 }, '-=600');
+
+        // ── Terminal code lines ──
+        const lines = ['#c1','#c2','#c3','#c4'];
+        lines.forEach((id, i) => {
+            setTimeout(() => {
+                anime({ targets: id, opacity:[0,1], translateX:[-10,0], duration:400, easing:'easeOutQuad' });
+            }, 900 + i * 300);
+        });
+
+        // ── Server shake on load ──
+        setTimeout(() => {
+            anime({
+                targets: '#server-svg',
+                translateX: [0, -4, 4, -3, 3, -2, 2, 0],
+                duration: 600,
+                easing: 'easeInOutSine',
+            });
+        }, 1200);
+
+        // ── Periodic shake ──
+        setInterval(() => {
+            anime({
+                targets: '#server-svg',
+                translateX: [0, -3, 3, -2, 2, 0],
+                duration: 400,
+                easing: 'easeInOutSine',
+            });
+        }, 4000);
+    </script>
+</body>
+</html>
