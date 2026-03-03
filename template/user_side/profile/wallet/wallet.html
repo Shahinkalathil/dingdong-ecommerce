@@ -92,6 +92,7 @@
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Date & Time
                                 </th>
+
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Type
                                 </th>
@@ -104,23 +105,39 @@
                             {% for transaction in transactions %}
                             <tr class="hover:bg-gray-50">
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="flex items-center">
-                                        <div class="ml-4">
-                                            <div class="text-sm font-medium text-gray-900">
-                                                {% if transaction.transaction_type == 'credit' %}
-                                                    {% if transaction.order %}Order Refund{% else %}Cashback Reward{% endif %}
+                                    <div class="text-sm font-medium text-gray-900">
+                                        {% if transaction.transaction_type == 'credit' %}
+                                            {% if transaction.order %}Order Refund{% endif %}
+                                        {% else %}
+                                            Order Payment
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="text-sm text-gray-500">
+                                        {% if transaction.transaction_type == 'credit' %}
+                                           {% if transaction.order %}
+                                                {% if transaction.order.order_status == 'cancelled' or transaction.order.order_status == 'returned' %}
+                                                    <span class="block text-xs text-red-600">
+                                                        Status: {{ transaction.order.order_status|title }}
+                                                    </span>
                                                 {% else %}
-                                                    Order Payment
+                                                    {% with has_special_item=False %}
+                                                        {% for item in transaction.order.items.all %}
+                                                            {% if item.item_status == 'cancelled' or item.item_status == 'returned' %}
+                                                                <span class="block text-xs text-orange-600">
+                                                                    {{ item.product_name }} - {{ item.item_status|title }}
+                                                                </span>
+                                                            {% endif %}
+                                                        {% endfor %}
+                                                    {% endwith %}
+                                                    <span class="block text-xs text-blue-600">
+                                                        Status: {{ transaction.order.order_status|title }}
+                                                    </span>
                                                 {% endif %}
-                                            </div>
-                                            <div class="text-sm text-gray-500">
-                                                {% if transaction.transaction_type == 'credit' %}
-                                                    {% if transaction.order %}Refund processed{% else %}Promotional credit{% endif %}
-                                                {% else %}
-                                                    Payment deducted
-                                                {% endif %}
-                                            </div>
-                                        </div>
+                                            {% else %}
+                                                Promotional credit
+                                            {% endif %}
+                                        {% endif %}
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">

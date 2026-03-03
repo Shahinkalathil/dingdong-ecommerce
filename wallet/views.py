@@ -19,7 +19,7 @@ User = get_user_model()
 def wallet_view(request):
     wallet, _ = Wallet.objects.get_or_create(user=request.user)
     
-    transactions = WalletTransaction.objects.filter(wallet=wallet)
+    transactions = WalletTransaction.objects.filter(wallet=wallet).select_related('order').prefetch_related('order__items') 
     
     transaction_filter = request.GET.get('filter', 'all')
     if transaction_filter == 'credit':
