@@ -451,39 +451,95 @@ def request_item_return(request, order_number, item_id):
     except Exception as e:
         return JsonResponse({'success': False, 'message': f'Error processing return: {str(e)}'})
 
+
+def _build_item_rows(order):
+    active_items = order.items.filter(item_status='active')
+
+    coupon_discount = order.coupon_discount or Decimal('0')
+    order_subtotal  = order.subtotal        or Decimal('1')  
+
+    rows = []
+    total_mrp            = Decimal('0')
+    total_offer_discount = Decimal('0')
+    total_coupon_saving  = Decimal('0')
+
+    for item in active_items:
+        qty           = item.quantity
+        unit_price    = item.price        
+        item_subtotal = item.subtotal  
+        variant  = item.variant        
+        unit_mrp = variant.price if variant else unit_price
+        mrp_subtotal = unit_mrp * qty
+        offer_discount = (mrp_subtotal - item_subtotal).max(Decimal('0'))
+        offer_pct = (
+            (offer_discount / mrp_subtotal * 100).quantize(Decimal('1'))
+            if mrp_subtotal > 0 and offer_discount > 0 else Decimal('0')
+        )
+        item_coupon = (
+            (coupon_discount * item_subtotal / order_subtotal).quantize(Decimal('0.01'))
+            if coupon_discount > 0 else Decimal('0')
+        )
+
+        item_final = item_subtotal - item_coupon
+
+        rows.append({
+            'item':           item,
+            'unit_mrp':       unit_mrp,
+            'unit_price':     unit_price,
+            'mrp_subtotal':   mrp_subtotal,
+            'item_subtotal':  item_subtotal,
+            'offer_discount': offer_discount,
+            'offer_pct':      offer_pct,
+            'item_coupon':    item_coupon,
+            'item_final':     item_final,
+        })
+
+        total_mrp            += mrp_subtotal
+        total_offer_discount += offer_discount
+        total_coupon_saving  += item_coupon
+
+    totals = {
+        'total_mrp':            total_mrp,
+        'total_offer_discount': total_offer_discount,
+        'subtotal':             order.subtotal,          
+        'total_coupon_saving':  total_coupon_saving,
+        'delivery_charge':      order.delivery_charge,
+        'grand_total':          order.total_amount,
+        'total_savings':        total_offer_discount + total_coupon_saving,
+    }
+
+    return rows, totals
+
+
+def _get_invoice_context(order):
+    rows, totals = _build_item_rows(order)
+    return {
+        'order':            order,
+        'item_rows':        rows,
+        'delivery_address': order.delivery_address,
+        **totals,
+    }
+
+
 @login_required
 def download_invoice(request, order_number):
-    order = get_object_or_404(Order, order_number=order_number, user=request.user)
-    
-    context = {
-        'order': order,
-        'order_items': order.items.filter(item_status='active'),
-        'delivery_address': order.delivery_address,
-    }
-    
+    order   = get_object_or_404(Order, order_number=order_number, user=request.user)
+    context = _get_invoice_context(order)
     return render(request, "user_side/profile/order_pdf.html", context)
 
 
 @login_required
 def generate_pdf(request, order_number):
-    order = get_object_or_404(Order, order_number=order_number, user=request.user)
-    
-    context = {
-        'order': order,
-        'order_items': order.items.all(),
-        'delivery_address': order.delivery_address,
-    }
-    
+    order   = get_object_or_404(Order, order_number=order_number, user=request.user)
+    context = _get_invoice_context(order)
+
     html_string = render_to_string('user_side/profile/invoice_template.html', context)
-    html = HTML(string=html_string)
-    result = html.write_pdf()
-    
+    result      = HTML(string=html_string).write_pdf()
+
     response = HttpResponse(content_type='application/pdf')
     response['Content-Disposition'] = f'attachment; filename="Invoice_{order_number}.pdf"'
     response.write(result)
-    
     return response
-
     
 # Admin
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)

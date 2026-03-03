@@ -4,408 +4,348 @@
     <meta charset="UTF-8">
     <title>Invoice - {{ order.order_number }}</title>
     <style>
-        @page {
-            size: A4;
-            margin: 1.5cm 1.5cm 1.5cm 1.5cm;
-        }
+        @page { size: A4; margin: 1.2cm 1.5cm 1.2cm 1.5cm; }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-            font-size: 12px;
+            font-size: 11px;
             color: #1f2937;
             background: #ffffff;
-            line-height: 1.4;
+            line-height: 1.45;
         }
 
-        /* ── Header ── */
+        /* ── HEADER ── */
         .header {
             background-color: #1a1a1a;
-            color: #ffffff;
-            padding: 20px 24px;
-            margin-bottom: 24px;
+            color: #fff;
+            padding: 18px 24px;
+            margin-bottom: 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
+        .brand      { font-size: 26px; font-weight: 800; letter-spacing: 4px; }
+        .tagline    { font-size: 9px;  color: #9ca3af; margin-top: 3px; letter-spacing: 1px; }
+        .inv-label  { font-size: 20px; font-weight: 700; letter-spacing: 2px; text-align: right; }
+        .inv-meta   { font-size: 9px;  color: #9ca3af; margin-top: 3px; text-align: right; }
 
-        .header-left .brand {
-            font-size: 28px;
-            font-weight: 800;
-            letter-spacing: 4px;
-            color: #ffffff;
-        }
-
-        .header-left .tagline {
-            font-size: 10px;
-            color: #9ca3af;
-            margin-top: 4px;
-            letter-spacing: 1px;
-        }
-
-        .header-right {
-            text-align: right;
-        }
-
-        .header-right .invoice-label {
-            font-size: 22px;
-            font-weight: 700;
-            color: #ffffff;
-            letter-spacing: 2px;
-        }
-
-        .header-right .order-meta {
-            font-size: 10px;
-            color: #9ca3af;
-            margin-top: 4px;
-        }
-
-        /* ── Info Grid ── */
-        .info-grid {
-            display: table;
-            width: 100%;
-            margin-bottom: 24px;
-            border-collapse: separate;
-            border-spacing: 12px 0;
-        }
-
-        .info-col {
-            display: table-cell;
-            width: 50%;
-            border: 1px solid #d1d5db;
-            padding: 14px 16px;
-            vertical-align: top;
-        }
-
+        /* ── INFO GRID ── */
+        .info-grid { display: table; width: 100%; border-collapse: separate; border-spacing: 10px 0; margin-bottom: 20px; }
+        .info-col  { display: table-cell; width: 50%; border: 1px solid #d1d5db; padding: 12px 14px; vertical-align: top; }
         .info-col h3 {
-            font-size: 10px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: #111827;
-            padding-bottom: 8px;
-            margin-bottom: 10px;
-            border-bottom: 1px solid #d1d5db;
+            font-size: 9px; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 1px; color: #111; padding-bottom: 7px;
+            margin-bottom: 9px; border-bottom: 1px solid #d1d5db;
         }
+        .info-row   { display: table; width: 100%; margin-bottom: 5px; }
+        .info-lbl   { display: table-cell; color: #6b7280; font-size: 9px; width: 48%; }
+        .info-val   { display: table-cell; font-weight: 600; font-size: 9px; text-align: right; color: #111; }
 
-        .info-row {
-            display: table;
-            width: 100%;
-            margin-bottom: 6px;
-        }
+        /* badges */
+        .badge { display: inline-block; padding: 1px 7px; font-size: 8px; font-weight: 700;
+                 text-transform: uppercase; letter-spacing: 0.5px; border-radius: 2px; }
+        .badge-confirmed { background:#d1fae5; color:#065f46; }
+        .badge-pending   { background:#fef3c7; color:#92400e; }
+        .badge-shipped   { background:#dbeafe; color:#1e40af; }
+        .badge-delivered { background:#1f2937; color:#fff;    }
+        .badge-cancelled { background:#fee2e2; color:#991b1b; }
 
-        .info-label {
-            display: table-cell;
-            color: #6b7280;
-            font-size: 10px;
-            width: 48%;
-        }
+        /* address */
+        .addr-name  { font-weight: 700; font-size: 10px; color: #111; margin-bottom: 2px; }
+        .addr-phone { color: #6b7280; font-size: 9px; margin-bottom: 5px; }
+        .addr-line  { font-size: 9px; color: #374151; margin-bottom: 1px; }
+        .addr-bold  { font-weight: 600; font-size: 9px; color: #111; margin-top: 2px; }
 
-        .info-value {
-            display: table-cell;
-            font-weight: 600;
-            font-size: 10px;
-            text-align: right;
-            color: #111827;
-        }
-
-        /* Status badges */
-        .badge {
-            display: inline-block;
-            padding: 2px 8px;
-            font-size: 9px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            border-radius: 2px;
-        }
-
-        .badge-confirmed  { background: #d1fae5; color: #065f46; }
-        .badge-pending    { background: #fef3c7; color: #92400e; }
-        .badge-shipped    { background: #dbeafe; color: #1e40af; }
-        .badge-delivered  { background: #1f2937; color: #ffffff; }
-        .badge-cancelled  { background: #fee2e2; color: #991b1b; }
-
-        /* ── Delivery Address ── */
-        .addr-name    { font-weight: 700; font-size: 11px; color: #111827; margin-bottom: 3px; }
-        .addr-phone   { color: #6b7280; font-size: 10px; margin-bottom: 6px; }
-        .addr-line    { font-size: 10px; color: #374151; margin-bottom: 2px; }
-        .addr-bold    { font-weight: 600; font-size: 10px; color: #111827; margin-top: 3px; }
-
-        /* ── Items Table ── */
+        /* ── ITEMS TABLE ── */
         .section-title {
-            font-size: 11px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: #111827;
-            margin-bottom: 10px;
+            font-size: 10px; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 1px; color: #111; margin-bottom: 8px;
         }
-
-        .items-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 24px;
-        }
-
-        .items-table thead tr {
-            background-color: #1f2937;
-        }
-
+        .items-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        .items-table thead tr { background-color: #1f2937; }
         .items-table thead th {
-            padding: 9px 12px;
+            padding: 8px 8px;
             text-align: left;
-            font-size: 9px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.8px;
-            color: #ffffff;
-            border: 1px solid #374151;
+            font-size: 8px; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.7px;
+            color: #fff; border: 1px solid #374151;
         }
+        .items-table thead th.right { text-align: right; }
+        .items-table thead th.center{ text-align: center; }
 
         .items-table tbody td {
-            padding: 10px 12px;
-            font-size: 10px;
+            padding: 8px 8px;
+            font-size: 9px;
             border: 1px solid #e5e7eb;
             color: #374151;
             vertical-align: middle;
         }
+        .items-table tbody tr:nth-child(even) { background-color: #f9fafb; }
+        .items-table tbody tr:nth-child(odd)  { background-color: #ffffff; }
 
-        .items-table tbody tr:nth-child(even) {
-            background-color: #f9fafb;
-        }
+        .td-right  { text-align: right; }
+        .td-center { text-align: center; }
 
-        .items-table tbody tr:nth-child(odd) {
-            background-color: #ffffff;
-        }
-
-        .product-name {
-            font-weight: 500;
-            color: #111827;
-        }
-
+        .product-name { font-weight: 600; color: #111; }
         .color-dot {
-            display: inline-block;
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            border: 1px solid #9ca3af;
-            margin-right: 5px;
-            vertical-align: middle;
+            display: inline-block; width: 9px; height: 9px; border-radius: 50%;
+            border: 1px solid #9ca3af; margin-right: 4px; vertical-align: middle;
+        }
+        .mrp-text    { color: #9ca3af; text-decoration: line-through; }
+        .green-text  { color: #16a34a; font-weight: 600; }
+        .dash-text   { color: #d1d5db; }
+
+        /* offer badge */
+        .offer-badge {
+            display: inline-block; background: #fff7ed; color: #c2410c;
+            font-size: 7px; font-weight: 700; padding: 1px 5px;
+            border-radius: 2px; white-space: nowrap;
         }
 
-        .subtotal-cell {
-            font-weight: 700;
-            color: #111827;
+        /* ── TOTALS ── */
+        .totals-wrapper { border-top: 2px solid #6b7280; padding-top: 14px; margin-bottom: 36px; }
+        .totals-table   { float: right; width: 260px; }
+
+        .tot-row    { display: table; width: 100%; margin-bottom: 7px; }
+        .tot-lbl    { display: table-cell; font-size: 10px; color: #4b5563; }
+        .tot-amt    { display: table-cell; font-size: 10px; font-weight: 600; text-align: right; color: #111; }
+
+        .tot-green-lbl { color: #16a34a; }
+        .tot-green-amt { color: #16a34a; font-weight: 700; }
+
+        .line-thru  { text-decoration: line-through; color: #9ca3af; }
+
+        .divider-dashed { border-top: 1px dashed #d1d5db; padding-top: 7px; margin-top: 3px; }
+
+        .coupon-badge {
+            display: inline-block; background: #dcfce7; color: #15803d;
+            font-size: 7px; font-weight: 700; font-family: monospace;
+            padding: 1px 5px; border-radius: 2px; margin-left: 3px; letter-spacing: 0.5px;
         }
 
-        /* ── Totals ── */
-        .totals-wrapper {
-            border-top: 2px solid #6b7280;
-            padding-top: 16px;
-            margin-bottom: 40px;
-        }
+        .tot-grand-lbl { font-size: 13px; font-weight: 700; color: #111; }
+        .tot-grand-amt { font-size: 13px; font-weight: 800; color: #111; text-align: right; }
+        .tot-grand-row { border-top: 2px solid #1f2937; padding-top: 9px; margin-top: 4px; }
 
-        .totals-table {
-            float: right;
-            width: 260px;
+        /* savings highlight */
+        .savings-box {
+            display: table; width: 100%; margin-top: 10px;
+            background: #f0fdf4; border: 1px solid #bbf7d0; padding: 6px 9px;
         }
+        .savings-lbl { display: table-cell; font-size: 9px; font-weight: 700; color: #15803d; }
+        .savings-amt { display: table-cell; font-size: 10px; font-weight: 800; color: #15803d; text-align: right; }
 
-        .totals-row {
-            display: table;
-            width: 100%;
-            margin-bottom: 8px;
-        }
-
-        .totals-label {
-            display: table-cell;
-            font-size: 11px;
-            color: #4b5563;
-        }
-
-        .totals-amount {
-            display: table-cell;
-            font-size: 11px;
-            font-weight: 600;
-            text-align: right;
-            color: #111827;
-        }
-
-        .totals-grand {
-            border-top: 2px solid #1f2937;
-            padding-top: 10px;
-            margin-top: 6px;
-        }
-
-        .totals-grand .totals-label {
-            font-size: 13px;
-            font-weight: 700;
-            color: #111827;
-        }
-
-        .totals-grand .totals-amount {
-            font-size: 13px;
-            font-weight: 800;
-            color: #111827;
-        }
-
-        /* ── Footer ── */
+        /* ── FOOTER ── */
         .footer {
-            clear: both;
-            border-top: 1px solid #d1d5db;
-            padding-top: 16px;
-            text-align: center;
-            margin-top: 60px;
+            clear: both; border-top: 1px solid #d1d5db;
+            padding-top: 14px; text-align: center; margin-top: 50px;
         }
-
-        .footer-main {
-            font-size: 12px;
-            font-weight: 600;
-            color: #1f2937;
-            margin-bottom: 5px;
-        }
-
-        .footer-support {
-            font-size: 10px;
-            color: #6b7280;
-            margin-bottom: 4px;
-        }
-
-        .footer-note {
-            font-size: 9px;
-            color: #9ca3af;
-        }
+        .footer-main    { font-size: 11px; font-weight: 600; color: #1f2937; margin-bottom: 4px; }
+        .footer-support { font-size: 9px; color: #6b7280; margin-bottom: 3px; }
+        .footer-note    { font-size: 8px; color: #9ca3af; }
     </style>
 </head>
 <body>
 
-    <!-- ═══ HEADER ═══ -->
-    <div class="header">
-        <div class="header-left">
-            <div class="brand">DINGDONG</div>
-            <div class="tagline">Premium Products Store</div>
+<!-- ═══ HEADER ═══ -->
+<div class="header">
+    <div>
+        <div class="brand">DINGDONG</div>
+        <div class="tagline">Premium Products Store</div>
+    </div>
+    <div>
+        <div class="inv-label">INVOICE</div>
+        <div class="inv-meta">{{ order.order_number }}</div>
+        <div class="inv-meta">{{ order.created_at|date:"d M, Y" }}</div>
+    </div>
+</div>
+
+<!-- ═══ INFO GRID ═══ -->
+<div class="info-grid">
+
+    <!-- Order Info -->
+    <div class="info-col">
+        <h3>Order Information</h3>
+        <div class="info-row">
+            <span class="info-lbl">Order Number</span>
+            <span class="info-val">{{ order.order_number }}</span>
         </div>
-        <div class="header-right">
-            <div class="invoice-label">INVOICE</div>
-            <div class="order-meta">{{ order.order_number }}</div>
-            <div class="order-meta">{{ order.created_at|date:"d M, Y" }}</div>
+        <div class="info-row">
+            <span class="info-lbl">Order Date</span>
+            <span class="info-val">{{ order.created_at|date:"d M, Y h:i A" }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-lbl">Payment Method</span>
+            <span class="info-val">{{ order.get_payment_method_display }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-lbl">Payment Status</span>
+            <span class="info-val">{{ order.get_payment_status_display }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-lbl">Order Status</span>
+            <span class="info-val">
+                {% if order.order_status == 'confirmed' %}<span class="badge badge-confirmed">{{ order.get_order_status_display }}</span>
+                {% elif order.order_status == 'pending'   %}<span class="badge badge-pending">{{ order.get_order_status_display }}</span>
+                {% elif order.order_status == 'shipped'   %}<span class="badge badge-shipped">{{ order.get_order_status_display }}</span>
+                {% elif order.order_status == 'delivered' %}<span class="badge badge-delivered">{{ order.get_order_status_display }}</span>
+                {% elif order.order_status == 'cancelled' %}<span class="badge badge-cancelled">{{ order.get_order_status_display }}</span>
+                {% endif %}
+            </span>
         </div>
     </div>
 
-    <!-- ═══ INFO GRID ═══ -->
-    <div class="info-grid">
-        <!-- Order Information -->
-        <div class="info-col">
-            <h3>Order Information</h3>
+    <!-- Delivery Address -->
+    <div class="info-col">
+        <h3>Delivery Address</h3>
+        <p class="addr-name">{{ delivery_address.full_name }}</p>
+        <p class="addr-phone">{{ delivery_address.phone_number }}</p>
+        <p class="addr-line">{{ delivery_address.flat_house }},</p>
+        <p class="addr-line">{{ delivery_address.area_street }},</p>
+        {% if delivery_address.landmark %}
+        <p class="addr-line" style="color:#6b7280;">Near {{ delivery_address.landmark }},</p>
+        {% endif %}
+        <p class="addr-bold">{{ delivery_address.town_city }}, {{ delivery_address.state }}</p>
+        <p class="addr-bold">PIN: {{ delivery_address.pincode }}</p>
+    </div>
+</div>
 
-            <div class="info-row">
-                <span class="info-label">Order Number:</span>
-                <span class="info-value">{{ order.order_number }}</span>
-            </div>
-            <div class="info-row">
-                <span class="info-label">Order Date:</span>
-                <span class="info-value">{{ order.created_at|date:"d M, Y h:i A" }}</span>
-            </div>
-            <div class="info-row">
-                <span class="info-label">Payment Method:</span>
-                <span class="info-value">{{ order.get_payment_method_display }}</span>
-            </div>
-            <div class="info-row">
-                <span class="info-label">Payment Status:</span>
-                <span class="info-value">{{ order.get_payment_status_display }}</span>
-            </div>
-            <div class="info-row">
-                <span class="info-label">Order Status:</span>
-                <span class="info-value">
-                    {% if order.order_status == 'confirmed' %}
-                        <span class="badge badge-confirmed">{{ order.get_order_status_display }}</span>
-                    {% elif order.order_status == 'pending' %}
-                        <span class="badge badge-pending">{{ order.get_order_status_display }}</span>
-                    {% elif order.order_status == 'shipped' %}
-                        <span class="badge badge-shipped">{{ order.get_order_status_display }}</span>
-                    {% elif order.order_status == 'delivered' %}
-                        <span class="badge badge-delivered">{{ order.get_order_status_display }}</span>
-                    {% elif order.order_status == 'cancelled' %}
-                        <span class="badge badge-cancelled">{{ order.get_order_status_display }}</span>
-                    {% endif %}
-                </span>
-            </div>
+<!-- ═══ ITEMS TABLE ═══ -->
+<p class="section-title">Order Items</p>
+<table class="items-table">
+    <thead>
+        <tr>
+            <th style="width:22%;">Product</th>
+            <th style="width:12%;">Color</th>
+            <th class="right" style="width:9%;">MRP</th>
+            <th class="center" style="width:9%;">Offer</th>
+            <th class="right" style="width:9%;">Price/Unit</th>
+            <th class="center" style="width:5%;">Qty</th>
+            <th class="right" style="width:11%;">Offer Saving</th>
+            <th class="right" style="width:11%;">Coupon Saving</th>
+            <th class="right" style="width:12%;">Final</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in item_rows %}
+        <tr>
+            <!-- Product -->
+            <td class="product-name">{{ row.item.product_name }}</td>
+
+            <!-- Color -->
+            <td>
+                <span class="color-dot" style="background-color:{{ row.item.color_code }};"></span>
+                {{ row.item.color_name }}
+            </td>
+
+            <!-- MRP -->
+            <td class="td-right mrp-text">&#8377;{{ row.unit_mrp }}</td>
+
+            <!-- Offer badge -->
+            <td class="td-center">
+                {% if row.offer_pct > 0 %}
+                <span class="offer-badge">{{ row.offer_pct }}% OFF</span>
+                {% else %}
+                <span class="dash-text">—</span>
+                {% endif %}
+            </td>
+
+            <!-- Discounted price per unit -->
+            <td class="td-right">&#8377;{{ row.unit_price }}</td>
+
+            <!-- Qty -->
+            <td class="td-center">{{ row.item.quantity }}</td>
+
+            <!-- Offer saving -->
+            <td class="td-right">
+                {% if row.offer_discount > 0 %}
+                <span class="green-text">- &#8377;{{ row.offer_discount }}</span>
+                {% else %}
+                <span class="dash-text">—</span>
+                {% endif %}
+            </td>
+
+            <!-- Coupon saving -->
+            <td class="td-right">
+                {% if row.item_coupon > 0 %}
+                <span class="green-text">- &#8377;{{ row.item_coupon }}</span>
+                {% else %}
+                <span class="dash-text">—</span>
+                {% endif %}
+            </td>
+
+            <!-- Final -->
+            <td class="td-right" style="font-weight:700; color:#111;">&#8377;{{ row.item_final }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<!-- ═══ TOTALS ═══ -->
+<div class="totals-wrapper">
+    <div class="totals-table">
+
+        <!-- MRP Total -->
+        <div class="tot-row">
+            <span class="tot-lbl">MRP Total</span>
+            <span class="tot-amt line-thru">&#8377;{{ total_mrp }}</span>
         </div>
 
-        <!-- Delivery Address -->
-        <div class="info-col">
-            <h3>Delivery Address</h3>
-            <p class="addr-name">{{ delivery_address.full_name }}</p>
-            <p class="addr-phone">{{ delivery_address.phone_number }}</p>
-            <p class="addr-line">{{ delivery_address.flat_house }}</p>
-            <p class="addr-line">{{ delivery_address.area_street }}</p>
-            {% if delivery_address.landmark %}
-            <p class="addr-line" style="color:#6b7280;">Landmark: {{ delivery_address.landmark }}</p>
-            {% endif %}
-            <p class="addr-bold">{{ delivery_address.town_city }}, {{ delivery_address.state }}</p>
-            <p class="addr-bold">PIN: {{ delivery_address.pincode }}</p>
+        <!-- Offer Discount -->
+        {% if total_offer_discount > 0 %}
+        <div class="tot-row">
+            <span class="tot-lbl tot-green-lbl">Offer Discount</span>
+            <span class="tot-amt tot-green-amt">− &#8377;{{ total_offer_discount }}</span>
+        </div>
+        {% endif %}
+
+        <!-- Subtotal after offers -->
+        <div class="tot-row divider-dashed">
+            <span class="tot-lbl">Subtotal <span style="font-size:8px;color:#9ca3af;">(after offers)</span></span>
+            <span class="tot-amt">&#8377;{{ subtotal }}</span>
+        </div>
+
+        <!-- Coupon Discount -->
+        {% if total_coupon_saving > 0 %}
+        <div class="tot-row">
+            <span class="tot-lbl tot-green-lbl">
+                Coupon Discount
+                {% if order.coupon_code %}
+                <span class="coupon-badge">{{ order.coupon_code }}</span>
+                {% endif %}
+            </span>
+            <span class="tot-amt tot-green-amt">− &#8377;{{ total_coupon_saving }}</span>
+        </div>
+        {% endif %}
+
+        <!-- Delivery -->
+        <div class="tot-row">
+            <span class="tot-lbl">Delivery Charges</span>
+            <span class="tot-amt">
+                {% if delivery_charge == 0 %}
+                <span class="tot-green-amt">FREE</span>
+                {% else %}
+                &#8377;{{ delivery_charge }}
+                {% endif %}
+            </span>
+        </div>
+
+        <!-- Grand Total -->
+        <div class="tot-row tot-grand-row">
+            <span class="tot-grand-lbl">Grand Total</span>
+            <span class="tot-grand-amt">&#8377;{{ grand_total }}</span>
         </div>
     </div>
+</div>
 
-    <!-- ═══ ITEMS TABLE ═══ -->
-    <p class="section-title">Order Items</p>
-    <table class="items-table">
-        <thead>
-            <tr>
-                <th style="width:40%;">Product</th>
-                <th style="width:18%;">Color</th>
-                <th style="width:14%;">Price</th>
-                <th style="width:12%;">Qty</th>
-                <th style="width:16%;">Subtotal</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for item in order_items %}
-            {% if not item.is_cancelled %}
-            <tr>
-                <td class="product-name">{{ item.product_name }}</td>
-                <td>
-                    <span class="color-dot" style="background-color: {{ item.color_code }};"></span>
-                    {{ item.color_name }}
-                </td>
-                <td>&#8377;{{ item.price }}</td>
-                <td>{{ item.quantity }}</td>
-                <td class="subtotal-cell">&#8377;{{ item.subtotal }}</td>
-            </tr>
-            {% endif %}
-            {% endfor %}
-        </tbody>
-    </table>
-
-    <!-- TOTALS -->
-    <div class="totals-wrapper">
-        <div class="totals-table">
-            <div class="totals-row">
-                <span class="totals-label">Subtotal:</span>
-                <span class="totals-amount">&#8377;{{ order.subtotal }}</span>
-            </div>
-            <div class="totals-row">
-                <span class="totals-label">Delivery Charges:</span>
-                <span class="totals-amount">&#8377;{{ order.delivery_charge }}</span>
-            </div>
-            <div class="totals-row totals-grand">
-                <span class="totals-label">Grand Total:</span>
-                <span class="totals-amount">&#8377;{{ order.total_amount }}</span>
-            </div>
-        </div>
-    </div>
-
-    <!-- ═══ FOOTER ═══ -->
-    <div class="footer">
-        <p class="footer-main">Thank you for shopping with DINGDONG!</p>
-        <p class="footer-support">For any queries, please contact our support team.</p>
-        <p class="footer-note">This is a computer-generated invoice and does not require a signature.</p>
-    </div>
+<!-- ═══ FOOTER ═══ -->
+<div class="footer">
+    <p class="footer-main">Thank you for shopping with DINGDONG!</p>
+    <p class="footer-support">For any queries, please contact our support team.</p>
+    <p class="footer-note">This is a computer-generated invoice and does not require a signature.</p>
+</div>
 
 </body>
 </html>

@@ -1,7 +1,6 @@
 from django.db import models
 from django.utils import timezone
 from django.contrib.auth import get_user_model
-from products.models import Product
 from django.core.validators import MinValueValidator, MaxValueValidator
 
 User = get_user_model()
