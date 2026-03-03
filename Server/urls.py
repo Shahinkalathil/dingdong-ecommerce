@@ -42,6 +42,10 @@ urlpatterns = [
     path('wallet/', include('wallet.urls')),
     
 ]
+handler404 = "home.views.custom_404"
+handler500 = "home.views.custom_500"
+handler403 = "home.views.custom_403"
+handler400 = "home.views.custom_400"
 
 # Serve static files during development
 if settings.DEBUG:

@@ -124,3 +124,26 @@ def categories(request):
         'cart_count': cart_count,
     }
     return render(request, 'user_side/brands/category.html', context)
+
+
+def custom_404(request, exception):
+    if request.path.startswith("/dashboard/"):
+        return render(request, "admin_panel/errors/404.html", status=404)
+    return render(request, "user_side/errors/404.html", status=404)
+
+def custom_500(request):
+    if request.path.startswith("/dashboard/"):
+        return render(request, "admin_panel/errors/500.html", status=500)
+    return render(request, "user_side/errors/500.html", status=500)
+
+
+def custom_403(request, exception):
+    if request.path.startswith("/dashboard/"):
+        return render(request, "admin_panel/errors/403.html", status=403)
+    return render(request, "user_side/errors/403.html", status=403)
+
+
+def custom_400(request, exception):
+    if request.path.startswith("/dashboard/"):
+        return render(request, "admin_panel/errors/400.html", status=400)
+    return render(request, "user_side/errors/400.html", status=400)

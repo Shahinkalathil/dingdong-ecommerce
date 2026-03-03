@@ -1,0 +1,43 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>400 - Bad Request</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+
+    <div class="bg-white shadow-xl rounded-2xl p-10 max-w-lg w-full text-center">
+
+        <!-- Error Code -->
+        <h1 class="text-6xl font-extrabold text-red-500 mb-4">400</h1>
+
+        <!-- Title -->
+        <h2 class="text-2xl font-semibold text-gray-800 mb-2">
+            Bad Request
+        </h2>
+
+        <!-- Message -->
+        <p class="text-gray-600 mb-6">
+            The request could not be processed.  
+            Please check your input and try again.
+        </p>
+
+        <!-- Action Buttons -->
+        <div class="flex justify-center gap-4">
+            <a href="{% url 'admin.index' %}"
+               class="px-6 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition duration-300">
+                Go Admin
+            </a>
+
+            <button onclick="history.back()"
+                class="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-100 transition duration-300">
+                Go Back
+            </button>
+        </div>
+
+    </div>
+
+</body>
+</html>
