@@ -15,6 +15,7 @@ urlpatterns = [
     path('<str:order_number>/item/<int:item_id>/cancel/', views.cancel_order_item, name='cancel_order_item'),
     path("<str:order_number>/return/", views.request_return, name='request_return'),
     path("<str:order_number>/item/<int:item_id>/return/", views.request_item_return, name='request_item_return'),
+    path('orders/<str:order_number>/review/', views.submit_order_review, name='submit_order_review'),
     path('order_doc/<str:order_number>/', views.download_invoice, name='download_invoice'),
     path('order_doc/<str:order_number>/pdf/', views.generate_pdf, name='generate_pdf'),
 ]

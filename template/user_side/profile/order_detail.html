@@ -167,7 +167,7 @@
                         <p class="text-xs text-gray-400 mb-2">₹{{ item.price|floatformat:2 }} × {{ item.quantity }} units</p>
                         {% endif %}
 
-                        <!-- Action buttons -->
+                       <!-- Action buttons -->
                         <div class="flex gap-2 flex-wrap">
                             {% if active_items_count > 1 %}
                                 {% if can_cancel %}
@@ -180,6 +180,21 @@
                                 <button onclick="openReturnItemModal({{ item.id }}, '{{ item.product_name|escapejs }}', {{ item.subtotal }})"
                                     class="px-3 py-1.5 text-xs text-orange-600 border border-orange-200 rounded-lg hover:bg-orange-50 hover:border-orange-400 transition-colors font-medium">
                                     Return Item
+                                </button>
+                                {% endif %}
+                            {% endif %}
+
+                            <!-- Say Opinion button — only for delivered orders -->
+                            {% if is_delivered and item.variant %}
+                                {% if item.variant.product.id in reviewed_products %}
+                                <button disabled
+                                    class="px-3 py-1.5 text-xs text-green-600 border border-green-200 rounded-lg bg-green-50 font-medium cursor-not-allowed">
+                                    ✓ Reviewed
+                                </button>
+                                {% else %}
+                                <button onclick="openReviewModal({{ item.variant.product.id }}, '{{ item.product_name|escapejs }}')"
+                                    class="px-3 py-1.5 text-xs text-blue-600 border border-blue-200 rounded-lg hover:bg-blue-50 hover:border-blue-400 transition-colors font-medium">
+                                    ★ Say Opinion
                                 </button>
                                 {% endif %}
                             {% endif %}
@@ -800,6 +815,66 @@
     </div>
 </div>
 
+<!-- Say Opinion / Review Modal -->
+<div id="reviewModal" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
+        <div class="flex items-center justify-between mb-5">
+            <div class="flex items-center gap-3">
+                <div class="w-11 h-11 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                    <svg class="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold text-gray-900">Say Opinion</h3>
+                    <p class="text-xs text-gray-500" id="reviewProductName"></p>
+                </div>
+            </div>
+            <button onclick="closeReviewModal()" class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 transition-colors">
+                <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Star Rating Picker -->
+        <div class="mb-5">
+            <label class="block text-xs font-medium text-gray-700 mb-2">Your Rating <span class="text-red-500">*</span></label>
+            <div class="flex gap-2" id="starPicker">
+                {% for i in "12345" %}
+                <button type="button" data-value="{{ forloop.counter }}"
+                    class="star-btn text-4xl text-gray-300 hover:text-yellow-400 transition-colors focus:outline-none leading-none"
+                    onclick="setRating({{ forloop.counter }})">★</button>
+                {% endfor %}
+            </div>
+            <p class="text-xs text-gray-400 mt-1" id="ratingLabel">Click a star to rate</p>
+        </div>
+
+        <!-- Description -->
+        <div class="mb-5">
+            <label class="block text-xs font-medium text-gray-700 mb-1.5">Your Review <span class="text-gray-400">(Optional)</span></label>
+            <textarea id="reviewDescription" rows="3" maxlength="500"
+                class="w-full px-3 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm resize-none bg-gray-50 transition-colors"
+                placeholder="Share your experience with this product..."></textarea>
+            <p class="text-xs text-gray-400 mt-1"><span id="reviewCharCount">0</span>/500</p>
+        </div>
+
+        <!-- Error message -->
+        <p id="reviewError" class="text-xs text-red-600 mb-3 hidden"></p>
+
+        <div class="flex gap-3">
+            <button type="button" onclick="closeReviewModal()"
+                class="flex-1 py-2.5 px-4 border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 font-medium text-sm transition-colors">
+                Cancel
+            </button>
+            <button type="button" onclick="submitReview()"
+                id="reviewSubmitBtn"
+                class="flex-1 py-2.5 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold text-sm transition-colors flex items-center justify-center gap-2">
+                Submit Review
+            </button>
+        </div>
+    </div>
+</div>
 
 <!--JAVASCRIPT-->
 <script>
@@ -973,6 +1048,94 @@
         if (el) el.addEventListener('input', function() {
             if (this.value.length > 500) this.value = this.value.substring(0, 500);
         });
+    });
+
+
+    // ── Review Modal ──
+    let currentReviewProductId = null;
+    let currentRating = 0;
+
+    const ratingLabels = ['', 'Poor', 'Fair', 'Good', 'Very Good', 'Excellent'];
+
+    function setRating(value) {
+        currentRating = value;
+        document.querySelectorAll('.star-btn').forEach((btn, idx) => {
+            btn.style.color = idx < value ? '#FBBF24' : '#D1D5DB';
+        });
+        document.getElementById('ratingLabel').textContent = ratingLabels[value] || '';
+        document.getElementById('reviewError').classList.add('hidden');
+    }
+
+    function openReviewModal(productId, productName) {
+        currentReviewProductId = productId;
+        currentRating = 0;
+        document.getElementById('reviewProductName').textContent = productName;
+        document.getElementById('reviewDescription').value = '';
+        document.getElementById('reviewCharCount').textContent = '0';
+        document.getElementById('ratingLabel').textContent = 'Click a star to rate';
+        document.getElementById('reviewError').classList.add('hidden');
+        document.querySelectorAll('.star-btn').forEach(btn => btn.style.color = '#D1D5DB');
+        document.getElementById('reviewModal').classList.remove('hidden');
+    }
+
+    function closeReviewModal() {
+        document.getElementById('reviewModal').classList.add('hidden');
+        currentReviewProductId = null;
+        currentRating = 0;
+    }
+
+    document.getElementById('reviewDescription').addEventListener('input', function() {
+        document.getElementById('reviewCharCount').textContent = this.value.length;
+    });
+
+    async function submitReview() {
+        const errorEl = document.getElementById('reviewError');
+        const submitBtn = document.getElementById('reviewSubmitBtn');
+
+        if (!currentRating) {
+            errorEl.textContent = 'Please select a rating.';
+            errorEl.classList.remove('hidden');
+            return;
+        }
+
+        const description = document.getElementById('reviewDescription').value.trim();
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path></svg> Submitting...';
+
+        try {
+            const response = await fetch('{% url "submit_order_review" order.order_number %}', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+                body: JSON.stringify({
+                    product_id: currentReviewProductId,
+                    rating: currentRating,
+                    description: description
+                })
+            });
+            const data = await response.json();
+
+            if (data.success) {
+                closeReviewModal();
+                location.reload();
+            } else {
+                errorEl.textContent = data.message;
+                errorEl.classList.remove('hidden');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = 'Submit Review';
+            }
+        } catch {
+            errorEl.textContent = 'Something went wrong. Please try again.';
+            errorEl.classList.remove('hidden');
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = 'Submit Review';
+        }
+    }
+
+    // Close review modal on backdrop click
+    document.getElementById('reviewModal').addEventListener('click', function(e) {
+        if (e.target === this) closeReviewModal();
     });
 </script>
 
