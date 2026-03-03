@@ -95,13 +95,14 @@
                     <h1 class="text-2xl font-bold text-gray-900 mt-1">{{ product.name }}</h1>
                 </div>
 
-                <!-- Rating -->
-                <div class="flex items-center space-x-2">
+            <!-- Rating -->
+            <div class="flex items-center space-x-2">
+                {% if review_count > 0 %}
                     <div class="flex text-yellow-400">
                         {% for i in "12345" %}
-                            {% if rating >= i|add:0 %}
+                            {% if rating >= forloop.counter %}
                                 <i class="fas fa-star"></i>
-                            {% elif rating >= i|add:"-0.5" %}
+                            {% elif rating >= forloop.counter|add:"-0.5" %}
                                 <i class="fas fa-star-half-alt"></i>
                             {% else %}
                                 <i class="far fa-star"></i>
@@ -109,8 +110,11 @@
                         {% endfor %}
                     </div>
                     <span class="text-sm text-gray-600">({{ rating }})</span>
-                    <span class="text-sm text-blue-600 cursor-pointer">{{ review_count }} reviews</span>
-                </div>
+                    <span class="text-sm text-blue-600">{{ review_count }} review{{ review_count|pluralize }}</span>
+                {% else %}
+                    <span class="text-sm text-gray-400">No ratings yet</span>
+                {% endif %}
+            </div>
 
                 <!-- Price with Offers -->
                 <div class="space-y-2">
@@ -269,17 +273,6 @@
             </div>
         </div>
 
-        <!-- Rest of the template remains the same (Features, Tabs, Related Products, Reviews, FAQ) -->
-        <!-- Features -->
-        <div class="bg-blue-50 p-4 rounded-lg mt-6">
-            <h3 class="font-medium text-gray-900 mb-2">Key Features</h3>
-            <ul class="text-sm text-gray-600 space-y-1">
-                {% for feature in key_features %}
-                    <li>• {{ feature }}</li>
-                {% endfor %}
-            </ul>
-        </div>
-
         <!-- Product Details Tabs -->
         <div class="mt-6">
             <div class="border-b border-gray-200">
@@ -287,65 +280,16 @@
                     <button class="tab-btn py-4 px-1 border-b-2 border-blue-500 text-blue-600 font-medium text-sm uppercase tracking-wide" data-tab="description">
                         Description
                     </button>
-                    <button class="tab-btn py-4 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700 font-medium text-sm uppercase tracking-wide" data-tab="specification">
-                        Specification
-                    </button>
-                    <button class="tab-btn py-4 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700 font-medium text-sm uppercase tracking-wide" data-tab="offers">
-                        Exclusive Offers
-                    </button>
                     <button class="tab-btn py-4 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700 font-medium text-sm uppercase tracking-wide" data-tab="manufacturer">
                         Manufacturer Details
                     </button>
                 </nav>
             </div>
-
+            
             <div class="py-8">
                 <div id="description" class="tab-content">
                     <div class="prose max-w-none">
                         <p class="text-gray-700 leading-relaxed">{{ product.description }}</p>
-                    </div>
-                </div>
-
-                <div id="specification" class="tab-content hidden">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                            <h4 class="font-medium text-gray-900 mb-3">Technical Specifications</h4>
-                            <dl class="space-y-2 text-sm">
-                                {% for key, value in specifications.items %}
-                                    <div class="flex justify-between">
-                                        <dt class="text-gray-600">{{ key }}</dt>
-                                        <dd class="text-gray-900">{{ value }}</dd>
-                                    </div>
-                                {% endfor %}
-                            </dl>
-                        </div>
-                        <div>
-                            <h4 class="font-medium text-gray-900 mb-3">Features</h4>
-                            <ul class="space-y-2 text-sm text-gray-600">
-                                {% for feature in key_features %}
-                                    <li>• {{ feature }}</li>
-                                {% endfor %}
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="offers" class="tab-content hidden">
-                    <div class="space-y-4">
-                        {% if offer_type %}
-                            <div class="bg-gradient-to-r from-orange-50 to-red-50 p-4 rounded-lg border border-orange-200">
-                                <h4 class="font-medium text-orange-800 mb-2">{{ offer_type }}</h4>
-                                <p class="text-sm text-orange-700">{{ offer_name }}</p>
-                            </div>
-                        {% endif %}
-                        <div class="bg-green-50 p-4 rounded-lg border border-green-200">
-                            <h4 class="font-medium text-green-800 mb-2">Bank Offers</h4>
-                            <p class="text-sm text-green-700">Get 10% instant discount on HDFC Bank Credit Cards</p>
-                        </div>
-                        <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                            <h4 class="font-medium text-blue-800 mb-2">Exchange Offer</h4>
-                            <p class="text-sm text-blue-700">Up to ₹2,000 off on exchange of your old product</p>
-                        </div>
                     </div>
                 </div>
 
@@ -424,36 +368,45 @@
 
         <!-- Reviews Section -->
         <div class="mt-6">
-            <h2 class="text-2xl font-bold text-gray-900 mb-8">REVIEWS ({{ reviews|length }})</h2>
-            <div class="space-y-6">
-                {% for review in reviews %}
-                <div class="bg-white p-6 rounded-lg border">
-                    <div class="flex items-start space-x-4">
-                        <div class="w-12 h-12 bg-gray-300 rounded-full flex items-center justify-center">
-                            <i class="fas fa-user text-gray-600"></i>
-                        </div>
-                        <div class="flex-1">
-                            <div class="flex items-center space-x-2 mb-2">
-                                <h4 class="font-medium text-gray-900">{{ review.name }}</h4>
-                                {% if review.verified %}
-                                    <span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs font-medium">VERIFIED</span>
+            <h2 class="text-2xl font-bold text-gray-900 mb-8">REVIEWS ({{ review_count }})</h2>
+
+            {% if reviews %}
+                <div class="space-y-4">
+                    {% for review in reviews %}
+                    <div class="bg-white p-6 rounded-lg border">
+                        <div class="flex items-start space-x-4">
+                            <div class="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-user text-gray-500 text-sm"></i>
+                            </div>
+                            <div class="flex-1">
+                                <div class="flex items-center space-x-2 mb-1">
+                                    <h4 class="font-medium text-gray-900 text-sm">{{ review.user.username }}</h4>
+                                    <span class="bg-green-100 text-green-800 px-2 py-0.5 rounded text-xs font-medium">VERIFIED</span>
+                                </div>
+                                <div class="flex text-yellow-400 text-sm mb-2">
+                                    {% for i in "12345" %}
+                                        {% if review.rating >= forloop.counter %}
+                                            <i class="fas fa-star"></i>
+                                        {% else %}
+                                            <i class="far fa-star"></i>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                                {% if review.description %}
+                                    <p class="text-gray-700 text-sm">{{ review.description }}</p>
                                 {% endif %}
+                                <p class="text-xs text-gray-400 mt-2">{{ review.created_at|date:"d M Y" }}</p>
                             </div>
-                            <div class="flex text-yellow-400 text-sm mb-2">
-                                {% for i in "12345" %}
-                                    {% if review.rating >= i|add:0 %}
-                                        <i class="fas fa-star"></i>
-                                    {% else %}
-                                        <i class="far fa-star"></i>
-                                    {% endif %}
-                                {% endfor %}
-                            </div>
-                            <p class="text-gray-700 text-sm">{{ review.comment }}</p>
                         </div>
                     </div>
+                    {% endfor %}
                 </div>
-                {% endfor %}
-            </div>
+            {% else %}
+                <div class="text-center py-12 text-gray-400">
+                    <i class="far fa-comment-dots text-4xl mb-3 block"></i>
+                    <p class="text-sm">No reviews yet</p>
+                </div>
+            {% endif %}
         </div>
 
         <!-- FAQ Section -->
