@@ -185,6 +185,7 @@ def cancel_order(request, order_number):
                 item.save()
 
             order.order_status = 'cancelled'
+            print(order.order_status)
             order.cancellation_reason = cancel_reason
             order.cancelled_at = timezone.now()
 
@@ -276,6 +277,7 @@ def cancel_order_item(request, order_number, item_id):
             item.is_cancelled = True
             item.cancelled_at = timezone.now()
             item.item_status = 'cancelled'
+            print(item.is_cancelled)
             item.save()
             if refund_amount > 0:
                 wallet, _ = Wallet.objects.get_or_create(user=request.user)
@@ -295,6 +297,7 @@ def cancel_order_item(request, order_number, item_id):
                 else:
                     order.payment_status = 'failed'
                     order.is_paid = False
+            print(item.item_status)
 
             order.save()
 
@@ -407,6 +410,7 @@ def request_item_return(request, order_number, item_id):
             item.is_returned = True
             item.returned_at = timezone.now()
             item.save()
+            print(item.item_status)
             if item.variant:
                 item.variant.stock += item.quantity
                 item.variant.save()
@@ -657,6 +661,7 @@ def AdminHandleReturnView(request, order_id):
                         return_request.save()
                         
                         order.order_status = 'returned'
+                        print(order.order_status)
                         order.payment_status = 'refunded'
                         order.save(update_fields=['order_status', 'payment_status', 'updated_at'])
                         

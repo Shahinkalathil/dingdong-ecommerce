@@ -17,7 +17,6 @@ from offers.utils import get_best_offer_price
 
 # User Side
 # -------------------------------------------
-
 def products(request):
     products=Product.objects.filter(is_listed=True,category__is_listed=True,brand__is_listed=True,variants__is_listed=True
     ).prefetch_related("variants__images","variants"
@@ -257,14 +256,11 @@ def product_detail(request, variant_id):
                 }
             ]
         }
-        
         return render(request, "user_side/product/product_detail.html", context)
-        
+    
     except ProductVariant.DoesNotExist:
-        messages.error(request, "Product variant not found.")
         return redirect('products')
     except Exception as e:
-        print(f"Error in product_detail: {e}")
         messages.error(request, "An error occurred while loading the product.")
         return redirect('products')
 

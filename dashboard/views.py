@@ -177,8 +177,6 @@ def download_sales_pdf(request):
     return response
 
 
-
-
 def _get_date_range(report_type, start_date_str, end_date_str, today):
     orders = Order.objects.filter(order_status__in=ACTIVE_STATUSES)
 
