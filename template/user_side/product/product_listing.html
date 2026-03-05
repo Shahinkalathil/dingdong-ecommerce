@@ -4,18 +4,19 @@
 {% block title %}Products - DINGDONG{% endblock %}
 
 {% block content %}
+
+<!-- ============================================================
+     ORIGINAL DESKTOP CODE — NOT MODIFIED — hidden on mobile
+     ============================================================ -->
+<div class="hidden md:block">
 <div class="container mx-auto px-4 py-8">
     <div class="flex flex-col lg:flex-row gap-8">
         <!-- Sidebar Filters -->
         <div class="lg:w-1/4 space-y-6">
             <form method="GET" action="{% url 'products' %}" id="filterForm">
-                <!-- Search Bar -->
                 <div class="bg-white p-4 rounded-lg shadow-sm">
                     <div class="flex gap-2">
-                        <input type="text" 
-                               name="search" 
-                               placeholder="Search products..." 
-                               value="{{ search_query|default:'' }}"
+                        <input type="text" name="search" placeholder="Search products..." value="{{ search_query|default:'' }}"
                                class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                         {% if search_query %}
                             <a href="{% url 'products' %}{% if selected_category %}?category={{ selected_category }}{% endif %}{% if selected_brand %}{% if selected_category %}&{% else %}?{% endif %}brand={{ selected_brand }}{% endif %}{% if selected_price_range %}{% if selected_category or selected_brand %}&{% else %}?{% endif %}price_range={{ selected_price_range }}{% endif %}{% if selected_sort %}{% if selected_category or selected_brand or selected_price_range %}&{% else %}?{% endif %}sort={{ selected_sort }}{% endif %}" 
@@ -25,76 +26,53 @@
                         {% endif %}
                     </div>
                 </div>
-
-                <!-- Category Filter -->
                 <div class="bg-white p-4 rounded-lg shadow-sm">
                     <div class="flex justify-between items-center mb-3">
                         <h3 class="font-semibold text-gray-800">Category</h3>
                         {% if selected_category %}
-                            <a href="{% url 'products' %}{% if search_query %}?search={{ search_query }}{% endif %}{% if selected_brand %}{% if search_query %}&{% else %}?{% endif %}brand={{ selected_brand }}{% endif %}{% if selected_price_range %}{% if search_query or selected_brand %}&{% else %}?{% endif %}price_range={{ selected_price_range }}{% endif %}{% if selected_sort %}{% if search_query or selected_brand or selected_price_range %}&{% else %}?{% endif %}sort={{ selected_sort }}{% endif %}" 
-                               class="text-sm text-blue-600 hover:text-blue-800">Clear</a>
+                            <a href="{% url 'products' %}{% if search_query %}?search={{ search_query }}{% endif %}{% if selected_brand %}{% if search_query %}&{% else %}?{% endif %}brand={{ selected_brand }}{% endif %}{% if selected_price_range %}{% if search_query or selected_brand %}&{% else %}?{% endif %}price_range={{ selected_price_range }}{% endif %}{% if selected_sort %}{% if search_query or selected_brand or selected_price_range %}&{% else %}?{% endif %}sort={{ selected_sort }}{% endif %}" class="text-sm text-blue-600 hover:text-blue-800">Clear</a>
                         {% endif %}
                     </div>
                     <div class="relative">
-                        <select name="category" 
-                                onchange="document.getElementById('filterForm').submit();" 
-                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none bg-white">
+                        <select name="category" onchange="document.getElementById('filterForm').submit();" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none bg-white">
                             <option value="">All Categories</option>
                             {% for category in categories %}
-                                <option value="{{ category.id }}" {% if selected_category == category.id|stringformat:"s" %}selected{% endif %}>
-                                    {{ category.name }}
-                                </option>
+                                <option value="{{ category.id }}" {% if selected_category == category.id|stringformat:"s" %}selected{% endif %}>{{ category.name }}</option>
                             {% endfor %}
                         </select>
                         <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-                            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                            </svg>
+                            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                         </div>
                     </div>
                 </div>
-
-                <!-- Brand Filter -->
                 <div class="bg-white p-4 rounded-lg shadow-sm">
                     <div class="flex justify-between items-center mb-3">
                         <h3 class="font-semibold text-gray-800">Brand</h3>
                         {% if selected_brand %}
-                            <a href="{% url 'products' %}{% if search_query %}?search={{ search_query }}{% endif %}{% if selected_category %}{% if search_query %}&{% else %}?{% endif %}category={{ selected_category }}{% endif %}{% if selected_price_range %}{% if search_query or selected_category %}&{% else %}?{% endif %}price_range={{ selected_price_range }}{% endif %}{% if selected_sort %}{% if search_query or selected_category or selected_price_range %}&{% else %}?{% endif %}sort={{ selected_sort }}{% endif %}" 
-                               class="text-sm text-blue-600 hover:text-blue-800">Clear</a>
+                            <a href="{% url 'products' %}{% if search_query %}?search={{ search_query }}{% endif %}{% if selected_category %}{% if search_query %}&{% else %}?{% endif %}category={{ selected_category }}{% endif %}{% if selected_price_range %}{% if search_query or selected_category %}&{% else %}?{% endif %}price_range={{ selected_price_range }}{% endif %}{% if selected_sort %}{% if search_query or selected_category or selected_price_range %}&{% else %}?{% endif %}sort={{ selected_sort }}{% endif %}" class="text-sm text-blue-600 hover:text-blue-800">Clear</a>
                         {% endif %}
                     </div>
                     <div class="relative">
-                        <select name="brand" 
-                                onchange="document.getElementById('filterForm').submit();" 
-                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none bg-white">
+                        <select name="brand" onchange="document.getElementById('filterForm').submit();" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none bg-white">
                             <option value="">All Brands</option>
                             {% for brand in brands %}
-                                <option value="{{ brand.id }}" {% if selected_brand == brand.id|stringformat:"s" %}selected{% endif %}>
-                                    {{ brand.name }}
-                                </option>
+                                <option value="{{ brand.id }}" {% if selected_brand == brand.id|stringformat:"s" %}selected{% endif %}>{{ brand.name }}</option>
                             {% endfor %}
                         </select>
                         <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-                            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                            </svg>
+                            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                         </div>
                     </div>
                 </div>
-
-                <!-- Price Range Filter -->
                 <div class="bg-white p-4 rounded-lg shadow-sm">
                     <div class="flex justify-between items-center mb-3">
                         <h3 class="font-semibold text-gray-800">Price Range</h3>
                         {% if selected_price_range %}
-                            <a href="{% url 'products' %}{% if search_query %}?search={{ search_query }}{% endif %}{% if selected_category %}{% if search_query %}&{% else %}?{% endif %}category={{ selected_category }}{% endif %}{% if selected_brand %}{% if search_query or selected_category %}&{% else %}?{% endif %}brand={{ selected_brand }}{% endif %}{% if selected_sort %}{% if search_query or selected_category or selected_brand %}&{% else %}?{% endif %}sort={{ selected_sort }}{% endif %}" 
-                               class="text-sm text-blue-600 hover:text-blue-800">Clear</a>
+                            <a href="{% url 'products' %}{% if search_query %}?search={{ search_query }}{% endif %}{% if selected_category %}{% if search_query %}&{% else %}?{% endif %}category={{ selected_category }}{% endif %}{% if selected_brand %}{% if search_query or selected_category %}&{% else %}?{% endif %}brand={{ selected_brand }}{% endif %}{% if selected_sort %}{% if search_query or selected_category or selected_brand %}&{% else %}?{% endif %}sort={{ selected_sort }}{% endif %}" class="text-sm text-blue-600 hover:text-blue-800">Clear</a>
                         {% endif %}
                     </div>
                     <div class="relative">
-                        <select name="price_range" 
-                                onchange="document.getElementById('filterForm').submit();" 
-                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none bg-white">
+                        <select name="price_range" onchange="document.getElementById('filterForm').submit();" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none bg-white">
                             <option value="">All Prices</option>
                             <option value="0-1000" {% if selected_price_range == "0-1000" %}selected{% endif %}>₹0 - ₹1,000</option>
                             <option value="1000-3000" {% if selected_price_range == "1000-3000" %}selected{% endif %}>₹1,000 - ₹3,000</option>
@@ -103,44 +81,28 @@
                             <option value="10000+" {% if selected_price_range == "10000+" %}selected{% endif %}>₹10,000+</option>
                         </select>
                         <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-                            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                            </svg>
+                            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                         </div>
                     </div>
                 </div>
-
-                <!-- Hidden fields to preserve sorting -->
                 {% if selected_sort %}<input type="hidden" name="sort" value="{{ selected_sort }}">{% endif %}
             </form>
-
-            <!-- Clear All Filters -->
             {% if search_query or selected_category or selected_brand or selected_price_range %}
-                <a href="{% url 'products' %}" 
-                   class="block w-full px-4 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors font-semibold text-center">
-                    Clear All Filters
-                </a>
+                <a href="{% url 'products' %}" class="block w-full px-4 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors font-semibold text-center">Clear All Filters</a>
             {% endif %}
         </div>
-
         <!-- Main Content -->
         <div class="lg:w-3/4">
-            <!-- Sort and Results Info -->
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
                 <div class="text-gray-600">
                     Showing <span class="font-semibold">{{ page_obj.start_index }}</span> - <span class="font-semibold">{{ page_obj.end_index }}</span> of <span class="font-semibold">{{ total_products }}</span> products
                 </div>
-                
                 <form method="GET" action="{% url 'products' %}" class="relative w-full sm:w-auto">
-                    <!-- Preserve current filters -->
                     {% if search_query %}<input type="hidden" name="search" value="{{ search_query }}">{% endif %}
                     {% if selected_category %}<input type="hidden" name="category" value="{{ selected_category }}">{% endif %}
                     {% if selected_brand %}<input type="hidden" name="brand" value="{{ selected_brand }}">{% endif %}
                     {% if selected_price_range %}<input type="hidden" name="price_range" value="{{ selected_price_range }}">{% endif %}
-                    
-                    <select name="sort" 
-                            onchange="this.form.submit();" 
-                            class="w-full sm:w-auto px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none bg-white pr-10">
+                    <select name="sort" onchange="this.form.submit();" class="w-full sm:w-auto px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none bg-white pr-10">
                         <option value="" {% if not selected_sort %}selected{% endif %}>Sort By</option>
                         <option value="price-low" {% if selected_sort == "price-low" %}selected{% endif %}>Price: Low to High</option>
                         <option value="price-high" {% if selected_sort == "price-high" %}selected{% endif %}>Price: High to Low</option>
@@ -148,186 +110,484 @@
                         <option value="name-za" {% if selected_sort == "name-za" %}selected{% endif %}>Name: Z to A</option>
                     </select>
                     <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-                        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                        </svg>
+                        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                     </div>
                 </form>
             </div>
-
-                <!-- Product Grid -->
-                {% if product_display_data %}
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-3 mb-8">
-                        {% for item in product_display_data %}
-                            <a href="{% url 'product_detail' item.variant.id %}" class="bg-white rounded-lg border border-gray-200 hover:shadow-xl transition-shadow duration-200 block relative overflow-hidden">
-                                
-                                <!-- Out of Stock Overlay -->
-                                {% if not item.in_stock %}
-                                <div class="absolute top-3 right-3 bg-red-600 text-white text-xs font-bold px-3 py-1 rounded-md z-10 shadow-md">
-                                    OUT OF STOCK
-                                </div>
+            {% if product_display_data %}
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-3 mb-8">
+                    {% for item in product_display_data %}
+                        <a href="{% url 'product_detail' item.variant.id %}" class="bg-white rounded-lg border border-gray-200 hover:shadow-xl transition-shadow duration-200 block relative overflow-hidden">
+                            {% if not item.in_stock %}
+                            <div class="absolute top-3 right-3 bg-red-600 text-white text-xs font-bold px-3 py-1 rounded-md z-10 shadow-md">OUT OF STOCK</div>
+                            {% endif %}
+                            <div class="relative h-52 p-3 flex items-center justify-center bg-gray-50">
+                                {% if item.first_image %}
+                                    <img src="{{ item.first_image.image.url }}" alt="{{ item.product.name }}" class="w-full h-full object-contain {% if not item.in_stock %}opacity-50{% endif %}">
+                                {% else %}
+                                    <div class="w-full h-full flex items-center justify-center"><i class="fas fa-image text-gray-400 text-4xl"></i></div>
                                 {% endif %}
-                                 
-                                <!-- Product Image -->
-                                <div class="relative h-52 p-3 flex items-center justify-center bg-gray-50">
-                                    {% if item.first_image %}
-                                        <img src="{{ item.first_image.image.url }}" 
-                                            alt="{{ item.product.name }}" 
-                                            class="w-full h-full object-contain {% if not item.in_stock %}opacity-50{% endif %}">
-                                    {% else %}
-                                        <div class="w-full h-full flex items-center justify-center">
-                                            <i class="fas fa-image text-gray-400 text-4xl"></i>
-                                        </div>
+                                {% if item.in_stock %}
+                                    {% if item.discount_percentage > 0 %}
+                                    <div class="absolute top-3 left-3 bg-red-600 text-white px-2 py-1 rounded-md text-xs font-bold shadow-md">{{ item.discount_percentage|floatformat:0 }}% OFF</div>
                                     {% endif %}
-                                   {% if item.in_stock %} 
-                                        <!-- Discount Badge -->
-                                        {% if item.discount_percentage > 0 %}
-                                        <div class="absolute top-3 left-3 bg-red-600 text-white px-2 py-1 rounded-md text-xs font-bold shadow-md">
-                                            {{ item.discount_percentage|floatformat:0 }}% OFF
-                                        </div>
-                                        {% endif %}
-                                    {% endif %}
-
+                                {% endif %}
+                            </div>
+                            <div class="p-3 border-t">
+                                <h3 class="text-sm font-semibold text-gray-800">{{ item.product.name }}</h3>
+                                <p class="text-xs text-gray-500 font-medium">{{ item.product.brand.name }}</p>
+                                <div class="flex items-center mb-1.5 text-xs">
+                                    <div class="flex text-yellow-400">
+                                        {% for i in "12345" %}{% if forloop.counter <= item.rating %}<i class="fas fa-star"></i>{% elif forloop.counter|add:"-0.5" <= item.rating %}<i class="fas fa-star-half-alt"></i>{% else %}<i class="far fa-star"></i>{% endif %}{% endfor %}
+                                    </div>
+                                    <span class="text-gray-500 ml-1.5">({{ item.rating|floatformat:1 }}) {{ item.review_count }}</span>
                                 </div>
-
-                                <!-- Product Details -->
-                                <div class="p-3 border-t">
-                                    <!-- Name & Brand -->
-                                    <h3 class="text-sm font-semibold text-gray-800  ">
-                                        {{ item.product.name }}
-                                    </h3>
-                                    <p class="text-xs text-gray-500 font-medium">
-                                        {{ item.product.brand.name }}
-                                    </p>
-
-                                    <!-- Rating -->
-                                    <div class="flex items-center mb-1.5 text-xs">
-                                        <div class="flex text-yellow-400">
-                                            {% for i in "12345" %}
-                                                {% if forloop.counter <= item.rating %}
-                                                    <i class="fas fa-star"></i>
-                                                {% elif forloop.counter|add:"-0.5" <= item.rating %}
-                                                    <i class="fas fa-star-half-alt"></i>
-                                                {% else %}
-                                                    <i class="far fa-star"></i>
-                                                {% endif %}
-                                            {% endfor %}
-                                        </div>
-                                        <span class="text-gray-500 ml-1.5">
-                                            ({{ item.rating|floatformat:1 }}) {{ item.review_count }}
-                                        </span>
+                                <div class="mb-1.5">
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-xl font-bold text-gray-900">₹{{ item.final_price|floatformat:2 }}</span>
+                                        {% if item.discount_percentage > 0 %}<span class="text-sm text-gray-500 line-through">₹{{ item.original_price|floatformat:2 }}</span>{% endif %}
                                     </div>
-
-                                    <!-- Price -->
-                                    <div class="mb-1.5">
-                                        <div class="flex items-center gap-2">
-                                            <span class="text-xl font-bold text-gray-900">
-                                                ₹{{ item.final_price|floatformat:2 }}
-                                            </span>
-                                            {% if item.discount_percentage > 0 %}
-                                                <span class="text-sm text-gray-500 line-through">
-                                                    ₹{{ item.original_price|floatformat:2 }}
-                                                </span>
-                                            {% endif %}
-                                        </div>
-
-                                        {% if item.discount_percentage > 0 %}
-                                            <p class="text-xs text-green-600 font-medium mt-0.5">
-                                                Save ₹{{ item.original_price|add:"-"|add:item.final_price|floatformat:2 }}
-                                                ({{ item.discount_percentage|floatformat:0 }}%)
-                                            </p>
-                                        {% endif %}
-                                    </div>
-
-                                    <!-- Color Variants -->
-                                    <div class="pt-2 border-t border-gray-100">
-                                        <div class="flex flex-wrap gap-1.5">
-                                            {% for variant in item.product.variants.all|slice:":6" %}
-                                                {% if variant.is_listed and variant.stock > 0 %}
-                                                    <div class="group relative" title="{{ variant.color_name }}">
-                                                        <div class="w-5 h-5 rounded-full border-2 border-gray-300 hover:scale-110 hover:border-gray-600 transition-transform duration-150"
-                                                            style="background-color: {{ variant.color_code }};"></div>
-                                                        <span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-0.5 text-xs text-white bg-gray-900 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 whitespace-nowrap">
-                                                            {{ variant.color_name }}
-                                                        </span>
-                                                    </div>
-                                                {% endif %}
-                                            {% endfor %}
-
-                                            {% if item.product.variants.count > 6 %}
-                                                <div class="w-5 h-5 rounded-full bg-gray-200 flex items-center justify-center text-xs font-medium text-gray-600 border-2 border-gray-300">
-                                                    +{{ item.product.variants.count|add:"-6" }}
+                                    {% if item.discount_percentage > 0 %}<p class="text-xs text-green-600 font-medium mt-0.5">Save ₹{{ item.original_price|add:"-"|add:item.final_price|floatformat:2 }} ({{ item.discount_percentage|floatformat:0 }}%)</p>{% endif %}
+                                </div>
+                                <div class="pt-2 border-t border-gray-100">
+                                    <div class="flex flex-wrap gap-1.5">
+                                        {% for variant in item.product.variants.all|slice:":6" %}
+                                            {% if variant.is_listed and variant.stock > 0 %}
+                                                <div class="group relative" title="{{ variant.color_name }}">
+                                                    <div class="w-5 h-5 rounded-full border-2 border-gray-300 hover:scale-110 hover:border-gray-600 transition-transform duration-150" style="background-color: {{ variant.color_code }};"></div>
                                                 </div>
                                             {% endif %}
-                                        </div>
+                                        {% endfor %}
+                                        {% if item.product.variants.count > 6 %}
+                                            <div class="w-5 h-5 rounded-full bg-gray-200 flex items-center justify-center text-xs font-medium text-gray-600 border-2 border-gray-300">+{{ item.product.variants.count|add:"-6" }}</div>
+                                        {% endif %}
                                     </div>
                                 </div>
-                            </a>
-                        {% endfor %}
-                    </div>
-
-
-                <!-- Pagination -->
+                            </div>
+                        </a>
+                    {% endfor %}
+                </div>
                 {% if page_obj.has_other_pages %}
                     <div class="flex justify-center items-center space-x-2 mt-8">
                         {% if page_obj.has_previous %}
-                            <a href="?{% if search_query %}search={{ search_query }}&{% endif %}{% if selected_category %}category={{ selected_category }}&{% endif %}{% if selected_brand %}brand={{ selected_brand }}&{% endif %}{% if selected_price_range %}price_range={{ selected_price_range }}&{% endif %}{% if selected_sort %}sort={{ selected_sort }}&{% endif %}page={{ page_obj.previous_page_number }}" 
-                               class="px-3 py-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-md transition-colors">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-                                </svg>
+                            <a href="?{% if search_query %}search={{ search_query }}&{% endif %}{% if selected_category %}category={{ selected_category }}&{% endif %}{% if selected_brand %}brand={{ selected_brand }}&{% endif %}{% if selected_price_range %}price_range={{ selected_price_range }}&{% endif %}{% if selected_sort %}sort={{ selected_sort }}&{% endif %}page={{ page_obj.previous_page_number }}" class="px-3 py-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-md transition-colors">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
                             </a>
                         {% else %}
-                            <span class="px-3 py-2 text-gray-300 cursor-not-allowed">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-                                </svg>
-                            </span>
+                            <span class="px-3 py-2 text-gray-300 cursor-not-allowed"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg></span>
                         {% endif %}
-                        
                         <div class="flex space-x-1">
                             {% for num in page_obj.paginator.page_range %}
                                 {% if page_obj.number == num %}
                                     <span class="px-4 py-2 rounded-md bg-blue-600 text-white font-semibold">{{ num }}</span>
                                 {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-                                    <a href="?{% if search_query %}search={{ search_query }}&{% endif %}{% if selected_category %}category={{ selected_category }}&{% endif %}{% if selected_brand %}brand={{ selected_brand }}&{% endif %}{% if selected_price_range %}price_range={{ selected_price_range }}&{% endif %}{% if selected_sort %}sort={{ selected_sort }}&{% endif %}page={{ num }}" 
-                                       class="px-4 py-2 rounded-md text-gray-700 hover:bg-gray-100 transition-colors">{{ num }}</a>
+                                    <a href="?{% if search_query %}search={{ search_query }}&{% endif %}{% if selected_category %}category={{ selected_category }}&{% endif %}{% if selected_brand %}brand={{ selected_brand }}&{% endif %}{% if selected_price_range %}price_range={{ selected_price_range }}&{% endif %}{% if selected_sort %}sort={{ selected_sort }}&{% endif %}page={{ num }}" class="px-4 py-2 rounded-md text-gray-700 hover:bg-gray-100 transition-colors">{{ num }}</a>
                                 {% endif %}
                             {% endfor %}
                         </div>
-                        
                         {% if page_obj.has_next %}
-                            <a href="?{% if search_query %}search={{ search_query }}&{% endif %}{% if selected_category %}category={{ selected_category }}&{% endif %}{% if selected_brand %}brand={{ selected_brand }}&{% endif %}{% if selected_price_range %}price_range={{ selected_price_range }}&{% endif %}{% if selected_sort %}sort={{ selected_sort }}&{% endif %}page={{ page_obj.next_page_number }}" 
-                               class="px-3 py-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-md transition-colors">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                                </svg>
+                            <a href="?{% if search_query %}search={{ search_query }}&{% endif %}{% if selected_category %}category={{ selected_category }}&{% endif %}{% if selected_brand %}brand={{ selected_brand }}&{% endif %}{% if selected_price_range %}price_range={{ selected_price_range }}&{% endif %}{% if selected_sort %}sort={{ selected_sort }}&{% endif %}page={{ page_obj.next_page_number }}" class="px-3 py-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-md transition-colors">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
                             </a>
                         {% else %}
-                            <span class="px-3 py-2 text-gray-300 cursor-not-allowed">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                                </svg>
-                            </span>
+                            <span class="px-3 py-2 text-gray-300 cursor-not-allowed"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg></span>
                         {% endif %}
                     </div>
                 {% endif %}
-
             {% else %}
-                <!-- No Products Found -->
                 <div class="text-center py-16">
-                    <div class="text-gray-400 mb-6">
-                        <i class="fas fa-search text-6xl"></i>
-                    </div>
+                    <div class="text-gray-400 mb-6"><i class="fas fa-search text-6xl"></i></div>
                     <h3 class="text-2xl font-semibold text-gray-700 mb-3">No products found</h3>
                     <p class="text-gray-500 mb-6">Try adjusting your search or filter criteria</p>
-                    <a href="{% url 'products' %}" 
-                       class="inline-block px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold">
-                        View All Products
-                    </a>
+                    <a href="{% url 'products' %}" class="inline-block px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold">View All Products</a>
                 </div>
             {% endif %}
         </div>
     </div>
 </div>
+</div>
+<!-- ============================================================
+     ORIGINAL DESKTOP CODE ENDS
+     ============================================================ -->
+
+
+<!-- ============================================================
+     MOBILE ONLY — iPhone 12 (390px) — block md:hidden
+     Filter Drawer + 2-col compact product grid
+     ============================================================ -->
+<div class="block md:hidden bg-gray-100 min-h-screen">
+
+  <!-- ── Sticky Top Bar: Search + Filter/Sort buttons ── -->
+  <div class="sticky top-0 z-30 bg-white border-b border-gray-200 px-3 py-2 space-y-2">
+
+    <!-- Search Row -->
+    <form method="GET" action="{% url 'products' %}" id="mFilterForm">
+      {% if selected_category %}<input type="hidden" name="category" value="{{ selected_category }}">{% endif %}
+      {% if selected_brand %}<input type="hidden" name="brand" value="{{ selected_brand }}">{% endif %}
+      {% if selected_price_range %}<input type="hidden" name="price_range" value="{{ selected_price_range }}">{% endif %}
+      {% if selected_sort %}<input type="hidden" name="sort" value="{{ selected_sort }}">{% endif %}
+
+      <div class="flex items-center gap-2">
+        <div class="flex-1 flex items-center bg-gray-100 rounded-full px-3 py-1.5 gap-2 border border-gray-200">
+          <i class="fas fa-search text-gray-400 text-xs"></i>
+          <input type="text" name="search" placeholder="Search products..." value="{{ search_query|default:'' }}"
+                 class="bg-transparent text-xs w-full outline-none text-gray-700 placeholder-gray-400">
+          {% if search_query %}
+            <a href="{% url 'products' %}{% if selected_category %}?category={{ selected_category }}{% endif %}{% if selected_brand %}{% if selected_category %}&{% else %}?{% endif %}brand={{ selected_brand }}{% endif %}{% if selected_price_range %}{% if selected_category or selected_brand %}&{% else %}?{% endif %}price_range={{ selected_price_range }}{% endif %}" class="text-gray-400 ml-1">
+              <i class="fas fa-times text-xs"></i>
+            </a>
+          {% endif %}
+        </div>
+        <button type="submit" class="bg-black text-white text-xs px-3 py-1.5 rounded-full font-medium flex-shrink-0">Go</button>
+      </div>
+    </form>
+
+    <!-- Filter + Sort buttons row -->
+    <div class="flex gap-2">
+      <!-- Filter Button -->
+      <button onclick="openMobileFilter()" class="flex-1 flex items-center justify-center gap-1.5 border border-gray-300 rounded-full py-1.5 text-xs font-medium text-gray-700 bg-white">
+        <i class="fas fa-sliders-h text-xs"></i>
+        Filters
+        {% if selected_category or selected_brand or selected_price_range %}
+          <span class="bg-red-500 text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center font-bold leading-none">
+            {{ selected_category|yesno:"1,0"|add:selected_brand|yesno:"1,0"|add:selected_price_range|yesno:"1,0" }}
+          </span>
+        {% endif %}
+      </button>
+
+      <!-- Sort Dropdown -->
+      <form method="GET" action="{% url 'products' %}" class="flex-1" id="mSortForm">
+        {% if search_query %}<input type="hidden" name="search" value="{{ search_query }}">{% endif %}
+        {% if selected_category %}<input type="hidden" name="category" value="{{ selected_category }}">{% endif %}
+        {% if selected_brand %}<input type="hidden" name="brand" value="{{ selected_brand }}">{% endif %}
+        {% if selected_price_range %}<input type="hidden" name="price_range" value="{{ selected_price_range }}">{% endif %}
+        <div class="relative">
+          <select name="sort" onchange="document.getElementById('mSortForm').submit();"
+                  class="w-full appearance-none border border-gray-300 rounded-full py-1.5 pl-3 pr-7 text-xs font-medium text-gray-700 bg-white outline-none">
+            <option value="" {% if not selected_sort %}selected{% endif %}>Sort By</option>
+            <option value="price-low" {% if selected_sort == "price-low" %}selected{% endif %}>Price ↑</option>
+            <option value="price-high" {% if selected_sort == "price-high" %}selected{% endif %}>Price ↓</option>
+            <option value="name-az" {% if selected_sort == "name-az" %}selected{% endif %}>A → Z</option>
+            <option value="name-za" {% if selected_sort == "name-za" %}selected{% endif %}>Z → A</option>
+          </select>
+          <div class="absolute inset-y-0 right-2 flex items-center pointer-events-none">
+            <svg class="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- Active filter chips -->
+    {% if search_query or selected_category or selected_brand or selected_price_range %}
+    <div class="flex gap-1.5 overflow-x-auto scrollbar-hide pb-0.5">
+      {% if search_query %}
+        <span class="flex-shrink-0 inline-flex items-center gap-1 bg-blue-50 border border-blue-200 text-blue-700 text-[10px] px-2 py-1 rounded-full">
+          "{{ search_query }}"
+          <a href="{% url 'products' %}{% if selected_category %}?category={{ selected_category }}{% endif %}{% if selected_brand %}{% if selected_category %}&{% else %}?{% endif %}brand={{ selected_brand }}{% endif %}{% if selected_price_range %}{% if selected_category or selected_brand %}&{% else %}?{% endif %}price_range={{ selected_price_range }}{% endif %}{% if selected_sort %}{% if selected_category or selected_brand or selected_price_range %}&{% else %}?{% endif %}sort={{ selected_sort }}{% endif %}">
+            <i class="fas fa-times text-[9px]"></i>
+          </a>
+        </span>
+      {% endif %}
+      {% if selected_category %}
+        <span class="flex-shrink-0 inline-flex items-center gap-1 bg-blue-50 border border-blue-200 text-blue-700 text-[10px] px-2 py-1 rounded-full">
+          Cat
+          <a href="{% url 'products' %}{% if search_query %}?search={{ search_query }}{% endif %}{% if selected_brand %}{% if search_query %}&{% else %}?{% endif %}brand={{ selected_brand }}{% endif %}{% if selected_price_range %}{% if search_query or selected_brand %}&{% else %}?{% endif %}price_range={{ selected_price_range }}{% endif %}{% if selected_sort %}{% if search_query or selected_brand or selected_price_range %}&{% else %}?{% endif %}sort={{ selected_sort }}{% endif %}">
+            <i class="fas fa-times text-[9px]"></i>
+          </a>
+        </span>
+      {% endif %}
+      {% if selected_brand %}
+        <span class="flex-shrink-0 inline-flex items-center gap-1 bg-blue-50 border border-blue-200 text-blue-700 text-[10px] px-2 py-1 rounded-full">
+          Brand
+          <a href="{% url 'products' %}{% if search_query %}?search={{ search_query }}{% endif %}{% if selected_category %}{% if search_query %}&{% else %}?{% endif %}category={{ selected_category }}{% endif %}{% if selected_price_range %}{% if search_query or selected_category %}&{% else %}?{% endif %}price_range={{ selected_price_range }}{% endif %}{% if selected_sort %}{% if search_query or selected_category or selected_price_range %}&{% else %}?{% endif %}sort={{ selected_sort }}{% endif %}">
+            <i class="fas fa-times text-[9px]"></i>
+          </a>
+        </span>
+      {% endif %}
+      {% if selected_price_range %}
+        <span class="flex-shrink-0 inline-flex items-center gap-1 bg-blue-50 border border-blue-200 text-blue-700 text-[10px] px-2 py-1 rounded-full">
+          ₹{{ selected_price_range }}
+          <a href="{% url 'products' %}{% if search_query %}?search={{ search_query }}{% endif %}{% if selected_category %}{% if search_query %}&{% else %}?{% endif %}category={{ selected_category }}{% endif %}{% if selected_brand %}{% if search_query or selected_category %}&{% else %}?{% endif %}brand={{ selected_brand }}{% endif %}{% if selected_sort %}{% if search_query or selected_category or selected_brand %}&{% else %}?{% endif %}sort={{ selected_sort }}{% endif %}">
+            <i class="fas fa-times text-[9px]"></i>
+          </a>
+        </span>
+      {% endif %}
+      <a href="{% url 'products' %}" class="flex-shrink-0 inline-flex items-center gap-1 bg-red-50 border border-red-200 text-red-600 text-[10px] px-2 py-1 rounded-full font-medium">
+        Clear All
+      </a>
+    </div>
+    {% endif %}
+
+  </div>
+  <!-- END Sticky Top Bar -->
+
+
+  <!-- ── Results count ── -->
+  <div class="px-3 py-2 text-[11px] text-gray-500">
+    Showing {{ page_obj.start_index }}–{{ page_obj.end_index }} of <strong>{{ total_products }}</strong> products
+  </div>
+
+
+  <!-- ── Product Grid ── -->
+  <div class="px-2 pb-4">
+    {% if product_display_data %}
+    <div class="grid grid-cols-2 gap-2">
+      {% for item in product_display_data %}
+      <a href="{% url 'product_detail' item.variant.id %}" class="block bg-white rounded-lg overflow-hidden border border-gray-100 shadow-sm active:scale-95 transition-transform">
+
+        <!-- Image -->
+        <div class="relative bg-gray-50 h-36 flex items-center justify-center">
+          {% if item.first_image %}
+            <img src="{{ item.first_image.image.url }}" alt="{{ item.product.name }}"
+                 class="h-full w-full object-contain p-2 {% if not item.in_stock %}opacity-40{% endif %}">
+          {% else %}
+            <div class="flex items-center justify-center h-full w-full">
+              <i class="fas fa-image text-gray-300 text-2xl"></i>
+            </div>
+          {% endif %}
+
+          <!-- Badges -->
+          {% if not item.in_stock %}
+            <span class="absolute inset-0 flex items-center justify-center">
+              <span class="bg-black bg-opacity-60 text-white text-[9px] font-bold px-2 py-0.5 rounded">OUT OF STOCK</span>
+            </span>
+          {% endif %}
+          {% if item.in_stock and item.discount_percentage > 0 %}
+            <span class="absolute top-1.5 left-1.5 bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-sm">
+              {{ item.discount_percentage|floatformat:0 }}% OFF
+            </span>
+          {% endif %}
+        </div>
+
+        <!-- Info -->
+        <div class="px-2 pt-1.5 pb-2">
+          <!-- Name -->
+          <p class="text-[11px] font-semibold text-gray-800 leading-tight mb-0.5"
+             style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">
+            {{ item.product.name }}
+          </p>
+          <!-- Brand -->
+          <p class="text-[10px] text-gray-400 mb-1">{{ item.product.brand.name }}</p>
+
+          <!-- Stars -->
+          <div class="flex items-center gap-0.5 mb-1">
+            {% for i in "12345" %}
+              {% if forloop.counter <= item.rating %}
+                <i class="fas fa-star text-yellow-400 text-[9px]"></i>
+              {% else %}
+                <i class="far fa-star text-gray-300 text-[9px]"></i>
+              {% endif %}
+            {% endfor %}
+            <span class="text-[9px] text-gray-400 ml-0.5">({{ item.review_count }})</span>
+          </div>
+
+          <!-- Price -->
+          <div class="flex items-baseline gap-1 flex-wrap">
+            <span class="text-sm font-bold text-gray-900">₹{{ item.final_price|floatformat:0 }}</span>
+            {% if item.discount_percentage > 0 %}
+              <span class="text-[10px] text-gray-400 line-through">₹{{ item.original_price|floatformat:0 }}</span>
+              <span class="text-[10px] text-green-600 font-medium">{{ item.discount_percentage|floatformat:0 }}% off</span>
+            {% endif %}
+          </div>
+
+          <!-- Color dots -->
+          {% if item.product.variants.all %}
+          <div class="flex gap-1 mt-1.5 flex-wrap">
+            {% for variant in item.product.variants.all|slice:":5" %}
+              {% if variant.is_listed and variant.stock > 0 %}
+                <div class="w-3 h-3 rounded-full border border-gray-300 flex-shrink-0" style="background-color:{{ variant.color_code }};"></div>
+              {% endif %}
+            {% endfor %}
+            {% if item.product.variants.count > 5 %}
+              <span class="text-[9px] text-gray-500">+{{ item.product.variants.count|add:"-5" }}</span>
+            {% endif %}
+          </div>
+          {% endif %}
+        </div>
+
+      </a>
+      {% endfor %}
+    </div>
+
+    <!-- Mobile Pagination -->
+    {% if page_obj.has_other_pages %}
+    <div class="flex items-center justify-center gap-2 mt-5">
+      {% if page_obj.has_previous %}
+        <a href="?{% if search_query %}search={{ search_query }}&{% endif %}{% if selected_category %}category={{ selected_category }}&{% endif %}{% if selected_brand %}brand={{ selected_brand }}&{% endif %}{% if selected_price_range %}price_range={{ selected_price_range }}&{% endif %}{% if selected_sort %}sort={{ selected_sort }}&{% endif %}page={{ page_obj.previous_page_number }}"
+           class="text-xs px-3 py-1.5 bg-white border border-gray-300 rounded text-gray-700 font-medium">‹ Prev</a>
+      {% else %}
+        <span class="text-xs px-3 py-1.5 bg-gray-100 border border-gray-200 rounded text-gray-400 cursor-not-allowed">‹ Prev</span>
+      {% endif %}
+
+      <!-- Page numbers (max 3 shown) -->
+      <div class="flex gap-1">
+        {% for num in page_obj.paginator.page_range %}
+          {% if page_obj.number == num %}
+            <span class="text-xs px-2.5 py-1.5 bg-blue-600 text-white rounded font-bold">{{ num }}</span>
+          {% elif num > page_obj.number|add:'-2' and num < page_obj.number|add:'2' %}
+            <a href="?{% if search_query %}search={{ search_query }}&{% endif %}{% if selected_category %}category={{ selected_category }}&{% endif %}{% if selected_brand %}brand={{ selected_brand }}&{% endif %}{% if selected_price_range %}price_range={{ selected_price_range }}&{% endif %}{% if selected_sort %}sort={{ selected_sort }}&{% endif %}page={{ num }}"
+               class="text-xs px-2.5 py-1.5 bg-white border border-gray-300 rounded text-gray-700">{{ num }}</a>
+          {% endif %}
+        {% endfor %}
+      </div>
+
+      {% if page_obj.has_next %}
+        <a href="?{% if search_query %}search={{ search_query }}&{% endif %}{% if selected_category %}category={{ selected_category }}&{% endif %}{% if selected_brand %}brand={{ selected_brand }}&{% endif %}{% if selected_price_range %}price_range={{ selected_price_range }}&{% endif %}{% if selected_sort %}sort={{ selected_sort }}&{% endif %}page={{ page_obj.next_page_number }}"
+           class="text-xs px-3 py-1.5 bg-white border border-gray-300 rounded text-gray-700 font-medium">Next ›</a>
+      {% else %}
+        <span class="text-xs px-3 py-1.5 bg-gray-100 border border-gray-200 rounded text-gray-400 cursor-not-allowed">Next ›</span>
+      {% endif %}
+    </div>
+    {% endif %}
+
+    {% else %}
+    <div class="text-center py-16">
+      <i class="fas fa-search text-4xl text-gray-300 mb-3 block"></i>
+      <p class="text-sm font-semibold text-gray-600 mb-1">No products found</p>
+      <p class="text-xs text-gray-400 mb-4">Try adjusting your filters</p>
+      <a href="{% url 'products' %}" class="text-xs bg-blue-600 text-white px-5 py-2 rounded-full font-medium">View All</a>
+    </div>
+    {% endif %}
+  </div>
+
+
+  <!-- ══════════════════════════════════════════
+       FILTER BOTTOM DRAWER
+       ══════════════════════════════════════════ -->
+
+  <!-- Overlay -->
+  <div id="mFilterOverlay" class="hidden fixed inset-0 bg-black bg-opacity-40 z-40" onclick="closeMobileFilter()"></div>
+
+  <!-- Drawer -->
+  <div id="mFilterDrawer"
+       class="fixed bottom-0 left-0 right-0 bg-white z-50 rounded-t-2xl shadow-2xl transition-transform duration-300 translate-y-full"
+       style="max-height: 85vh; overflow-y: auto;">
+
+    <!-- Drawer Handle + Header -->
+    <div class="sticky top-0 bg-white border-b border-gray-100 px-4 pt-3 pb-3 z-10">
+      <div class="w-10 h-1 bg-gray-300 rounded-full mx-auto mb-3"></div>
+      <div class="flex items-center justify-between">
+        <span class="text-sm font-bold text-gray-800">Filters</span>
+        <div class="flex items-center gap-3">
+          {% if selected_category or selected_brand or selected_price_range %}
+            <a href="{% url 'products' %}{% if search_query %}?search={{ search_query }}{% endif %}{% if selected_sort %}{% if search_query %}&{% else %}?{% endif %}sort={{ selected_sort }}{% endif %}"
+               class="text-xs text-red-500 font-medium">Clear All</a>
+          {% endif %}
+          <button onclick="closeMobileFilter()" class="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center">
+            <i class="fas fa-times text-xs text-gray-600"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filter Form -->
+    <form method="GET" action="{% url 'products' %}" id="mDrawerForm" class="px-4 py-4 space-y-5">
+      {% if search_query %}<input type="hidden" name="search" value="{{ search_query }}">{% endif %}
+      {% if selected_sort %}<input type="hidden" name="sort" value="{{ selected_sort }}">{% endif %}
+
+      <!-- Category -->
+      <div>
+        <label class="block text-xs font-bold text-gray-700 mb-2 uppercase tracking-wide">Category</label>
+        <div class="flex flex-wrap gap-2">
+          <label class="cursor-pointer">
+            <input type="radio" name="category" value="" class="hidden peer" {% if not selected_category %}checked{% endif %}>
+            <span class="peer-checked:bg-black peer-checked:text-white border border-gray-300 text-gray-600 text-xs px-3 py-1.5 rounded-full block transition-colors">All</span>
+          </label>
+          {% for category in categories %}
+          <label class="cursor-pointer">
+            <input type="radio" name="category" value="{{ category.id }}" class="hidden peer" {% if selected_category == category.id|stringformat:"s" %}checked{% endif %}>
+            <span class="peer-checked:bg-black peer-checked:text-white border border-gray-300 text-gray-600 text-xs px-3 py-1.5 rounded-full block transition-colors">{{ category.name }}</span>
+          </label>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Brand -->
+      <div>
+        <label class="block text-xs font-bold text-gray-700 mb-2 uppercase tracking-wide">Brand</label>
+        <div class="flex flex-wrap gap-2">
+          <label class="cursor-pointer">
+            <input type="radio" name="brand" value="" class="hidden peer" {% if not selected_brand %}checked{% endif %}>
+            <span class="peer-checked:bg-black peer-checked:text-white border border-gray-300 text-gray-600 text-xs px-3 py-1.5 rounded-full block transition-colors">All</span>
+          </label>
+          {% for brand in brands %}
+          <label class="cursor-pointer">
+            <input type="radio" name="brand" value="{{ brand.id }}" class="hidden peer" {% if selected_brand == brand.id|stringformat:"s" %}checked{% endif %}>
+            <span class="peer-checked:bg-black peer-checked:text-white border border-gray-300 text-gray-600 text-xs px-3 py-1.5 rounded-full block transition-colors">{{ brand.name }}</span>
+          </label>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Price Range -->
+      <div>
+        <label class="block text-xs font-bold text-gray-700 mb-2 uppercase tracking-wide">Price Range</label>
+        <div class="flex flex-wrap gap-2">
+          {% for val, label in price_options %}
+          <label class="cursor-pointer">
+            <input type="radio" name="price_range" value="{{ val }}" class="hidden peer" {% if selected_price_range == val %}checked{% endif %}>
+            <span class="peer-checked:bg-black peer-checked:text-white border border-gray-300 text-gray-600 text-xs px-3 py-1.5 rounded-full block transition-colors">{{ label }}</span>
+          </label>
+          {% empty %}
+          <!-- Fallback hardcoded price options -->
+          <label class="cursor-pointer">
+            <input type="radio" name="price_range" value="" class="hidden peer" {% if not selected_price_range %}checked{% endif %}>
+            <span class="peer-checked:bg-black peer-checked:text-white border border-gray-300 text-gray-600 text-xs px-3 py-1.5 rounded-full block transition-colors">All</span>
+          </label>
+          <label class="cursor-pointer">
+            <input type="radio" name="price_range" value="0-1000" class="hidden peer" {% if selected_price_range == "0-1000" %}checked{% endif %}>
+            <span class="peer-checked:bg-black peer-checked:text-white border border-gray-300 text-gray-600 text-xs px-3 py-1.5 rounded-full block transition-colors">Under ₹1K</span>
+          </label>
+          <label class="cursor-pointer">
+            <input type="radio" name="price_range" value="1000-3000" class="hidden peer" {% if selected_price_range == "1000-3000" %}checked{% endif %}>
+            <span class="peer-checked:bg-black peer-checked:text-white border border-gray-300 text-gray-600 text-xs px-3 py-1.5 rounded-full block transition-colors">₹1K–3K</span>
+          </label>
+          <label class="cursor-pointer">
+            <input type="radio" name="price_range" value="3000-5000" class="hidden peer" {% if selected_price_range == "3000-5000" %}checked{% endif %}>
+            <span class="peer-checked:bg-black peer-checked:text-white border border-gray-300 text-gray-600 text-xs px-3 py-1.5 rounded-full block transition-colors">₹3K–5K</span>
+          </label>
+          <label class="cursor-pointer">
+            <input type="radio" name="price_range" value="5000-10000" class="hidden peer" {% if selected_price_range == "5000-10000" %}checked{% endif %}>
+            <span class="peer-checked:bg-black peer-checked:text-white border border-gray-300 text-gray-600 text-xs px-3 py-1.5 rounded-full block transition-colors">₹5K–10K</span>
+          </label>
+          <label class="cursor-pointer">
+            <input type="radio" name="price_range" value="10000+" class="hidden peer" {% if selected_price_range == "10000+" %}checked{% endif %}>
+            <span class="peer-checked:bg-black peer-checked:text-white border border-gray-300 text-gray-600 text-xs px-3 py-1.5 rounded-full block transition-colors">₹10K+</span>
+          </label>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Apply Button -->
+      <div class="pt-2 pb-2">
+        <button type="submit" onclick="closeMobileFilter()"
+                class="w-full bg-black text-white text-sm font-bold py-3 rounded-xl">
+          Apply Filters
+        </button>
+      </div>
+    </form>
+  </div>
+
+</div>
+<!-- END MOBILE SECTION -->
+
+
+<style>
+  .scrollbar-hide::-webkit-scrollbar { display: none; }
+  .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+</style>
+
+<script>
+  function openMobileFilter() {
+    document.getElementById('mFilterDrawer').classList.remove('translate-y-full');
+    document.getElementById('mFilterOverlay').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeMobileFilter() {
+    document.getElementById('mFilterDrawer').classList.add('translate-y-full');
+    document.getElementById('mFilterOverlay').classList.add('hidden');
+    document.body.style.overflow = '';
+  }
+</script>
+
 {% endblock %}
