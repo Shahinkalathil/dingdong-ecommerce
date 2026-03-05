@@ -34,17 +34,6 @@
             Back to Profile
         </a>
 
-        <!-- Messages -->
-        {% if messages %}
-        <div class="mb-4 space-y-2">
-            {% for message in messages %}
-            <div class="{% if message.tags == 'error' %}bg-red-50 border-red-200 text-red-800{% elif message.tags == 'success' %}bg-green-50 border-green-200 text-green-800{% else %}bg-blue-50 border-blue-200 text-blue-800{% endif %} border px-4 py-3 rounded-lg">
-                {{ message }}
-            </div>
-            {% endfor %}
-        </div>
-        {% endif %}
-
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <form method="POST" class="space-y-6">
                 {% csrf_token %}

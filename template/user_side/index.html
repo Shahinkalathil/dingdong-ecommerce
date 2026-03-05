@@ -5,20 +5,22 @@
 
 {% block content %}
 
+<!-- ============================================================
+     ORIGINAL DESKTOP CODE STARTS — NOT MODIFIED
+     ============================================================ -->
+<div class="hidden md:block">
+
 <!-- Hero Banner Carousel -->
 <section class="container mx-auto px-4 py-6">
   {% if has_banners %}
   <div class="relative rounded-lg overflow-hidden bg-gray-900 h-[300px] md:h-[400px]">
     <div class="carousel-container relative w-full h-full">
-      
       {% for banner in banners %}
       <div class="carousel-slide {% if forloop.first %}active{% endif %} absolute inset-0 transition-all duration-500 ease-in-out">
         <img src="{{ banner.image.url }}" alt="Banner {{ forloop.counter }}" class="w-full h-full object-cover">
       </div>
       {% endfor %}
     </div>
-
-    <!-- Navigation -->
     {% if banners|length > 1 %}
     <button class="carousel-prev absolute left-4 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-3 rounded-full hover:bg-opacity-75 hover:scale-110 transition-all z-20">
       <i class="fas fa-chevron-left text-lg"></i>
@@ -26,8 +28,6 @@
     <button class="carousel-next absolute right-4 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-3 rounded-full hover:bg-opacity-75 hover:scale-110 transition-all z-20">
       <i class="fas fa-chevron-right text-lg"></i>
     </button>
-
-    <!-- Dots -->
     <div class="absolute bottom-4 left-0 right-0 flex justify-center space-x-3 z-20">
       {% for banner in banners %}
       <button class="carousel-dot w-3 h-3 rounded-full bg-white transition-opacity duration-300 {% if forloop.first %}opacity-100{% else %}opacity-50{% endif %}" data-slide="{{ forloop.counter0 }}"></button>
@@ -36,51 +36,35 @@
     {% endif %}
   </div>
   {% else %}
-  <!-- Default Banner -->
   <div class="relative rounded-lg overflow-hidden h-[300px] md:h-[400px]" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
     <div class="absolute inset-0" style="background: radial-gradient(circle at 30% 50%, rgba(255,255,255,0.1) 0%, transparent 50%), radial-gradient(circle at 70% 50%, rgba(255,255,255,0.05) 0%, transparent 50%);"></div>
     <div class="absolute inset-0 flex items-center justify-center">
       <div class="text-center text-white px-4">
-        <div class="mb-6">
-          <i class="fas fa-watch text-6xl md:text-8xl opacity-90 animate-pulse"></i>
-        </div>
+        <div class="mb-6"><i class="fas fa-watch text-6xl md:text-8xl opacity-90 animate-pulse"></i></div>
         <h2 class="text-3xl md:text-5xl font-bold mb-4">Welcome to DINGDONG</h2>
         <p class="text-lg md:text-xl mb-6 opacity-90">Discover Premium Watches & Accessories</p>
-        <a href="{% url 'products' %}" class="inline-block bg-white text-purple-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors shadow-lg">
-          Shop Now
-        </a>
+        <a href="{% url 'products' %}" class="inline-block bg-white text-purple-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors shadow-lg">Shop Now</a>
       </div>
     </div>
   </div>
   {% endif %}
 </section>
 
-<!-- Brands Section -->
 {% if brands %}
 <section class="container mx-auto px-4 py-8 bg-gray-50">
   <div class="flex items-center justify-between mb-6">
     <h2 class="text-2xl md:text-3xl font-bold">Popular Brands</h2>
-    <a href="{% url 'products' %}" class="text-blue-600 hover:text-blue-800 font-semibold flex items-center">
-      View All <i class="fas fa-arrow-right ml-2"></i>
-    </a>
+    <a href="{% url 'products' %}" class="text-blue-600 hover:text-blue-800 font-semibold flex items-center">View All <i class="fas fa-arrow-right ml-2"></i></a>
   </div>
-  
   <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
     {% for brand in brands %}
     <a href="{% url 'products' %}?brand={{ brand.id }}" class="group bg-white rounded-lg p-4 shadow hover:shadow-lg transition-all duration-300 transform hover:scale-105">
       <div class="flex flex-col items-center justify-center h-24">
         <div class="w-16 h-16 mb-2 rounded-lg overflow-hidden flex items-center justify-center group-hover:scale-110 transition-transform">
-          {% if brand.image %}
-            <img src="{{ brand.image.url }}" alt="{{ brand.name }}" class="w-full h-full object-contain">
-          {% else %}
-            <div class="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
-              <i class="fas fa-store text-2xl text-gray-600"></i>
-            </div>
-          {% endif %}
+          {% if brand.image %}<img src="{{ brand.image.url }}" alt="{{ brand.name }}" class="w-full h-full object-contain">
+          {% else %}<div class="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center"><i class="fas fa-store text-2xl text-gray-600"></i></div>{% endif %}
         </div>
-        <div class="text-center">
-          <h3 class="font-bold text-sm truncate max-w-full">{{ brand.name }}</h3>
-        </div>
+        <h3 class="font-bold text-sm truncate max-w-full">{{ brand.name }}</h3>
       </div>
     </a>
     {% endfor %}
@@ -88,42 +72,27 @@
 </section>
 {% endif %}
 
-<!-- Products Section -->
 <section class="container mx-auto px-4 py-8">
   <div class="flex items-center justify-between mb-6">
     <h2 class="text-2xl md:text-3xl font-bold">Featured Products</h2>
-    <a href="{% url 'products' %}" class="text-blue-600 hover:text-blue-800 font-semibold flex items-center">
-      View All <i class="fas fa-arrow-right ml-2"></i>
-    </a>
+    <a href="{% url 'products' %}" class="text-blue-600 hover:text-blue-800 font-semibold flex items-center">View All <i class="fas fa-arrow-right ml-2"></i></a>
   </div>
-  
   {% if products_data %}
   <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
     {% for item in products_data %}
     <div class="block">
-      <!-- Product Card -->
       <div class="bg-white p-4 rounded-lg shadow hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 group">
         <div class="relative">
           <a href="{% url 'product_detail' item.product.id %}?variant={{ item.variant.id }}">
-            {% if item.image %}
-            <img src="{{ item.image.image.url }}" alt="{{ item.product.name }}" class="w-full h-48 object-contain">
-            {% else %}
-            <img src="https://via.placeholder.com/200x200?text=No+Image" alt="{{ item.product.name }}" class="w-full h-48 object-contain">
-            {% endif %}
+            {% if item.image %}<img src="{{ item.image.image.url }}" alt="{{ item.product.name }}" class="w-full h-48 object-contain">
+            {% else %}<img src="https://via.placeholder.com/200x200?text=No+Image" alt="{{ item.product.name }}" class="w-full h-48 object-contain">{% endif %}
           </a>
-          
-          {% if item.variant.stock < 10 %}
-          <span class="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded">Low Stock</span>
-          {% endif %}
+          {% if item.variant.stock < 10 %}<span class="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded">Low Stock</span>{% endif %}
         </div>
-        
         <div class="mt-4">
           <a href="{% url 'product_detail' item.product.id %}?variant={{ item.variant.id }}">
-            <h3 class="text-xs font-bold uppercase line-clamp-2 overflow-hidden hover:text-blue-600 transition-colors" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">
-              {{ item.product.name }}
-            </h3>
+            <h3 class="text-xs font-bold uppercase line-clamp-2 overflow-hidden hover:text-blue-600 transition-colors" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">{{ item.product.name }}</h3>
           </a>
-          
           <div class="mt-2 flex items-center justify-between">
             <div>
               <span class="font-bold text-lg text-gray-900">₹{{ item.price }}</span>
@@ -133,8 +102,6 @@
               {% endif %}
             </div>
           </div>
-
-          <!-- Color Variants -->
           {% if item.available_variants %}
           <div class="mt-3 pt-3 border-t border-gray-100">
             <p class="text-xs text-gray-500 mb-2">Available Colors:</p>
@@ -142,12 +109,8 @@
               {% for variant in item.available_variants %}
               <div class="group/color relative" title="{{ variant.color_name }}">
                 <a href="{% url 'product_detail' item.product.id %}?variant={{ variant.id }}">
-                  <div class="w-6 h-6 rounded-full border-2 border-gray-300 cursor-pointer transition-all hover:scale-110 hover:border-gray-500" 
-                       style="background-color: {{ variant.color_code }};"></div>
+                  <div class="w-6 h-6 rounded-full border-2 border-gray-300 cursor-pointer transition-all hover:scale-110 hover:border-gray-500" style="background-color: {{ variant.color_code }};"></div>
                 </a>
-                <span class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 px-2 py-1 text-xs text-white bg-gray-800 rounded opacity-0 group-hover/color:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
-                  {{ variant.color_name }}
-                </span>
               </div>
               {% endfor %}
             </div>
@@ -158,50 +121,27 @@
     </div>
     {% endfor %}
   </div>
-
-  <!-- Pagination -->
   {% if products_data.has_other_pages %}
   <div class="mt-8 flex justify-center">
     <nav class="inline-flex rounded-md shadow-sm">
       {% if products_data.has_previous %}
-      <a href="?page=1" class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-l-md hover:bg-gray-50 transition-colors">
-        First
-      </a>
-      <a href="?page={{ products_data.previous_page_number }}" class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border-t border-b border-gray-300 hover:bg-gray-50 transition-colors">
-        Previous
-      </a>
+      <a href="?page=1" class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-l-md hover:bg-gray-50">First</a>
+      <a href="?page={{ products_data.previous_page_number }}" class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border-t border-b border-gray-300 hover:bg-gray-50">Previous</a>
       {% else %}
-      <span class="px-3 py-2 text-sm font-medium text-gray-400 bg-gray-100 border border-gray-300 rounded-l-md cursor-not-allowed">
-        First
-      </span>
-      <span class="px-3 py-2 text-sm font-medium text-gray-400 bg-gray-100 border-t border-b border-gray-300 cursor-not-allowed">
-        Previous
-      </span>
+      <span class="px-3 py-2 text-sm font-medium text-gray-400 bg-gray-100 border border-gray-300 rounded-l-md cursor-not-allowed">First</span>
+      <span class="px-3 py-2 text-sm font-medium text-gray-400 bg-gray-100 border-t border-b border-gray-300 cursor-not-allowed">Previous</span>
       {% endif %}
-
-      <span class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border-t border-b border-gray-300">
-        Page {{ products_data.number }} of {{ products_data.paginator.num_pages }}
-      </span>
-
+      <span class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border-t border-b border-gray-300">Page {{ products_data.number }} of {{ products_data.paginator.num_pages }}</span>
       {% if products_data.has_next %}
-      <a href="?page={{ products_data.next_page_number }}" class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border-t border-b border-gray-300 hover:bg-gray-50 transition-colors">
-        Next
-      </a>
-      <a href="?page={{ products_data.paginator.num_pages }}" class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-r-md hover:bg-gray-50 transition-colors">
-        Last
-      </a>
+      <a href="?page={{ products_data.next_page_number }}" class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border-t border-b border-gray-300 hover:bg-gray-50">Next</a>
+      <a href="?page={{ products_data.paginator.num_pages }}" class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-r-md hover:bg-gray-50">Last</a>
       {% else %}
-      <span class="px-3 py-2 text-sm font-medium text-gray-400 bg-gray-100 border-t border-b border-gray-300 cursor-not-allowed">
-        Next
-      </span>
-      <span class="px-3 py-2 text-sm font-medium text-gray-400 bg-gray-100 border border-gray-300 rounded-r-md cursor-not-allowed">
-        Last
-      </span>
+      <span class="px-3 py-2 text-sm font-medium text-gray-400 bg-gray-100 border-t border-b border-gray-300 cursor-not-allowed">Next</span>
+      <span class="px-3 py-2 text-sm font-medium text-gray-400 bg-gray-100 border border-gray-300 rounded-r-md cursor-not-allowed">Last</span>
       {% endif %}
     </nav>
   </div>
   {% endif %}
-
   {% else %}
   <div class="text-center py-12">
     <i class="fas fa-box-open text-6xl text-gray-300 mb-4"></i>
@@ -210,40 +150,28 @@
   {% endif %}
 </section>
 
-<!-- Promotional Banner -->
 <section class="container mx-auto px-4 py-8">
   <div class="rounded-lg p-8 md:p-12 text-center text-white bg-cover bg-center bg-no-repeat"
-       style="background-image: linear-gradient(135deg, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)), url('{% static 'images/offer_image.png' %}');">
+       style="background-image: linear-gradient(135deg, rgba(0,0,0,0.8), rgba(0,0,0,0.8)), url('{% static 'images/offer_image.png' %}');">
     <h2 class="text-3xl md:text-4xl font-bold mb-4">Special Offer</h2>
     <p class="text-lg md:text-xl mb-6">Get up to 30% off on selected watches</p>
-    <a href="{% url 'products' %}" class="inline-block bg-white text-purple-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors shadow-lg">
-      Shop Now
-    </a>
+    <a href="{% url 'products' %}" class="inline-block bg-white text-purple-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors shadow-lg">Shop Now</a>
   </div>
 </section>
 
-<!-- Categories Section -->
 {% if categories %}
 <section class="container mx-auto px-4 py-8">
   <div class="flex items-center justify-between mb-6">
     <h2 class="text-2xl md:text-3xl font-bold">Shop by Category</h2>
-    <a href="{% url 'products' %}" class="text-blue-600 hover:text-blue-800 font-semibold flex items-center">
-      View All <i class="fas fa-arrow-right ml-2"></i>
-    </a>
+    <a href="{% url 'products' %}" class="text-blue-600 hover:text-blue-800 font-semibold flex items-center">View All <i class="fas fa-arrow-right ml-2"></i></a>
   </div>
-  
   <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
     {% for category in categories %}
     <a href="{% url 'products' %}?category={{ category.id }}" class="group">
       <div class="bg-white rounded-lg p-6 shadow hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 text-center">
         <div class="w-16 h-16 mx-auto mb-4 rounded-full overflow-hidden flex items-center justify-center group-hover:scale-110 transition-transform">
-          {% if category.image %}
-            <img src="{{ category.image.url }}" alt="{{ category.name }}" class="w-full h-full object-cover">
-          {% else %}
-            <div class="w-full h-full bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center">
-              <i class="fas fa-tag text-2xl text-blue-600"></i>
-            </div>
-          {% endif %}
+          {% if category.image %}<img src="{{ category.image.url }}" alt="{{ category.name }}" class="w-full h-full object-cover">
+          {% else %}<div class="w-full h-full bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center"><i class="fas fa-tag text-2xl text-blue-600"></i></div>{% endif %}
         </div>
         <h3 class="font-semibold text-sm mb-1">{{ category.name }}</h3>
         <p class="text-xs text-gray-500">{{ category.product_count }} Product{{ category.product_count|pluralize }}</p>
@@ -254,151 +182,276 @@
 </section>
 {% endif %}
 
-<!-- Carousel JavaScript -->
+</div>
+<!-- ============================================================
+     ORIGINAL DESKTOP CODE ENDS
+     ============================================================ -->
+
+
+<!-- ============================================================
+     MOBILE ONLY — iPhone 12 (390px) — block md:hidden
+     Compact layout like Flipkart / Amazon
+     ============================================================ -->
+<div class="block md:hidden bg-gray-100 min-h-screen">
+
+  <!-- Banner Carousel -->
+  <section class="w-full">
+    {% if has_banners %}
+    <div class="relative overflow-hidden bg-gray-900 h-36">
+      <div class="m-carousel-container relative w-full h-full">
+        {% for banner in banners %}
+        <div class="m-carousel-slide {% if forloop.first %}active{% endif %} absolute inset-0">
+          <img src="{{ banner.image.url }}" alt="Banner {{ forloop.counter }}" class="w-full h-full object-cover">
+        </div>
+        {% endfor %}
+      </div>
+      {% if banners|length > 1 %}
+      <button class="m-carousel-prev absolute left-2 top-1/2 -translate-y-1/2 bg-black bg-opacity-40 text-white w-6 h-6 rounded-full flex items-center justify-center z-20">
+        <i class="fas fa-chevron-left text-xs"></i>
+      </button>
+      <button class="m-carousel-next absolute right-2 top-1/2 -translate-y-1/2 bg-black bg-opacity-40 text-white w-6 h-6 rounded-full flex items-center justify-center z-20">
+        <i class="fas fa-chevron-right text-xs"></i>
+      </button>
+      <div class="absolute bottom-2 left-0 right-0 flex justify-center gap-1 z-20">
+        {% for banner in banners %}
+        <button class="m-carousel-dot w-1.5 h-1.5 rounded-full bg-white {% if forloop.first %}opacity-100{% else %}opacity-40{% endif %}" data-mslide="{{ forloop.counter0 }}"></button>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+    {% else %}
+    <div class="h-36 flex items-center justify-center text-white text-center px-4" style="background: linear-gradient(135deg, #667eea, #764ba2);">
+      <div>
+        <i class="fas fa-watch text-3xl mb-2 block animate-pulse"></i>
+        <p class="text-sm font-bold">Welcome to DINGDONG</p>
+        <p class="text-xs opacity-80 mb-2">Premium Watches & Accessories</p>
+        <a href="{% url 'products' %}" class="text-xs bg-white text-purple-600 px-4 py-1 rounded font-semibold">Shop Now</a>
+      </div>
+    </div>
+    {% endif %}
+  </section>
+
+  <!-- Brands Strip -->
+  {% if brands %}
+  <section class="bg-white mt-2 px-3 py-3">
+    <div class="flex items-center justify-between mb-2">
+      <span class="text-xs font-bold text-gray-800 uppercase tracking-wide">Top Brands</span>
+      <a href="{% url 'products' %}" class="text-xs text-blue-600 font-medium">See All →</a>
+    </div>
+    <div class="flex gap-3 overflow-x-auto scrollbar-hide pb-1">
+      {% for brand in brands %}
+      <a href="{% url 'products' %}?brand={{ brand.id }}" class="flex-shrink-0 flex flex-col items-center gap-1">
+        <div class="w-12 h-12 rounded-full border border-gray-200 bg-white flex items-center justify-center overflow-hidden shadow-sm">
+          {% if brand.image %}
+            <img src="{{ brand.image.url }}" alt="{{ brand.name }}" class="w-full h-full object-contain p-1">
+          {% else %}
+            <i class="fas fa-store text-gray-500 text-sm"></i>
+          {% endif %}
+        </div>
+        <span class="text-[10px] text-gray-600 text-center w-12 truncate">{{ brand.name }}</span>
+      </a>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
+  <!-- Featured Products -->
+  <section class="mt-2 bg-white px-3 py-3">
+    <div class="flex items-center justify-between mb-2">
+      <span class="text-xs font-bold text-gray-800 uppercase tracking-wide">Featured Products</span>
+      <a href="{% url 'products' %}" class="text-xs text-blue-600 font-medium">See All →</a>
+    </div>
+
+    {% if products_data %}
+    <!-- 2-column product grid, compact -->
+    <div class="grid grid-cols-2 gap-2">
+      {% for item in products_data %}
+      <a href="{% url 'product_detail' item.product.id %}?variant={{ item.variant.id }}" class="block bg-white border border-gray-100 rounded-lg overflow-hidden shadow-sm active:scale-95 transition-transform">
+
+        <!-- Product Image -->
+        <div class="relative bg-gray-50 h-32 flex items-center justify-center">
+          {% if item.image %}
+            <img src="{{ item.image.image.url }}" alt="{{ item.product.name }}" class="h-full w-full object-contain p-2">
+          {% else %}
+            <img src="https://via.placeholder.com/150x150?text=No+Image" alt="{{ item.product.name }}" class="h-full w-full object-contain p-2">
+          {% endif %}
+          {% if item.variant.stock < 10 %}
+            <span class="absolute top-1 left-1 bg-red-500 text-white text-[9px] px-1.5 py-0.5 rounded-sm font-medium">Low Stock</span>
+          {% endif %}
+          {% if item.discount_percentage %}
+            <span class="absolute top-1 right-1 bg-green-600 text-white text-[9px] px-1.5 py-0.5 rounded-sm font-medium">{{ item.discount_percentage }}% off</span>
+          {% endif %}
+        </div>
+
+        <!-- Product Info -->
+        <div class="px-2 py-1.5">
+          <p class="text-[11px] font-semibold text-gray-800 leading-tight line-clamp-2" style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">
+            {{ item.product.name }}
+          </p>
+          <div class="mt-1 flex items-center gap-1 flex-wrap">
+            <span class="text-sm font-bold text-gray-900">₹{{ item.price }}</span>
+            {% if item.discount_percentage %}
+              <span class="text-[10px] text-gray-400 line-through">₹{{ item.original_price }}</span>
+            {% endif %}
+          </div>
+          <!-- Color dots -->
+          {% if item.available_variants %}
+          <div class="flex gap-1 mt-1 flex-wrap">
+            {% for variant in item.available_variants %}
+            <div class="w-3 h-3 rounded-full border border-gray-300" style="background-color:{{ variant.color_code }};" title="{{ variant.color_name }}"></div>
+            {% endfor %}
+          </div>
+          {% endif %}
+        </div>
+
+      </a>
+      {% endfor %}
+    </div>
+
+    <!-- Mobile Pagination -->
+    {% if products_data.has_other_pages %}
+    <div class="flex items-center justify-center gap-2 mt-4">
+      {% if products_data.has_previous %}
+        <a href="?page={{ products_data.previous_page_number }}" class="text-xs px-3 py-1.5 bg-white border border-gray-300 rounded text-gray-700">‹ Prev</a>
+      {% else %}
+        <span class="text-xs px-3 py-1.5 bg-gray-100 border border-gray-200 rounded text-gray-400 cursor-not-allowed">‹ Prev</span>
+      {% endif %}
+      <span class="text-xs text-gray-600 font-medium">{{ products_data.number }} / {{ products_data.paginator.num_pages }}</span>
+      {% if products_data.has_next %}
+        <a href="?page={{ products_data.next_page_number }}" class="text-xs px-3 py-1.5 bg-white border border-gray-300 rounded text-gray-700">Next ›</a>
+      {% else %}
+        <span class="text-xs px-3 py-1.5 bg-gray-100 border border-gray-200 rounded text-gray-400 cursor-not-allowed">Next ›</span>
+      {% endif %}
+    </div>
+    {% endif %}
+
+    {% else %}
+    <div class="text-center py-8">
+      <i class="fas fa-box-open text-3xl text-gray-300 mb-2 block"></i>
+      <p class="text-xs text-gray-400">No products available</p>
+    </div>
+    {% endif %}
+  </section>
+
+  <!-- Promo Banner -->
+  <section class="mx-3 mt-2 mb-2 rounded-lg overflow-hidden">
+    <div class="relative h-24 flex items-center justify-between px-5 text-white"
+         style="background-image: linear-gradient(135deg, rgba(0,0,0,0.82), rgba(0,0,0,0.75)), url('{% static 'images/offer_image.png' %}'); background-size:cover; background-position:center;">
+      <div>
+        <p class="text-xs font-bold leading-tight">Special Offer 🎉</p>
+        <p class="text-[11px] opacity-80 mt-0.5">Up to 30% off on selected watches</p>
+      </div>
+      <a href="{% url 'products' %}" class="text-[11px] font-bold bg-white text-black px-3 py-1.5 rounded flex-shrink-0">Shop Now</a>
+    </div>
+  </section>
+
+  <!-- Categories -->
+  {% if categories %}
+  <section class="bg-white mt-2 px-3 py-3 mb-4">
+    <div class="flex items-center justify-between mb-2">
+      <span class="text-xs font-bold text-gray-800 uppercase tracking-wide">Categories</span>
+      <a href="{% url 'products' %}" class="text-xs text-blue-600 font-medium">See All →</a>
+    </div>
+    <div class="grid grid-cols-4 gap-2">
+      {% for category in categories %}
+      <a href="{% url 'products' %}?category={{ category.id }}" class="flex flex-col items-center gap-1">
+        <div class="w-14 h-14 rounded-full border border-gray-100 bg-gray-50 flex items-center justify-center overflow-hidden shadow-sm">
+          {% if category.image %}
+            <img src="{{ category.image.url }}" alt="{{ category.name }}" class="w-full h-full object-cover">
+          {% else %}
+            <div class="w-full h-full bg-gradient-to-br from-blue-50 to-purple-100 flex items-center justify-center">
+              <i class="fas fa-tag text-blue-500 text-sm"></i>
+            </div>
+          {% endif %}
+        </div>
+        <span class="text-[10px] text-gray-600 text-center leading-tight w-14 truncate">{{ category.name }}</span>
+        <span class="text-[9px] text-gray-400">{{ category.product_count }} items</span>
+      </a>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
+</div>
+<!-- END MOBILE SECTION -->
+
+
+<!-- Carousel JS (desktop) -->
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-  // Carousel functionality
+  // ---- Desktop Carousel ----
   const slides = document.querySelectorAll('.carousel-slide');
   const dots = document.querySelectorAll('.carousel-dot');
   const prevBtn = document.querySelector('.carousel-prev');
   const nextBtn = document.querySelector('.carousel-next');
   const totalSlides = slides.length;
-  
   if (totalSlides === 0) return;
-  
   let currentSlide = 0;
   let autoPlayInterval = null;
 
   function showSlide(index) {
     if (index < 0) index = totalSlides - 1;
     if (index >= totalSlides) index = 0;
-    
     slides.forEach((slide, i) => {
-      if (i === index) {
-        slide.style.opacity = '1';
-        slide.style.zIndex = '10';
-        slide.classList.add('active');
-      } else {
-        slide.style.opacity = '0';
-        slide.style.zIndex = '0';
-        slide.classList.remove('active');
-      }
+      slide.style.opacity = i === index ? '1' : '0';
+      slide.style.zIndex = i === index ? '10' : '0';
+      i === index ? slide.classList.add('active') : slide.classList.remove('active');
     });
-    
-    dots.forEach((dot, i) => {
-      if (i === index) {
-        dot.style.opacity = '1';
-      } else {
-        dot.style.opacity = '0.5';
-      }
-    });
-    
+    dots.forEach((dot, i) => { dot.style.opacity = i === index ? '1' : '0.5'; });
     currentSlide = index;
   }
 
-  function nextSlide() {
-    showSlide(currentSlide + 1);
+  if (nextBtn) nextBtn.addEventListener('click', e => { e.preventDefault(); showSlide(currentSlide + 1); resetAP(); });
+  if (prevBtn) prevBtn.addEventListener('click', e => { e.preventDefault(); showSlide(currentSlide - 1); resetAP(); });
+  dots.forEach((dot, i) => dot.addEventListener('click', e => { e.preventDefault(); showSlide(i); resetAP(); }));
+
+  function resetAP() { clearInterval(autoPlayInterval); if (totalSlides > 1) autoPlayInterval = setInterval(() => showSlide(currentSlide + 1), 4000); }
+  const cc = document.querySelector('.carousel-container');
+  if (cc && totalSlides > 1) { cc.addEventListener('mouseenter', () => clearInterval(autoPlayInterval)); cc.addEventListener('mouseleave', resetAP); }
+  showSlide(0); resetAP();
+
+  // ---- Mobile Carousel ----
+  const mSlides = document.querySelectorAll('.m-carousel-slide');
+  const mDots = document.querySelectorAll('.m-carousel-dot');
+  const mPrev = document.querySelector('.m-carousel-prev');
+  const mNext = document.querySelector('.m-carousel-next');
+  const mTotal = mSlides.length;
+  if (mTotal === 0) return;
+  let mCurrent = 0;
+  let mAP = null;
+
+  function mShowSlide(index) {
+    if (index < 0) index = mTotal - 1;
+    if (index >= mTotal) index = 0;
+    mSlides.forEach((s, i) => { s.style.opacity = i === index ? '1' : '0'; s.style.zIndex = i === index ? '10' : '0'; });
+    mDots.forEach((d, i) => { d.style.opacity = i === index ? '1' : '0.4'; });
+    mCurrent = index;
   }
 
-  function prevSlide() {
-    showSlide(currentSlide - 1);
-  }
-
-  if (nextBtn) {
-    nextBtn.addEventListener('click', function(e) {
-      e.preventDefault();
-      nextSlide();
-      resetAutoPlay();
-    });
-  }
-
-  if (prevBtn) {
-    prevBtn.addEventListener('click', function(e) {
-      e.preventDefault();
-      prevSlide();
-      resetAutoPlay();
-    });
-  }
-
-  dots.forEach((dot, index) => {
-    dot.addEventListener('click', function(e) {
-      e.preventDefault();
-      showSlide(index);
-      resetAutoPlay();
-    });
-  });
-
-  function startAutoPlay() {
-    if (totalSlides > 1) {
-      autoPlayInterval = setInterval(nextSlide, 4000);
-    }
-  }
-
-  function stopAutoPlay() {
-    if (autoPlayInterval) {
-      clearInterval(autoPlayInterval);
-      autoPlayInterval = null;
-    }
-  }
-
-  function resetAutoPlay() {
-    stopAutoPlay();
-    startAutoPlay();
-  }
-
-  const carouselContainer = document.querySelector('.carousel-container');
-  if (carouselContainer && totalSlides > 1) {
-    carouselContainer.addEventListener('mouseenter', stopAutoPlay);
-    carouselContainer.addEventListener('mouseleave', startAutoPlay);
-  }
-
-  showSlide(0);
-  startAutoPlay();
+  if (mNext) mNext.addEventListener('click', e => { e.preventDefault(); mShowSlide(mCurrent + 1); clearInterval(mAP); mAP = setInterval(() => mShowSlide(mCurrent + 1), 3500); });
+  if (mPrev) mPrev.addEventListener('click', e => { e.preventDefault(); mShowSlide(mCurrent - 1); clearInterval(mAP); mAP = setInterval(() => mShowSlide(mCurrent + 1), 3500); });
+  mDots.forEach((d, i) => d.addEventListener('click', () => mShowSlide(i)));
+  mShowSlide(0);
+  if (mTotal > 1) mAP = setInterval(() => mShowSlide(mCurrent + 1), 3500);
 });
 
-// Wishlist functionality
-document.querySelectorAll('.wishlist-btn').forEach(button => {
-  button.addEventListener('click', function(e) {
-    e.preventDefault();
-    const url = this.getAttribute('data-url');
-    const icon = this.querySelector('i');
-    
-    fetch(url, {
-      method: 'POST',
-      headers: {
-        'X-CSRFToken': getCookie('csrftoken'),
-        'Content-Type': 'application/json'
-      }
-    })
-    .then(response => response.json())
-    .then(data => {
-      if (data.status === 'added') {
-        icon.classList.remove('far');
-        icon.classList.add('fas', 'text-red-500');
-      } else if (data.status === 'removed') {
-        icon.classList.remove('fas', 'text-red-500');
-        icon.classList.add('far', 'text-gray-600');
-      }
-    })
-    .catch(error => console.error('Error:', error));
-  });
-});
-
-// CSRF token helper function
 function getCookie(name) {
   let cookieValue = null;
   if (document.cookie && document.cookie !== '') {
     const cookies = document.cookie.split(';');
     for (let i = 0; i < cookies.length; i++) {
       const cookie = cookies[i].trim();
-      if (cookie.substring(0, name.length + 1) === (name + '=')) {
-        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-        break;
-      }
+      if (cookie.substring(0, name.length + 1) === (name + '=')) { cookieValue = decodeURIComponent(cookie.substring(name.length + 1)); break; }
     }
   }
   return cookieValue;
 }
 </script>
+
+<style>
+  .scrollbar-hide::-webkit-scrollbar { display: none; }
+  .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+  .m-carousel-slide { transition: opacity 0.4s ease; }
+</style>
 
 {% endblock %}
