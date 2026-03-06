@@ -98,86 +98,97 @@
             </div>
         </div>
     </div>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
 
-    <script>
-    document.addEventListener("DOMContentLoaded", function () {
-        // ── OTP input behaviour ──────────────────────────────────────────
-        const otpInputs = document.querySelectorAll(".otp-input");
-        const completeOtp = document.getElementById("complete_otp");
+    // ── OTP Input Behaviour ──────────────────────────────────────────────
+    const otpInputs   = document.querySelectorAll(".otp-input");
+    const completeOtp = document.getElementById("complete_otp");
 
-        otpInputs.forEach((input, index) => {
-            // Only allow numeric input
-            input.addEventListener("keypress", (e) => {
-                if (!/[0-9]/.test(e.key)) e.preventDefault();
-            });
+    otpInputs.forEach((input, index) => {
 
-            input.addEventListener("input", (e) => {
-                // Strip non-numeric characters in case they sneak in
-                e.target.value = e.target.value.replace(/[^0-9]/g, '');
-                if (e.target.value.length === 1 && index < otpInputs.length - 1) {
-                    otpInputs[index + 1].focus();
-                }
-                updateOtp();
-            });
-
-            input.addEventListener("keydown", (e) => {
-                if (e.key === "Backspace" && !input.value && index > 0) {
-                    otpInputs[index - 1].focus();
-                }
-            });
+        // Only allow numeric input
+        input.addEventListener("keypress", (e) => {
+            if (!/[0-9]/.test(e.key)) e.preventDefault();
         });
 
-        // Allow pasting full 6-digit OTP
-        otpInputs[0].addEventListener("paste", function (e) {
-            e.preventDefault();
-            const pasteData = (e.clipboardData || window.clipboardData).getData("text").trim();
-            if (/^\d{6}$/.test(pasteData)) {
-                otpInputs.forEach((input, i) => { input.value = pasteData[i]; });
-                updateOtp();
-                otpInputs[otpInputs.length - 1].focus();
+        input.addEventListener("input", (e) => {
+            e.target.value = e.target.value.replace(/[^0-9]/g, "");
+            if (e.target.value.length === 1 && index < otpInputs.length - 1) {
+                otpInputs[index + 1].focus();
             }
+            updateOtp();
         });
 
-        function updateOtp() {
-            completeOtp.value = Array.from(otpInputs).map(i => i.value).join("");
-        }
-
-        // Auto-focus first input
-        otpInputs[0].focus();
-        const timerEl  = document.getElementById("timer");
-        const resendBtn = document.getElementById("resendBtn");
-        const expiryRaw = "{{ otp_expiry|date:'c' }}";
-        const expiryTime = new Date(expiryRaw).getTime();
-
-        function startTimer() {
-            if (isNaN(expiryTime)) {
-                timerEl.textContent = "00:00";
-                enableResend();
-                return;
+        input.addEventListener("keydown", (e) => {
+            if (e.key === "Backspace" && !input.value && index > 0) {
+                otpInputs[index - 1].focus();
             }
-
-            const interval = setInterval(() => {
-                const remaining = Math.max(0, Math.floor((expiryTime - Date.now()) / 1000));
-                const minutes = String(Math.floor(remaining / 60)).padStart(2, '0');
-                const seconds = String(remaining % 60).padStart(2, '0');
-                timerEl.textContent = `${minutes}:${seconds}`;
-
-                if (remaining === 0) {
-                    clearInterval(interval);
-                    enableResend();
-                }
-            }, 1000);
-        }
-
-        function enableResend() {
-            resendBtn.classList.remove("text-gray-400", "pointer-events-none", "cursor-not-allowed");
-            resendBtn.classList.add("text-black", "hover:underline", "cursor-pointer");
-            resendBtn.onclick = null; // re-enable the href click
-        }
-
-        startTimer();
+        });
     });
-    </script>
+
+    // Allow pasting full 6-digit OTP
+    otpInputs[0].addEventListener("paste", function (e) {
+        e.preventDefault();
+        const pasteData = (e.clipboardData || window.clipboardData).getData("text").trim();
+        if (/^\d{6}$/.test(pasteData)) {
+            otpInputs.forEach((input, i) => { input.value = pasteData[i]; });
+            updateOtp();
+            otpInputs[otpInputs.length - 1].focus();
+        }
+    });
+
+    function updateOtp() {
+        completeOtp.value = Array.from(otpInputs).map(i => i.value).join("");
+    }
+
+    // Auto-focus first input
+    otpInputs[0].focus();
+
+
+    // ── Countdown Timer ──────────────────────────────────────────────────
+    const timerEl   = document.getElementById("timer");
+    const resendBtn = document.getElementById("resendBtn");
+
+    // Server sends remaining seconds — fully timezone-safe
+    const totalSeconds = parseInt("{{ remaining_seconds }}") || 0;
+    const expiryTime   = Date.now() + totalSeconds * 1000;
+
+    function pad(n) {
+        return String(n).padStart(2, "0");
+    }
+
+    function enableResend() {
+        resendBtn.classList.remove("text-gray-400", "pointer-events-none", "cursor-not-allowed");
+        resendBtn.classList.add("text-black", "hover:underline", "cursor-pointer");
+        resendBtn.onclick = null; // re-enable the href click
+        timerEl.textContent = "00:00";
+    }
+
+    function startTimer() {
+        // Already expired when page loaded
+        if (totalSeconds <= 0) {
+            timerEl.textContent = "00:00";
+            enableResend();
+            return;
+        }
+
+        const interval = setInterval(() => {
+            const remaining = Math.max(0, Math.floor((expiryTime - Date.now()) / 1000));
+            const minutes   = pad(Math.floor(remaining / 60));
+            const seconds   = pad(remaining % 60);
+            timerEl.textContent = `${minutes}:${seconds}`;
+
+            if (remaining === 0) {
+                clearInterval(interval);
+                enableResend();
+            }
+        }, 1000);
+    }
+
+    startTimer();
+});
+</script>
 
 </body>
 </html>

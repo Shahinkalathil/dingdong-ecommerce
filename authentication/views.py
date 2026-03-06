@@ -185,23 +185,23 @@ def otp(request):
         return redirect("sign_up")
 
     otp_expiry = user.otp_expiry
+    remaining_seconds = max(0, int((otp_expiry - timezone.now()).total_seconds())) if otp_expiry else 0
 
     if request.method == "POST":
         entered_otp = request.POST.get("otp")
+        if not otp_expiry or timezone.now() > otp_expiry:
+            messages.error(request, "OTP has expired. Please request a new one.")
+            return render(request, "user_side/auth/otp.html", {"remaining_seconds": 0,"user": user,})
         if entered_otp != user.otp:
-            messages.error(request, "Invalid OTP")
-            return render(request, "user_side/auth/otp.html", {
-                "otp_expiry": otp_expiry,
-                "user": user,
-            })
-        else:
-            user.is_active = True
-            user.otp = None  
-            user.save()
-            login(request, user, backend="django.contrib.auth.backends.ModelBackend")
-            return redirect("home")
-
-    return render(request, "user_side/auth/otp.html", {"otp_expiry": otp_expiry, "user": user})
+            messages.error(request, "Invalid OTP.")
+            return render(request, "user_side/auth/otp.html", { "remaining_seconds": remaining_seconds,"user": user,})
+        user.is_active = True
+        user.otp = None
+        user.otp_expiry = None
+        user.save()
+        login(request, user, backend="django.contrib.auth.backends.ModelBackend")
+        return redirect("home")
+    return render(request, "user_side/auth/otp.html", {"remaining_seconds": remaining_seconds,"user": user,})
 
 @redirect_authenticated
 @never_cache

@@ -10,7 +10,7 @@ class CustomUser(AbstractUser):
     phone = models.CharField(max_length=50, null=True, blank=True)
     fullname = models.CharField(max_length=100)
     otp = models.CharField(max_length=6, blank=True, null=True)
-    otp_expiry = models.DateTimeField(null=True, blank=True, default=datetime.datetime.now)
+    otp_expiry = models.DateTimeField(null=True, blank=True, default=None)
     forget_password_token = models.CharField(max_length=100, null=True, blank=True)
     forget_password_expiry = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)  
