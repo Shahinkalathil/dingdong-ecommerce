@@ -9,7 +9,6 @@ from .models import Category, Product, Brand, ProductVariant, ProductImage, Prod
 from cart.models import Cart, CartItem
 from django.core.paginator import Paginator
 from django.db.models import Min,  Q, Max, Count, Avg
-import random
 import base64
 import io
 from offers.models import ProductOffer
@@ -42,17 +41,13 @@ def products(request):
     if brand_filter:
         products=products.filter(brand__id=brand_filter)
 
-    price_range=request.GET.get('price_range','').strip()
-    if price_range=='0-1000':
-        products=products.filter(variants__price__range=(0,1000))
-    elif price_range=='1000-3000':
-        products=products.filter(variants__price__range=(1000,3000))
-    elif price_range=='3000-5000':
-        products=products.filter(variants__price__range=(3000,5000))
-    elif price_range=='5000-10000':
-        products=products.filter(variants__price__range=(5000,10000))
-    elif price_range=='10000+':
-        products=products.filter(variants__price__gte=10000)
+    price_range = request.GET.get('price_range', '').strip()
+    if '-' in price_range:
+        low, high = price_range.split('-')
+        products = products.filter(variants__price__range=(int(low), int(high)))
+    elif price_range.endswith('+'):
+        low = price_range.removesuffix('+')
+        products = products.filter(variants__price__gte=int(low))
 
     sort_by=request.GET.get('sort','').strip()
     if sort_by=='price-low':
